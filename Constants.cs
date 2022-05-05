@@ -1,14 +1,15 @@
 class Constants
 {
-    public const char   LABEL_BORDER_VALUE = '%';
-    public const char   LABEL_TYPE_NAME_SEPARATOR = '$';
-    public const string LABEL_STRING_VARIABLE     = "%_INJECTOR_VARIABLE_";
-    public const string LABEL_TOGGLEABLE_START    = "%_INJECTOR_TOGGLEABLE_";
-    public const string LABEL_TOGGLEABLE_END      = "%_INJECTOR_TOGGLEABLE_END_%";
-    public const string LABEL_FORMATTING_RULES    = "Labels must have the form %cType%cName";
-
-            // A label must have the form %Type$Name%, where:
-        // - The types are explicitly defined. Case-insensitivity is allowed but discouraged by convention.
-        // - The name may only have letters (a-z, A-Z), numbers (0-9) and underscores (_)
+    public const string LABEL_BORDER_VALUE        = "%";
+    public const string LABEL_TYPE_PREFACE        = "_INJECTOR_";
+    public const string LABEL_TYPE_NAME_SEPARATOR = "$";
+    public const string TYPE_STRING_VARIABLE      = "VARIABLE_";
+    public const string TYPE_TOGGLEABLE           = "TOGGLEABLE_";
+    public const string TYPE_TOGGLEABLE_END       = "TOGGLEABLE_END_";
+    public const string LABEL_FORMATTING_RULES    = "Labels must have the form "
+        + LABEL_BORDER_VALUE + LABEL_TYPE_PREFACE + "[TYPE]" + LABEL_TYPE_NAME_SEPARATOR + "[NAME]" + LABEL_BORDER_VALUE + " where:\n"
+        + "- [TYPE] is a pre-defined string, with possible values listed in the documentation.\n"
+        + "- Case-insensitivity of the [TYPE] and it's preface is allowed, but discouraged by convention.\n"
+        + "- [NAME] may only contain letters (a-z, A-Z), numbers (0-9), or underscores ( _ ). Names cannot be blank.\n";
 }
 
