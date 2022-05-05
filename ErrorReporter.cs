@@ -18,7 +18,18 @@ class ErrorReporter
                 formattedString += "The config. file has a syntax error, printing Exception message:\n" + args[0];
                 break;
             case ErrorCode.BAD_LABEL_FORMATTING:
-                formattedString += "The label " + args[0] + " is not formatted correctly.\n" + Constants.LABEL_FORMATTING_RULES;
+                formattedString += "The Label " + args[0] + " is not formatted correctly.\n" + Constants.LABEL_FORMATTING_RULES;
+                break;
+            case ErrorCode.OPTION_ISNT_OBJECT:
+                formattedString += "The Option " + args[0] + " is not defined as a Json object.";
+                break;
+            case ErrorCode.BAD_VARIABLE_VALUE:
+                formattedString += "The Variable " + args[0] + " has it's required '" + Constants.PROPERTY_NAME_VALUE 
+                    + "' property incorrectly defined, or missing entirely.\n" + Constants.VARIABLE_VALUE_RULES;
+                break;
+            case ErrorCode.BAD_TOGGLEABLE_VALUE:
+                formattedString += "The Toggleable " + args[0] + " has it's required '" + Constants.PROPERTY_NAME_VALUE 
+                    + "' property incorrectly defined, or missing entirely.\n" + Constants.TOGGLEABLE_VALUE_RULES;
                 break;
         }
         terminateWithError(formattedString);
@@ -37,6 +48,9 @@ enum ErrorCode
     DIRECTORY_NOT_FOUND,
     CONFIG_NOT_FOUND,
     BAD_JSON_FILE,
-    BAD_LABEL_FORMATTING
+    BAD_LABEL_FORMATTING,
+    OPTION_ISNT_OBJECT,
+    BAD_VARIABLE_VALUE,
+    BAD_TOGGLEABLE_VALUE
 }
 
