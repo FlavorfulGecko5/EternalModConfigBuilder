@@ -9,7 +9,7 @@ class VariableOption : Option
 
     public override string ToString()
     {
-        return "Configuration Option of type 'StringOption'\n"
+        return "Configuration Option of type 'VariableOption'\n"
             + "Label: " + label + "\n"
             + "Value: " + value + "\n";
     }

@@ -53,7 +53,7 @@ class EternalModConfiguration
                 foreach (JProperty currentRawOption in rawOptions)
                 {
                     // The label syntax is parsed and error-checked inside this try-block
-                    currentLabel = currentRawOption.Name;
+                    currentLabel = currentRawOption.Name.ToUpper();
                     try
                     {
                         separatorIndex = currentLabel.IndexOf(Constants.LABEL_TYPE_NAME_SEPARATOR, typeStartIndex);
@@ -86,7 +86,7 @@ class EternalModConfiguration
                                 goto CATCH_BAD_LABEL;
                     }
                     // Will be thrown by String.substring() if an index/length parameter is out of bounds.
-                    catch (System.ArgumentOutOfRangeException) { goto CATCH_BAD_LABEL; }
+                    catch (System.ArgumentOutOfRangeException) { goto CATCH_BAD_LABEL; }       
 
                     // Convert the raw option from JProperty to JObject
                     try { currentOption = (JObject)currentRawOption.Value; }
@@ -161,7 +161,6 @@ class EternalModConfiguration
                         }
                     }
                     catch (System.ArgumentException) {goto CATCH_LOCATIONS_NOT_STRING_ARRAY;}
-                    // TODO - ADD DUPLICATE LABEL CHECK, and allow case-insensitivity?
                 }
             }
             return new ParsedConfig(filesToCheck, options, hasMissingLocations);
@@ -192,5 +191,6 @@ class EternalModConfiguration
     static void Main(string[] args)
     {
         ParsedConfig config = readConfig("./testfiles/SampleConfig.json");
+        System.Console.WriteLine(config.ToString());
     }
 }

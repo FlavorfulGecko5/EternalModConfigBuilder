@@ -12,7 +12,9 @@ class Constants
         + LABEL_BORDER_VALUE + LABEL_TYPE_PREFACE + "[TYPE]" + LABEL_TYPE_NAME_SEPARATOR + "[NAME]" + LABEL_BORDER_VALUE + " where:\n"
         + "- [TYPE] is a pre-defined string, with possible values listed in the documentation.\n"
         + "- Case-insensitivity of the [TYPE] and it's preface is allowed, but discouraged by convention.\n"
-        + "- [NAME] may only contain letters (a-z, A-Z), numbers (0-9), or underscores ( _ ). Names cannot be blank.";    
+        + "- [NAME] may only contain letters (a-z, A-Z), numbers (0-9), or underscores ( _ ).\n"
+        + "- Names cannot be blank, and are case-insensitive. For example, 'ITEM' and 'item' are considered equivalent names.\n"
+        + "- If you accidentally define a label multiple times, the last definition will be used.";    
     public const string VARIABLE_VALUE_RULES      = "A Variable's '" + PROPERTY_NAME_VALUE + "' Property can be defined in the following ways:\n"
         + "- String: This is recommended by convention.\n"
         + "- Number: An integer or floating-point\n"
