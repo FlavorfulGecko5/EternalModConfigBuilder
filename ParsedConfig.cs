@@ -26,4 +26,9 @@ class ParsedConfig
 
         return formattedString;
     }
+
+    public void buildMod(string inputDirectory, string outputDirectory)
+    {
+        
+    }
 }

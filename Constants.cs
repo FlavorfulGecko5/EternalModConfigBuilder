@@ -37,5 +37,10 @@ class Constants
         + "- The list may be empty.\n"
         + "- If '" + PROPERTY_NAME_LOCATIONS + "' is null, undefined, or missing entirely, then every file of all supported filetypes in your mod will be checked "
             + "for labels, which may have a noticeable effect on execution time if your mod has lots of files that don't need to be configured.";
+    
+    public const string SUPPORTED_FILETYPES_DESCRIPTION = "Currently, this application only supports injecting configuration data into files of type:\n"
+        + "- .decl\n- .json";
+
+    public static readonly List<string> SUPPORTED_FILETYPES = new List<string>(){ "decl", "json" };
 }
 

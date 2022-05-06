@@ -35,6 +35,10 @@ class ErrorReporter
                 formattedString += "The Option " + args[0] + " has it's '" + Constants.PROPERTY_NAME_LOCATIONS 
                     + "' property incorrectly defined.\n" + Constants.PROPERTY_LOCATIONS_RULES;
                 break;
+            case ErrorCode.UNSUPPORTED_FILETYPE:
+                formattedString += "The Option " + args[0] + " has an invalid or unsupported file '" + args[1]
+                    + "' in it's '" + Constants.PROPERTY_NAME_LOCATIONS + "' list.\n" + Constants.SUPPORTED_FILETYPES_DESCRIPTION;
+                break;
         }
         terminateWithError(formattedString);
     }
@@ -56,6 +60,7 @@ enum ErrorCode
     OPTION_ISNT_OBJECT,
     BAD_VARIABLE_VALUE,
     BAD_TOGGLEABLE_VALUE,
-    LOCATIONS_ISNT_STRING_ARRAY
+    LOCATIONS_ISNT_STRING_ARRAY,
+    UNSUPPORTED_FILETYPE
 }
 

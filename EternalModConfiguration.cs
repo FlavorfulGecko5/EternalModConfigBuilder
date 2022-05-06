@@ -26,23 +26,25 @@ class EternalModConfiguration
         // The current label's name
                currentName = "";
         // The index where [LABEL_TYPE_NAME_SEPARATOR] is located
-        int separatorIndex = -1,
+        int    separatorIndex = -1,
         // The length of [LABEL_BORDER_VALUE][LABEL_TYPE_PREFACE], and the index where the type should begin
                typeStartIndex = Constants.LABEL_BORDER_VALUE.Length + Constants.LABEL_TYPE_PREFACE.Length;
 
         // The current variable option's value
         string? currentVariableValue = "";
         // The current toggleable option's value
-        bool? currentToggleableValue = false;
+        bool?   currentToggleableValue = false;
 
         // The current option's Locations array
         JArray? currentLocations = new JArray();
         // Whether a Locations array is undefined or not
-        bool hasMissingLocations = false,
-        // Whether the current filepath has already been extracted from a Locations array
-                isDuplicateFile = false;
+        bool    hasMissingLocations = false;
+        // The current filepath we're iterating through - initially read into here
+        string? nullCurrentFilePath = "";
         // The current filepath we're iterating through from the Locations array
-        string? currentFilePath = "";
+        string  currentFilePath = "",
+        // The current filepath's file extension
+                currentFileExtension = "";
         try
         {
             using (StreamReader fileReader = new StreamReader(configFilePath))
@@ -141,22 +143,24 @@ class EternalModConfiguration
                     // and eliminating duplicate filepaths
                     try
                     {
-                        for (int i = 0; i < currentLocations.Count; i++)
+                        for (int i = 0, j = 0; i < currentLocations.Count; i++)
                         {
-                            currentFilePath = (string?)currentLocations[i];
-                            if(currentFilePath == null)
+                            nullCurrentFilePath = (string?)currentLocations[i];
+                            if(nullCurrentFilePath == null)
                                 goto CATCH_LOCATIONS_NOT_STRING_ARRAY;
-                            isDuplicateFile = false;
+
+                            // This is just to fix a warning in the ErrorCode calls
+                            currentFilePath = nullCurrentFilePath;
                             
-                            for (int j = 0; j < filesToCheck.Count; j++)
-                            {
-                                if (currentFilePath.Equals(filesToCheck[j]))
-                                {
-                                    isDuplicateFile = true;
-                                    break;
-                                }
-                            }
-                            if (!isDuplicateFile)
+                            // Check if the file extension is valid
+                            // This appears to be out-of-bounds-safe
+                            j = currentFilePath.LastIndexOf('.') + 1;
+                            currentFileExtension = currentFilePath.Substring(j, currentFilePath.Length - j);
+                            if(!Constants.SUPPORTED_FILETYPES.Contains(currentFileExtension))
+                                goto CATCH_UNSUPPORTED_FILETYPE;
+                            
+                            // Check if this filePath has already been identified as having labels.
+                            if(!filesToCheck.Contains(currentFilePath))
                                 filesToCheck.Add(currentFilePath);
                         }
                     }
@@ -183,6 +187,8 @@ class EternalModConfiguration
           ErrorReporter.ProcessErrorCode(ErrorCode.BAD_TOGGLEABLE_VALUE,        new string[] { currentLabel });
         CATCH_LOCATIONS_NOT_STRING_ARRAY:
           ErrorReporter.ProcessErrorCode(ErrorCode.LOCATIONS_ISNT_STRING_ARRAY, new string[] { currentLabel });
+        CATCH_UNSUPPORTED_FILETYPE:
+          ErrorReporter.ProcessErrorCode(ErrorCode.UNSUPPORTED_FILETYPE,        new string[] { currentLabel, currentFilePath });
 
         // Return empty ParsedConfig to prevent warnings. This line won't ever be executed.
         return new ParsedConfig(new List<string>() { }, new List<Option>() { }, false);
