@@ -31,6 +31,10 @@ class ErrorReporter
                 formattedString += "The Toggleable " + args[0] + " has it's required '" + Constants.PROPERTY_NAME_VALUE 
                     + "' property incorrectly defined, or missing entirely.\n" + Constants.TOGGLEABLE_VALUE_RULES;
                 break;
+            case ErrorCode.LOCATIONS_ISNT_STRING_ARRAY:
+                formattedString += "The Option " + args[0] + " has it's '" + Constants.PROPERTY_NAME_LOCATIONS 
+                    + "' property incorrectly defined.\n" + Constants.PROPERTY_LOCATIONS_RULES;
+                break;
         }
         terminateWithError(formattedString);
     }
@@ -51,6 +55,7 @@ enum ErrorCode
     BAD_LABEL_FORMATTING,
     OPTION_ISNT_OBJECT,
     BAD_VARIABLE_VALUE,
-    BAD_TOGGLEABLE_VALUE
+    BAD_TOGGLEABLE_VALUE,
+    LOCATIONS_ISNT_STRING_ARRAY
 }
 

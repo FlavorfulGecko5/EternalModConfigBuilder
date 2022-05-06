@@ -1,8 +1,8 @@
-class StringOption : Option
+class VariableOption : Option
 {
     public string value {get;}
 
-    public StringOption(string labelParameter, string valueParameter) : base(labelParameter)
+    public VariableOption(string labelParameter, string valueParameter) : base(labelParameter)
     {
         value = valueParameter;
     }

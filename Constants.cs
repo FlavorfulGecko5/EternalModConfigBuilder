@@ -26,5 +26,14 @@ class Constants
         + "- Number: Use '1' for 'true' and '0' for 'false'. Other values give unpredictable results. Not recommended.\n"
         + "- Json lists and objects cannot be converted to strings and will cause an error if used.\n"
         + "- A null, empty or missing '" + PROPERTY_NAME_VALUE + "' field is not allowed.";
+
+    public const string PROPERTY_LOCATIONS_RULES = "An Option's '" + PROPERTY_NAME_LOCATIONS + "' array must obey the following rules:\n"
+        + "- A Json list is the only acceptable way to define this property.\n"
+        + "- Each entry in the list should be a string, or errors will result when parsing it, or when searching for labels to replace with data.\n"
+        + "- Each string should represent a filepath to a supported filetype with the option's label inside of it, starting from the .resources file. "
+            + "Example: gameresources_patch1/generated/decls/some/path/to/a/supported/filetype.decl\n"
+        + "- The list may be empty.\n"
+        + "- If '" + PROPERTY_NAME_LOCATIONS + "' is null, undefined, or missing entirely, then every file of all supported filetypes in your mod will be checked "
+            + "for labels, which may have a noticeable effect on execution time if your mod has lots of files that don't need to be configured.";
 }
 
