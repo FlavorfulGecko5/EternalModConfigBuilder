@@ -130,7 +130,7 @@ class EternalModConfiguration
                     // Process the Option's Locations array, checking if it's null or invalid
                     try
                     {
-                        currentLocations = (JArray?)currentOption["Locations"];
+                        currentLocations = (JArray?)currentOption[Constants.PROPERTY_NAME_LOCATIONS];
                         if (currentLocations == null)
                         {
                             hasMissingLocations = true;
@@ -196,7 +196,8 @@ class EternalModConfiguration
 
     static void Main(string[] args)
     {
-        ParsedConfig config = readConfig("./testfiles/SampleConfig.json");
+        ParsedConfig config = readConfig("./testfiles/variableDemoConfig.json");
         System.Console.WriteLine(config.ToString());
+        config.buildMod("sourceDirectory", "outputDirectory");
     }
 }
