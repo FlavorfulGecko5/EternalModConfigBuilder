@@ -175,7 +175,7 @@ class EternalModConfiguration
             return new ParsedConfig(filesToCheck, options, hasMissingLocations);
         }
         catch (System.IO.DirectoryNotFoundException)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.DIRECTORY_NOT_FOUND,         new string[] { configFilePath }); }
+        { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_DIRECTORY_NOT_FOUND,  new string[] { configFilePath }); }
         catch (FileNotFoundException)
         { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_FOUND,            new string[] { configFilePath }); }
         catch (Newtonsoft.Json.JsonReaderException e)
@@ -204,7 +204,7 @@ class EternalModConfiguration
     static void Main(string[] args)
     {
         ParsedConfig config = readConfig("./testfiles/variableDemoConfig.json");
-        System.Console.WriteLine(config.ToString());
+        //System.Console.WriteLine(config.ToString());
         config.buildMod("sourceDirectory", "outputDirectory");
     }
 }

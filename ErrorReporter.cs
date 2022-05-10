@@ -2,38 +2,39 @@ class ErrorReporter
 {
     public static void ProcessErrorCode(ErrorCode error, string[] args)
     {
+        bool terminateProgram = true;
         string formattedString = "ERROR: ";
         switch (error)
         {
             case ErrorCode.UNKNOWN_ERROR:
                 formattedString += "An unknown error occurred, printing Exception:\n" + args[0];
                 break;
-            case ErrorCode.DIRECTORY_NOT_FOUND:
-                formattedString += "The mod config. is in a non-existant directory: " + args[0];
+            case ErrorCode.CONFIG_DIRECTORY_NOT_FOUND:
+                formattedString += "The configuration file is in a non-existant directory: " + args[0];
                 break;
             case ErrorCode.CONFIG_NOT_FOUND:
-                formattedString += "Failed to find mod config. file " + args[0];
+                formattedString += "Failed to find the configuration file in the specified directory: " + args[0];
                 break;
             case ErrorCode.BAD_JSON_FILE:
-                formattedString += "The config. file has a syntax error, printing Exception message:\n" + args[0];
+                formattedString += "The configuration file has a syntax error, printing Exception message:\n" + args[0];
                 break;
             case ErrorCode.BAD_LABEL_FORMATTING:
-                formattedString += "The Label " + args[0] + " is not formatted correctly.\n" + Constants.LABEL_FORMATTING_RULES;
+                formattedString += "The Label " + args[0] + " is not formatted correctly in the configuration file.\n" + Constants.LABEL_FORMATTING_RULES;
                 break;
             case ErrorCode.OPTION_ISNT_OBJECT:
-                formattedString += "The Option " + args[0] + " is not defined as a Json object.";
+                formattedString += "The Option " + args[0] + " is not defined as a Json object in the configuration file.";
                 break;
             case ErrorCode.BAD_VARIABLE_VALUE:
                 formattedString += "The Variable " + args[0] + " has it's required '" + Constants.PROPERTY_NAME_VALUE 
-                    + "' property incorrectly defined, or missing entirely.\n" + Constants.VARIABLE_VALUE_RULES;
+                    + "' property incorrectly defined, or missing entirely in the configuration file.\n" + Constants.VARIABLE_VALUE_RULES;
                 break;
             case ErrorCode.BAD_TOGGLEABLE_VALUE:
                 formattedString += "The Toggleable " + args[0] + " has it's required '" + Constants.PROPERTY_NAME_VALUE 
-                    + "' property incorrectly defined, or missing entirely.\n" + Constants.TOGGLEABLE_VALUE_RULES;
+                    + "' property incorrectly defined, or missing entirely in the configuration file.\n" + Constants.TOGGLEABLE_VALUE_RULES;
                 break;
             case ErrorCode.LOCATIONS_ISNT_STRING_ARRAY:
                 formattedString += "The Option " + args[0] + " has it's '" + Constants.PROPERTY_NAME_LOCATIONS 
-                    + "' property incorrectly defined.\n" + Constants.PROPERTY_LOCATIONS_RULES;
+                    + "' property incorrectly defined in the configuration file.\n" + Constants.PROPERTY_LOCATIONS_RULES;
                 break;
             case ErrorCode.UNSUPPORTED_FILETYPE:
                 formattedString += "The Option " + args[0] + " has an invalid or unsupported file '" + args[1]
@@ -43,21 +44,33 @@ class ErrorReporter
                 formattedString += "The label " + args[0] + " is used multiple times in the configuration file."
                     + " A label may only be used to define one Option.";
                 break;
+            case ErrorCode.MOD_DIRECTORY_NOT_FOUND:
+                formattedString += "The mod directory " + args[0] + " does not exist.";
+                break;
+            case ErrorCode.MOD_FILE_NOT_FOUND:
+                formattedString += "The file " + args[0] + " was specified in the configuration file but does not actually exist in the mod."
+                    + " This filepath will be ignored.";
+                terminateProgram = false;
+                break;
+            case ErrorCode.UNRECOGNIZED_LABEL:
+                formattedString += "The file " + args[0] + " contains an unrecognized label '" + args[1] + "'\n"
+                    + "This label may have an invalid format or location, have a typo in the name, or be missing entirely from the configuration file.";
+                break;
+            case ErrorCode.INCOMPLETE_LABEL:
+                formattedString += "The file " + args[0] + " has an incomplete label that's missing a '" + Constants.LABEL_BORDER_VALUE + "' on it's right side.";
+                break;
         }
-        terminateWithError(formattedString);
-    }
-
-    private static void terminateWithError(string outputString)
-    {
-        System.Console.WriteLine(outputString);
-        Environment.Exit(1);
+        System.Console.WriteLine(formattedString);
+        
+        if(terminateProgram)
+            Environment.Exit(1);
     }
 }
 
 enum ErrorCode
 {
     UNKNOWN_ERROR,
-    DIRECTORY_NOT_FOUND,
+    CONFIG_DIRECTORY_NOT_FOUND,
     CONFIG_NOT_FOUND,
     BAD_JSON_FILE,
     BAD_LABEL_FORMATTING,
@@ -66,6 +79,10 @@ enum ErrorCode
     BAD_TOGGLEABLE_VALUE,
     LOCATIONS_ISNT_STRING_ARRAY,
     UNSUPPORTED_FILETYPE,
-    DUPLICATE_LABEL
+    DUPLICATE_LABEL,
+    MOD_DIRECTORY_NOT_FOUND,
+    MOD_FILE_NOT_FOUND,
+    UNRECOGNIZED_LABEL,
+    INCOMPLETE_LABEL
 }
 

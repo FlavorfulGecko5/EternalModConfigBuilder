@@ -4,11 +4,21 @@ class ParsedConfig
     private List<string> filePaths { get; }
     private List<Option> configOptions { get; }
 
-    public ParsedConfig(List<string> filePathsParameter, List<Option> configOptionsParameter, bool mustCheckAllDeclsParameter)
+    public ParsedConfig(List<string> filePathsParameter, List<Option> configOptionsParameter, bool mustCheckAllFilesParameter)
     {
         filePaths = filePathsParameter;
         configOptions = configOptionsParameter;
-        mustCheckAllFiles = mustCheckAllDeclsParameter;
+        mustCheckAllFiles = mustCheckAllFilesParameter;
+    }
+
+    public Option? hasOption(string label)
+    {
+        for(int i = 0; i < configOptions.Count; i++)
+        {
+            if(configOptions[i].label.Equals(label))
+                return configOptions[i];
+        }
+        return null;
     }
 
     public override string ToString()
@@ -29,69 +39,104 @@ class ParsedConfig
 
     public void buildMod(string inputDirectory, string outputDirectory)
     {
-        // Clone the contents of inputDirectory to the outputDirectory
-        if(!Directory.Exists(outputDirectory))
-            Directory.CreateDirectory(outputDirectory);
-        CopyFilesRecursively(new DirectoryInfo(inputDirectory), new DirectoryInfo(outputDirectory));
-
-        // Begin working with the newly copied files
-        Directory.SetCurrentDirectory(outputDirectory);
-        string[] allFiles = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
-
         string currentFilePath = "";
-        if(mustCheckAllFiles)
-            for(int i = 0, j = 0; i < allFiles.Length; i++)
-            {
-                currentFilePath = allFiles[i];
+        try
+        {
+            // Clone the contents of inputDirectory to the outputDirectory
+            if (!Directory.Exists(outputDirectory))
+                Directory.CreateDirectory(outputDirectory);
+            CopyFilesRecursively(new DirectoryInfo(inputDirectory), new DirectoryInfo(outputDirectory));
 
-                // Check the file extension to ensure we can parse this file
-                j = currentFilePath.LastIndexOf('.') + 1;
-                if(Constants.SUPPORTED_FILETYPES.Contains(currentFilePath.Substring(j, currentFilePath.Length - j)))
-                    parseFile(currentFilePath);
-            }
-        else
-            for(int i = 0; i < filePaths.Count; i++)
-                parseFile(filePaths[i]);
+            // Begin working with the newly copied files
+            Directory.SetCurrentDirectory(outputDirectory);
+            string[] allFiles = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
+
+            if (mustCheckAllFiles)
+                for (int i = 0, j = 0; i < allFiles.Length; i++)
+                {
+                    currentFilePath = allFiles[i];
+
+                    // Check the file extension to ensure we can parse this file
+                    j = currentFilePath.LastIndexOf('.') + 1;
+                    if (Constants.SUPPORTED_FILETYPES.Contains(currentFilePath.Substring(j, currentFilePath.Length - j)))
+                        parseFile(currentFilePath);
+                }
+            else
+                // All files in filepaths have already had their extensions validated
+                for (int i = 0; i < filePaths.Count; i++)
+                {
+                    currentFilePath = filePaths[i];
+
+                    // Verify the file actually exists in the mod
+                    if(File.Exists(currentFilePath))
+                        parseFile(currentFilePath);
+                    else
+                        goto CATCH_FILE_NOT_FOUND;
+                }
+
+        }
+        catch (System.IO.DirectoryNotFoundException)
+        {ErrorReporter.ProcessErrorCode(ErrorCode.MOD_DIRECTORY_NOT_FOUND, new string[]{ inputDirectory });}
+        catch (Exception e)
+        {ErrorReporter.ProcessErrorCode(ErrorCode.UNKNOWN_ERROR,           new string[]{ e.ToString()   });}
+        CATCH_FILE_NOT_FOUND:
+         ErrorReporter.ProcessErrorCode(ErrorCode.MOD_FILE_NOT_FOUND,      new string[]{ currentFilePath});
     }
 
     private void parseFile(string filePath)
     {
-        string fileText = "";
+        // The full text of the file
+        string fileText = "",
+        // The label we're currently parsing
+               label = "",
+        // The string we search the fileText for to find the next label
+               searchString = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE;
+        // The start and end indices of the label we're currently parsing
+        int labelStartIndex = 0, labelEndIndex = 0;
+
         using(StreamReader fileReader = new StreamReader(filePath))
         {
+            // Labels are parsed sequentially by scanning the entire text file.
             fileText = fileReader.ReadToEnd();
-            string currentLabel = "";
-            int nextLabelStartIndex = fileText.IndexOf(Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE, StringComparison.CurrentCultureIgnoreCase),
-                nextLabelEndIndex = 0;
+            labelStartIndex = fileText.IndexOf(searchString, StringComparison.CurrentCultureIgnoreCase);
 
-            while(nextLabelStartIndex != -1)
+            while(labelStartIndex != -1)
             {
-                nextLabelEndIndex = fileText.IndexOf(Constants.LABEL_BORDER_VALUE, nextLabelStartIndex + 1);
-                currentLabel = fileText.Substring(nextLabelStartIndex, nextLabelEndIndex - nextLabelStartIndex + 1).ToUpper();
+                labelEndIndex = fileText.IndexOf(Constants.LABEL_BORDER_VALUE, labelStartIndex + 1);
+                if(labelEndIndex == -1)
+                    goto CATCH_INCOMPLETE_LABEL;
+                label = fileText.Substring(labelStartIndex, labelEndIndex - labelStartIndex + 1).ToUpper();
 
-                for(int i = 0; i < configOptions.Count; i++)
-                    if(configOptions[i].label.Equals(currentLabel))
-                    {
-                        switch(configOptions[i])
-                        {
-                            case VariableOption v:
-                                fileText = fileText.Substring(0, nextLabelStartIndex) // Everything before the label
-                                            + v.value  // The value we're substituting for the label
-                                            + fileText.Substring(nextLabelEndIndex + 1, fileText.Length - nextLabelEndIndex - 1); // Everything after the label
-                                break;
-                            case ToggleOption t:
-                                fileText = parseToggle(fileText, t.value, nextLabelStartIndex, nextLabelEndIndex);
-                                break;
-                        }
+                // Check if the label exists in the config file - null if it doesn't.
+                switch (hasOption(label))
+                {
+                    case null:
+                        goto CATCH_UNRECOGNIZED_LABEL;
+
+                    case VariableOption v:
+                        fileText = fileText.Substring(0, labelStartIndex) // Everything before the label
+                            // The value we're substituting for the label
+                            + v.value
+                            // Everything after the label
+                            + fileText.Substring(labelEndIndex + 1, fileText.Length - labelEndIndex - 1);
                         break;
-                    }
-                nextLabelStartIndex = fileText.IndexOf(Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE, StringComparison.CurrentCultureIgnoreCase);
+                    case ToggleOption t:
+                        fileText = parseToggle(fileText, t.value, labelStartIndex, labelEndIndex);
+                        break;
+                }
+                labelStartIndex = fileText.IndexOf(searchString, StringComparison.CurrentCultureIgnoreCase);
             }
         }
         using(StreamWriter fileWriter = new StreamWriter(filePath))
         {
             fileWriter.Write(fileText);
-        }          
+        }
+        return;
+
+        CATCH_INCOMPLETE_LABEL:
+        ErrorReporter.ProcessErrorCode(ErrorCode.INCOMPLETE_LABEL, new string[]{ filePath });
+        CATCH_UNRECOGNIZED_LABEL:
+        ErrorReporter.ProcessErrorCode(ErrorCode.UNRECOGNIZED_LABEL, new string[]{ filePath, label});
     }
 
     private string parseToggle(string fileText, bool optionValue, int startLabelStartIndex, int startLabelEndIndex)
