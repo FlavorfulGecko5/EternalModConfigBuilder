@@ -88,7 +88,12 @@ class EternalModConfiguration
                                 goto CATCH_BAD_LABEL;
                     }
                     // Will be thrown by String.substring() if an index/length parameter is out of bounds.
-                    catch (System.ArgumentOutOfRangeException) { goto CATCH_BAD_LABEL; }       
+                    catch (System.ArgumentOutOfRangeException) { goto CATCH_BAD_LABEL; }
+
+                    // Check for duplicate labels
+                    for(int i = 0; i < options.Count; i++)
+                        if(options[i].label.Equals(currentLabel))
+                            goto CATCH_DUPLICATE_LABEL;   
 
                     // Convert the raw option from JProperty to JObject
                     try { currentOption = (JObject)currentRawOption.Value; }
@@ -189,6 +194,8 @@ class EternalModConfiguration
           ErrorReporter.ProcessErrorCode(ErrorCode.LOCATIONS_ISNT_STRING_ARRAY, new string[] { currentLabel });
         CATCH_UNSUPPORTED_FILETYPE:
           ErrorReporter.ProcessErrorCode(ErrorCode.UNSUPPORTED_FILETYPE,        new string[] { currentLabel, currentFilePath });
+        CATCH_DUPLICATE_LABEL:
+          ErrorReporter.ProcessErrorCode(ErrorCode.DUPLICATE_LABEL,             new string[] { currentLabel });
 
         // Return empty ParsedConfig to prevent warnings. This line won't ever be executed.
         return new ParsedConfig(new List<string>() { }, new List<Option>() { }, false);

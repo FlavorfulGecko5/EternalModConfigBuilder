@@ -39,6 +39,10 @@ class ErrorReporter
                 formattedString += "The Option " + args[0] + " has an invalid or unsupported file '" + args[1]
                     + "' in it's '" + Constants.PROPERTY_NAME_LOCATIONS + "' list.\n" + Constants.SUPPORTED_FILETYPES_DESCRIPTION;
                 break;
+            case ErrorCode.DUPLICATE_LABEL:
+                formattedString += "The label " + args[0] + " is used multiple times in the configuration file."
+                    + " A label may only be used to define one Option.";
+                break;
         }
         terminateWithError(formattedString);
     }
@@ -61,6 +65,7 @@ enum ErrorCode
     BAD_VARIABLE_VALUE,
     BAD_TOGGLEABLE_VALUE,
     LOCATIONS_ISNT_STRING_ARRAY,
-    UNSUPPORTED_FILETYPE
+    UNSUPPORTED_FILETYPE,
+    DUPLICATE_LABEL
 }
 
