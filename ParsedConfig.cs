@@ -73,7 +73,7 @@ class ParsedConfig
                     else
                         goto CATCH_FILE_NOT_FOUND;
                 }
-
+            return;
         }
         catch (System.IO.DirectoryNotFoundException)
         {ErrorReporter.ProcessErrorCode(ErrorCode.MOD_DIRECTORY_NOT_FOUND, new string[]{ inputDirectory });}
@@ -111,7 +111,11 @@ class ParsedConfig
                 switch (hasOption(label))
                 {
                     case null:
-                        goto CATCH_UNRECOGNIZED_LABEL;
+                        // Edge: A toggleable-end label with no toggleable-beginning label preceding it
+                        if(label.Equals(Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE))
+                            goto CATCH_EXTRA_END_TOGGLE;
+                        else
+                            goto CATCH_UNRECOGNIZED_LABEL;
 
                     case VariableOption v:
                         fileText = fileText.Substring(0, labelStartIndex) // Everything before the label
@@ -121,10 +125,11 @@ class ParsedConfig
                             + fileText.Substring(labelEndIndex + 1, fileText.Length - labelEndIndex - 1);
                         break;
                     case ToggleOption t:
-                        fileText = parseToggle(fileText, t.value, labelStartIndex, labelEndIndex);
+                        fileText = parseToggle(filePath, fileText, label, t.value, labelStartIndex, labelEndIndex);
                         break;
                 }
-                labelStartIndex = fileText.IndexOf(searchString, StringComparison.CurrentCultureIgnoreCase);
+                // Starts search from the location of the previous label.
+                labelStartIndex = fileText.IndexOf(searchString, labelStartIndex, StringComparison.CurrentCultureIgnoreCase);
             }
         }
         using(StreamWriter fileWriter = new StreamWriter(filePath))
@@ -136,14 +141,16 @@ class ParsedConfig
         CATCH_INCOMPLETE_LABEL:
         ErrorReporter.ProcessErrorCode(ErrorCode.INCOMPLETE_LABEL, new string[]{ filePath });
         CATCH_UNRECOGNIZED_LABEL:
-        ErrorReporter.ProcessErrorCode(ErrorCode.UNRECOGNIZED_LABEL, new string[]{ filePath, label});
+        ErrorReporter.ProcessErrorCode(ErrorCode.UNRECOGNIZED_LABEL, new string[]{ filePath, label });
+        CATCH_EXTRA_END_TOGGLE:
+        ErrorReporter.ProcessErrorCode(ErrorCode.EXTRA_END_TOGGLE, new string[]{ filePath });
     }
 
-    private string parseToggle(string fileText, bool optionValue, int startLabelStartIndex, int startLabelEndIndex)
+    private string parseToggle(string filePath, string fileText, string label, bool optionValue, int startLabelStartIndex, int startLabelEndIndex)
     {
-        string toggleLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE + Constants.LABEL_TYPE_NAME_SEPARATOR,
-               toggleEndLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE,
-               toggleGeneralLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE;
+        string toggleEndLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE,
+            toggleGeneralLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE,
+            currentSubLabel = "";
         int numEndLabelsNeeded = 1;
 
         int endLabelStartIndex = startLabelStartIndex, endLabelEndIndex = 0;
@@ -151,12 +158,26 @@ class ParsedConfig
         {
             endLabelStartIndex = fileText.IndexOf(toggleGeneralLabel, endLabelStartIndex + 1, StringComparison.CurrentCultureIgnoreCase);
             if(endLabelStartIndex == -1)
-                ; // Throw an error - there are more toggle start labels than there are end labels
+                goto CATCH_MISSING_END_TOGGLE;
             
             if(fileText.IndexOf(toggleEndLabel, endLabelStartIndex, StringComparison.CurrentCultureIgnoreCase) == endLabelStartIndex)
                 numEndLabelsNeeded--;
+            // No need to go too in-depth with error checking here, since one way or another invalid labels will get detected in parseFile
             else
-                numEndLabelsNeeded++;
+            {
+                // Just check if the toggle-non-end label we found is actually valid.
+                // This way, all labels are validated even if the toggle is false
+                endLabelEndIndex = fileText.IndexOf(Constants.LABEL_BORDER_VALUE, endLabelStartIndex + 1);
+                if(endLabelEndIndex == -1)
+                    goto CATCH_INCOMPLETE_LABEL;
+                currentSubLabel = fileText.Substring(endLabelStartIndex, endLabelEndIndex - endLabelStartIndex + 1).ToUpper();
+
+                if(hasOption(currentSubLabel) != null)
+                    numEndLabelsNeeded++;
+                else
+                    goto CATCH_UNRECOGNIZED_LABEL;
+            }
+                
         }
         endLabelEndIndex = fileText.IndexOf(Constants.LABEL_BORDER_VALUE, endLabelStartIndex + 1);
 
@@ -167,6 +188,16 @@ class ParsedConfig
         else
             return fileText.Substring(0, startLabelStartIndex) // Everything before the start label
                 + fileText.Substring(endLabelEndIndex + 1, fileText.Length - endLabelEndIndex - 1); // Everthing after the end label
+        
+        CATCH_MISSING_END_TOGGLE:
+        ErrorReporter.ProcessErrorCode(ErrorCode.MISSING_END_TOGGLE, new string[]{ filePath, label });
+        CATCH_INCOMPLETE_LABEL:
+        ErrorReporter.ProcessErrorCode(ErrorCode.INCOMPLETE_LABEL, new string[]{ filePath });
+        CATCH_UNRECOGNIZED_LABEL:
+        ErrorReporter.ProcessErrorCode(ErrorCode.UNRECOGNIZED_LABEL, new string[]{ filePath, currentSubLabel });
+
+        // This return statement will never execute
+        return "";
     }
 
     // Used to copy the mod folder to the output directory.

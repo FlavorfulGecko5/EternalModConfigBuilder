@@ -59,6 +59,16 @@ class ErrorReporter
             case ErrorCode.INCOMPLETE_LABEL:
                 formattedString += "The file " + args[0] + " has an incomplete label that's missing a '" + Constants.LABEL_BORDER_VALUE + "' on it's right side.";
                 break;
+            case ErrorCode.EXTRA_END_TOGGLE:
+                formattedString += "The file " + args[0] + " has an '"
+                    + Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE 
+                    + "' label with no accompanying start label.";
+                break;
+            case ErrorCode.MISSING_END_TOGGLE:
+                formattedString += "The file " + args[0] + " has a toggleable label " + args[1] + " without a '"
+                    + Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE 
+                    + "' label to denote the end of the toggle block.";
+                break;
         }
         System.Console.WriteLine(formattedString);
         
@@ -83,6 +93,8 @@ enum ErrorCode
     MOD_DIRECTORY_NOT_FOUND,
     MOD_FILE_NOT_FOUND,
     UNRECOGNIZED_LABEL,
-    INCOMPLETE_LABEL
+    INCOMPLETE_LABEL,
+    EXTRA_END_TOGGLE,
+    MISSING_END_TOGGLE
 }
 
