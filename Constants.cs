@@ -43,6 +43,10 @@ class Constants
 
     public static readonly List<string> SUPPORTED_FILETYPES = new List<string>(){ "decl", "json" };
 
-    public const string EXPECTED_USAGE = "Usage: ./ConfigBuilder.exe -c [config file] -s [mod directory or zip file] -o [output directory or zip file]";
+    public const int EXPECTED_ARG_COUNT = 6;
+
+    public const string EXPECTED_USAGE = "Usage: ./ConfigBuilder.exe -c [.txt config file] -s [mod directory or zip file] -o [output directory or zip file]\n"
+        + "WARNING - IF THE OUTPUT DIRECTORY ALREADY EXISTS, ANY FILES INSIDE OF IT MAY BE OVERWRITTEN.\n"
+        + "IF YOU OUTPUT A ZIP FILE, IT WILL OVERWRITE ANY ZIP FILE THAT ALREADY EXISTS WITH THAT NAME.";
 }
 

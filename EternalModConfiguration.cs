@@ -47,8 +47,8 @@ class EternalModConfiguration
                 currentFileExtension = "";
         try
         {
-            if(configFilePath.LastIndexOf(".json", StringComparison.CurrentCultureIgnoreCase) != configFilePath.Length - 5)
-                goto CATCH_CONFIG_NOT_JSON;
+            if(configFilePath.LastIndexOf(".txt", StringComparison.CurrentCultureIgnoreCase) != configFilePath.Length - 4)
+                goto CATCH_CONFIG_NOT_TXT;
             using (StreamReader fileReader = new StreamReader(configFilePath))
             {
                 rawJson = JObject.Parse(fileReader.ReadToEnd());
@@ -184,8 +184,8 @@ class EternalModConfiguration
         { ErrorReporter.ProcessErrorCode(ErrorCode.BAD_JSON_FILE,               new string[] { e.Message }); }
         catch (Exception e)
         { ErrorReporter.ProcessErrorCode(ErrorCode.UNKNOWN_ERROR,               new string[] { e.ToString() }); }
-        CATCH_CONFIG_NOT_JSON:
-          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_JSON,             new string[] { configFilePath });
+        CATCH_CONFIG_NOT_TXT:
+          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_TXT,             new string[] { configFilePath });
         CATCH_BAD_LABEL:
           ErrorReporter.ProcessErrorCode(ErrorCode.BAD_LABEL_FORMATTING,        new string[] { currentLabel });
         CATCH_OPTION_ISNT_OBJECT:
@@ -207,14 +207,16 @@ class EternalModConfiguration
 
     static void Main(string[] args)
     {
-        int expectedNumberArguments = 6, i = 0, extensionIndex = 0;
+        int i = 0, extensionIndex = 0;
         
         string configFilePath = "", sourceDirectory = "", outputDirectory = "";
         bool hasConfig = false, hasSource = false, hasOutput = false, sourceIsZip = false, outputToZip = false;
         
-        if(args.Length != expectedNumberArguments)
+        if(args.Length != Constants.EXPECTED_ARG_COUNT)
             goto CATCH_INVALID_NUMBER_ARGUMENTS;
-
+        
+        // Read in each pair of arguments
+        // Validates that the same parameter hasn't option hasn't been entered multiple times.
         for(i = 0; i < args.Length; i += 2)
         {
             switch(args[i].ToLower())
@@ -268,7 +270,7 @@ class EternalModConfiguration
         return;
 
         CATCH_INVALID_NUMBER_ARGUMENTS:
-        ErrorReporter.ProcessErrorCode(ErrorCode.BAD_NUMBER_ARGUMENTS, new string[]{expectedNumberArguments.ToString(), args.Length.ToString()});
+        ErrorReporter.ProcessErrorCode(ErrorCode.BAD_NUMBER_ARGUMENTS, new string[]{args.Length.ToString()});
         CATCH_INVALID_ARGUMENT:
         ErrorReporter.ProcessErrorCode(ErrorCode.BAD_ARGUMENT,         new string[]{(i + 1).ToString()});
     }

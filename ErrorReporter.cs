@@ -69,12 +69,12 @@ class ErrorReporter
                     + Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE 
                     + "' label to denote the end of the toggle block.";
                 break;
-            case ErrorCode.CONFIG_NOT_JSON:
-                formattedString += "The configuration file " + args[0] + " is not recognized as a .json file.";
+            case ErrorCode.CONFIG_NOT_TXT:
+                formattedString += "The configuration file " + args[0] + " is not recognized as a .txt file.";
                 break;
             // Bad command line argument error codes
             case ErrorCode.BAD_NUMBER_ARGUMENTS:
-                formattedString += "Invalid number of command line arguments. (Expected " + args[0] + ", received " + args[1] + ")\n" + Constants.EXPECTED_USAGE;
+                formattedString += "Invalid number of command line arguments. (Expected " + Constants.EXPECTED_ARG_COUNT + ", received " + args[0] + ")\n" + Constants.EXPECTED_USAGE;
                 break;
             case ErrorCode.BAD_ARGUMENT:
                 formattedString += "Command line argument #" + args[0] + " is invalid.\n" + Constants.EXPECTED_USAGE;
@@ -106,7 +106,7 @@ enum ErrorCode
     INCOMPLETE_LABEL,
     EXTRA_END_TOGGLE,
     MISSING_END_TOGGLE,
-    CONFIG_NOT_JSON,
+    CONFIG_NOT_TXT,
     // Bad command line argument error codes.
     BAD_NUMBER_ARGUMENTS,
     BAD_ARGUMENT
