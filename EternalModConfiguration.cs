@@ -47,6 +47,8 @@ class EternalModConfiguration
                 currentFileExtension = "";
         try
         {
+            if(configFilePath.LastIndexOf(".json", StringComparison.CurrentCultureIgnoreCase) != configFilePath.Length - 5)
+                goto CATCH_CONFIG_NOT_JSON;
             using (StreamReader fileReader = new StreamReader(configFilePath))
             {
                 rawJson = JObject.Parse(fileReader.ReadToEnd());
@@ -182,6 +184,8 @@ class EternalModConfiguration
         { ErrorReporter.ProcessErrorCode(ErrorCode.BAD_JSON_FILE,               new string[] { e.Message }); }
         catch (Exception e)
         { ErrorReporter.ProcessErrorCode(ErrorCode.UNKNOWN_ERROR,               new string[] { e.ToString() }); }
+        CATCH_CONFIG_NOT_JSON:
+          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_JSON,             new string[] { configFilePath });
         CATCH_BAD_LABEL:
           ErrorReporter.ProcessErrorCode(ErrorCode.BAD_LABEL_FORMATTING,        new string[] { currentLabel });
         CATCH_OPTION_ISNT_OBJECT:
@@ -203,8 +207,69 @@ class EternalModConfiguration
 
     static void Main(string[] args)
     {
-        ParsedConfig config = readConfig("./testfiles/variableDemoConfig.json");
+        int expectedNumberArguments = 6, i = 0, extensionIndex = 0;
+        
+        string configFilePath = "", sourceDirectory = "", outputDirectory = "";
+        bool hasConfig = false, hasSource = false, hasOutput = false, sourceIsZip = false, outputToZip = false;
+        
+        if(args.Length != expectedNumberArguments)
+            goto CATCH_INVALID_NUMBER_ARGUMENTS;
+
+        for(i = 0; i < args.Length; i += 2)
+        {
+            switch(args[i].ToLower())
+            {
+                case "-c":
+                    if(!hasConfig)
+                    {
+                        configFilePath = args[i + 1];
+                        hasConfig = true;
+                    }
+                    else
+                        goto CATCH_INVALID_ARGUMENT;
+                    break;
+
+                case "-s":
+                    if(!hasSource)
+                    {
+                        sourceDirectory = args[i+1];
+                        hasSource = true;
+                    }
+                    else
+                        goto CATCH_INVALID_ARGUMENT; 
+                    break;
+
+                case "-o":
+                    if(!hasOutput)
+                    {
+                        outputDirectory = args[i+1];
+                        hasOutput = true;
+                    }
+                    else
+                        goto CATCH_INVALID_ARGUMENT;
+                    break;
+
+                default:
+                    goto CATCH_INVALID_ARGUMENT;
+            }
+        }
+        
+        extensionIndex = sourceDirectory.LastIndexOf(".zip", StringComparison.CurrentCultureIgnoreCase);
+        if(extensionIndex == sourceDirectory.Length - 4)
+            sourceIsZip = true;
+        
+        extensionIndex = outputDirectory.LastIndexOf(".zip", StringComparison.CurrentCultureIgnoreCase);
+        if(extensionIndex == outputDirectory.Length - 4)
+            outputToZip = true;
+        
+        ParsedConfig config = readConfig(configFilePath);
         //System.Console.WriteLine(config.ToString());
-        config.buildMod("sourceDirectory", "outputDirectory");
+        config.buildMod(sourceDirectory, sourceIsZip, outputDirectory, outputToZip);
+        return;
+
+        CATCH_INVALID_NUMBER_ARGUMENTS:
+        ErrorReporter.ProcessErrorCode(ErrorCode.BAD_NUMBER_ARGUMENTS, new string[]{expectedNumberArguments.ToString(), args.Length.ToString()});
+        CATCH_INVALID_ARGUMENT:
+        ErrorReporter.ProcessErrorCode(ErrorCode.BAD_ARGUMENT,         new string[]{(i + 1).ToString()});
     }
 }

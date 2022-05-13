@@ -42,5 +42,7 @@ class Constants
         + "- .decl\n- .json";
 
     public static readonly List<string> SUPPORTED_FILETYPES = new List<string>(){ "decl", "json" };
+
+    public const string EXPECTED_USAGE = "Usage: ./ConfigBuilder.exe -c [config file] -s [mod directory or zip file] -o [output directory or zip file]";
 }
 

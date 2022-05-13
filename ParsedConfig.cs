@@ -1,3 +1,4 @@
+using System.IO.Compression;
 class ParsedConfig
 {
     private bool mustCheckAllFiles;
@@ -33,22 +34,28 @@ class ParsedConfig
         formattedString += "\nOptions\n----------\n";
         for (int i = 0; i < configOptions.Count; i++)
             formattedString += configOptions[i].ToString();
-
         return formattedString;
     }
 
-    public void buildMod(string inputDirectory, string outputDirectory)
+    public void buildMod(string inputDirectory, bool inputIsZip, string outputDirectory, bool outputToZip)
     {
-        string currentFilePath = "";
+        string tempDirectory = "TEMP_DIRECTORY_ETERNAL_MOD_CONFIGURATOR",
+               activeOutputDirectory = outputToZip ? tempDirectory : outputDirectory,
+               workingDirectory = Directory.GetCurrentDirectory(), 
+               currentFilePath = "";
         try
         {
             // Clone the contents of inputDirectory to the outputDirectory
-            if (!Directory.Exists(outputDirectory))
-                Directory.CreateDirectory(outputDirectory);
-            CopyFilesRecursively(new DirectoryInfo(inputDirectory), new DirectoryInfo(outputDirectory));
+            if (!Directory.Exists(activeOutputDirectory))
+                Directory.CreateDirectory(activeOutputDirectory);
+
+            if(inputIsZip)
+                ZipFile.ExtractToDirectory(inputDirectory, activeOutputDirectory);
+            else
+                CopyFilesRecursively(new DirectoryInfo(inputDirectory), new DirectoryInfo(activeOutputDirectory));
 
             // Begin working with the newly copied files
-            Directory.SetCurrentDirectory(outputDirectory);
+            Directory.SetCurrentDirectory(activeOutputDirectory);
             string[] allFiles = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
 
             if (mustCheckAllFiles)
@@ -73,6 +80,15 @@ class ParsedConfig
                     else
                         goto CATCH_FILE_NOT_FOUND;
                 }
+            
+            if(outputToZip)
+            {
+                Directory.SetCurrentDirectory(workingDirectory);
+                if(File.Exists(outputDirectory))
+                    File.Delete(outputDirectory);
+                ZipFile.CreateFromDirectory(tempDirectory, outputDirectory);
+                Directory.Delete(tempDirectory, true);
+            }
             return;
         }
         catch (System.IO.DirectoryNotFoundException)
