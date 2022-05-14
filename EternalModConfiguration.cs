@@ -86,7 +86,7 @@ class EternalModConfiguration
                         if (currentName.Length == 0)
                             goto CATCH_BAD_LABEL;
                         for (int i = 0; i < currentName.Length; i++)
-                            if (!Char.IsAscii(currentName[i]) || (!Char.IsLetterOrDigit(currentName[i]) && currentName[i] != '_'))
+                            if (!Char.IsAscii(currentName[i]) || (!Char.IsLetterOrDigit(currentName[i]) && !Constants.NAME_SPECIAL_CHARACTERS.Contains(currentName[i])))
                                 goto CATCH_BAD_LABEL;
                     }
                     // Will be thrown by String.substring() if an index/length parameter is out of bounds.
@@ -185,7 +185,7 @@ class EternalModConfiguration
         catch (Exception e)
         { ErrorReporter.ProcessErrorCode(ErrorCode.UNKNOWN_ERROR,               new string[] { e.ToString() }); }
         CATCH_CONFIG_NOT_TXT:
-          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_TXT,             new string[] { configFilePath });
+          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_TXT,              new string[] { configFilePath });
         CATCH_BAD_LABEL:
           ErrorReporter.ProcessErrorCode(ErrorCode.BAD_LABEL_FORMATTING,        new string[] { currentLabel });
         CATCH_OPTION_ISNT_OBJECT:
@@ -207,16 +207,16 @@ class EternalModConfiguration
 
     static void Main(string[] args)
     {
-        int i = 0, extensionIndex = 0;
-        
         string configFilePath = "", sourceDirectory = "", outputDirectory = "";
-        bool hasConfig = false, hasSource = false, hasOutput = false, sourceIsZip = false, outputToZip = false;
+        bool hasConfig = false,   hasSource = false, hasOutput = false, 
+             sourceIsZip = false, outputToZip = false;
+        int i = 0, extensionIndex = 0;
         
         if(args.Length != Constants.EXPECTED_ARG_COUNT)
             goto CATCH_INVALID_NUMBER_ARGUMENTS;
         
         // Read in each pair of arguments
-        // Validates that the same parameter hasn't option hasn't been entered multiple times.
+        // Validates that the same parameter hasn't been entered multiple times.
         for(i = 0; i < args.Length; i += 2)
         {
             switch(args[i].ToLower())
@@ -256,6 +256,7 @@ class EternalModConfiguration
             }
         }
         
+        // Check whether the input and outputs are zip files or directories
         extensionIndex = sourceDirectory.LastIndexOf(".zip", StringComparison.CurrentCultureIgnoreCase);
         if(extensionIndex == sourceDirectory.Length - 4)
             sourceIsZip = true;
@@ -265,7 +266,6 @@ class EternalModConfiguration
             outputToZip = true;
         
         ParsedConfig config = readConfig(configFilePath);
-        //System.Console.WriteLine(config.ToString());
         config.buildMod(sourceDirectory, sourceIsZip, outputDirectory, outputToZip);
         return;
 

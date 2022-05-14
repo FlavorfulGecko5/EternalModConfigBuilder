@@ -1,15 +1,17 @@
 using System.IO.Compression;
+using System.Data;
 class ParsedConfig
 {
     private bool mustCheckAllFiles;
     private List<string> filePaths { get; }
     private List<Option> configOptions { get; }
-
+    private DataTable expressionEvaluator;
     public ParsedConfig(List<string> filePathsParameter, List<Option> configOptionsParameter, bool mustCheckAllFilesParameter)
     {
         filePaths = filePathsParameter;
         configOptions = configOptionsParameter;
         mustCheckAllFiles = mustCheckAllFilesParameter;
+        expressionEvaluator = new DataTable();
     }
 
     public Option? hasOption(string label)
@@ -105,10 +107,13 @@ class ParsedConfig
         string fileText = "",
         // The label we're currently parsing
                label = "",
+        // The expression in the current label, if it exists
+               expression = "",
+               expressionResult = "",
         // The string we search the fileText for to find the next label
                searchString = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE;
         // The start and end indices of the label we're currently parsing
-        int labelStartIndex = 0, labelEndIndex = 0;
+        int labelStartIndex = 0, labelEndIndex = 0, expressionSeparatorIndex = 0;
 
         using(StreamReader fileReader = new StreamReader(filePath))
         {
@@ -118,17 +123,27 @@ class ParsedConfig
 
             while(labelStartIndex != -1)
             {
+                // Get the complete label by utilizing the border characters.
                 labelEndIndex = fileText.IndexOf(Constants.LABEL_BORDER_VALUE, labelStartIndex + 1);
                 if(labelEndIndex == -1)
                     goto CATCH_INCOMPLETE_LABEL;
                 label = fileText.Substring(labelStartIndex, labelEndIndex - labelStartIndex + 1).ToUpper();
+
+                // Isolate the expression, if it exists
+                expressionSeparatorIndex = label.IndexOf(Constants.LABEL_NAME_EXP_SEPARATOR);
+                if(expressionSeparatorIndex != -1)
+                {
+                    expression = label.Substring(expressionSeparatorIndex + 1, label.Length - expressionSeparatorIndex - 2);
+                    label = label.Substring(0, expressionSeparatorIndex) + Constants.LABEL_BORDER_VALUE;
+                    expressionResult = parseExpression(expression, label);
+                }
 
                 // Check if the label exists in the config file - null if it doesn't.
                 switch (hasOption(label))
                 {
                     case null:
                         // Edge: A toggleable-end label with no toggleable-beginning label preceding it
-                        if(label.Equals(Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE))
+                        if(label.Equals(Constants.SPECIAL_TOGGLEABLE_END))
                             goto CATCH_EXTRA_END_TOGGLE;
                         else
                             goto CATCH_UNRECOGNIZED_LABEL;
@@ -136,7 +151,7 @@ class ParsedConfig
                     case VariableOption v:
                         fileText = fileText.Substring(0, labelStartIndex) // Everything before the label
                             // The value we're substituting for the label
-                            + v.value
+                            + (expressionSeparatorIndex == -1 ? v.value : expressionResult)
                             // Everything after the label
                             + fileText.Substring(labelEndIndex + 1, fileText.Length - labelEndIndex - 1);
                         break;
@@ -162,10 +177,31 @@ class ParsedConfig
         ErrorReporter.ProcessErrorCode(ErrorCode.EXTRA_END_TOGGLE, new string[]{ filePath });
     }
 
+    private string parseExpression(string expression, string label)
+    {
+        expression = expression.Replace("{X}", label);
+        expression = expression.Replace("{", Constants.LABEL_BORDER_VALUE);
+        expression = expression.Replace("}", Constants.LABEL_BORDER_VALUE);
+        for(int i = 0; i < configOptions.Count; i++)
+            switch(configOptions[i])
+            {
+                case VariableOption v:
+                    expression = expression.Replace(v.label, v.value);
+                    break;
+                case ToggleOption t:
+                    expression = expression.Replace(t.label, t.value.ToString());
+                    break;
+            }
+        string? result = expressionEvaluator.Compute(expression, "").ToString();
+        if(result != null)
+            return result;
+        else
+            return "null"; 
+    }
+
     private string parseToggle(string filePath, string fileText, string label, bool optionValue, int startLabelStartIndex, int startLabelEndIndex)
     {
-        string toggleEndLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE,
-            toggleGeneralLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE,
+        string toggleGeneralLabel = Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE,
             currentSubLabel = "";
         int numEndLabelsNeeded = 1;
 
@@ -176,7 +212,7 @@ class ParsedConfig
             if(endLabelStartIndex == -1)
                 goto CATCH_MISSING_END_TOGGLE;
             
-            if(fileText.IndexOf(toggleEndLabel, endLabelStartIndex, StringComparison.CurrentCultureIgnoreCase) == endLabelStartIndex)
+            if(fileText.IndexOf(Constants.SPECIAL_TOGGLEABLE_END, endLabelStartIndex, StringComparison.CurrentCultureIgnoreCase) == endLabelStartIndex)
                 numEndLabelsNeeded--;
             // No need to go too in-depth with error checking here, since one way or another invalid labels will get detected in parseFile
             else

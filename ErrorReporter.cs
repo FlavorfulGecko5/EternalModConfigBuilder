@@ -1,3 +1,5 @@
+using static Constants;
+using static ErrorCode;
 class ErrorReporter
 {
     public static void ProcessErrorCode(ErrorCode error, string[] args)
@@ -6,78 +8,79 @@ class ErrorReporter
         string formattedString = "ERROR: ";
         switch (error)
         {
-            case ErrorCode.UNKNOWN_ERROR:
+            // Anything not handled below
+            case UNKNOWN_ERROR:
                 formattedString += "An unknown error occurred, printing Exception:\n" + args[0];
                 break;
-            case ErrorCode.CONFIG_DIRECTORY_NOT_FOUND:
+            // Command-line argument errors
+            case BAD_NUMBER_ARGUMENTS:
+                formattedString += "Invalid number of command line arguments. (Expected " + EXPECTED_ARG_COUNT + ", received " + args[0] + ")\n" + EXPECTED_USAGE;
+                break;
+            case BAD_ARGUMENT:
+                formattedString += "Command line argument #" + args[0] + " is invalid.\n" + EXPECTED_USAGE;
+                break;
+            // Config. file parsing errors
+            case CONFIG_NOT_TXT:
+                formattedString += "The configuration file " + args[0] + " is not recognized as a .txt file.";
+                break;
+            case CONFIG_DIRECTORY_NOT_FOUND:
                 formattedString += "The configuration file is in a non-existant directory: " + args[0];
                 break;
-            case ErrorCode.CONFIG_NOT_FOUND:
+            case CONFIG_NOT_FOUND:
                 formattedString += "Failed to find the configuration file in the specified directory: " + args[0];
                 break;
-            case ErrorCode.BAD_JSON_FILE:
+            case BAD_JSON_FILE:
                 formattedString += "The configuration file has a syntax error, printing Exception message:\n" + args[0];
                 break;
-            case ErrorCode.BAD_LABEL_FORMATTING:
-                formattedString += "The Label " + args[0] + " is not formatted correctly in the configuration file.\n" + Constants.LABEL_FORMATTING_RULES;
+            case BAD_LABEL_FORMATTING:
+                formattedString += "The Label " + args[0] + " is not formatted correctly in the configuration file.\n" + RULES_LABEL_FORMATTING;
                 break;
-            case ErrorCode.OPTION_ISNT_OBJECT:
+            case OPTION_ISNT_OBJECT:
                 formattedString += "The Option " + args[0] + " is not defined as a Json object in the configuration file.";
                 break;
-            case ErrorCode.BAD_VARIABLE_VALUE:
-                formattedString += "The Variable " + args[0] + " has it's required '" + Constants.PROPERTY_NAME_VALUE 
-                    + "' property incorrectly defined, or missing entirely in the configuration file.\n" + Constants.VARIABLE_VALUE_RULES;
+            case BAD_VARIABLE_VALUE:
+                formattedString += "The Variable " + args[0] + " has it's required '" + PROPERTY_NAME_VALUE 
+                    + "' property incorrectly defined, or missing entirely in the configuration file.\n" + RULES_VARIABLE_VALUE;
                 break;
-            case ErrorCode.BAD_TOGGLEABLE_VALUE:
-                formattedString += "The Toggleable " + args[0] + " has it's required '" + Constants.PROPERTY_NAME_VALUE 
-                    + "' property incorrectly defined, or missing entirely in the configuration file.\n" + Constants.TOGGLEABLE_VALUE_RULES;
+            case BAD_TOGGLEABLE_VALUE:
+                formattedString += "The Toggleable " + args[0] + " has it's required '" + PROPERTY_NAME_VALUE 
+                    + "' property incorrectly defined, or missing entirely in the configuration file.\n" + RULES_TOGGLEABLE_VALUE;
                 break;
-            case ErrorCode.LOCATIONS_ISNT_STRING_ARRAY:
-                formattedString += "The Option " + args[0] + " has it's '" + Constants.PROPERTY_NAME_LOCATIONS 
-                    + "' property incorrectly defined in the configuration file.\n" + Constants.PROPERTY_LOCATIONS_RULES;
+            case LOCATIONS_ISNT_STRING_ARRAY:
+                formattedString += "The Option " + args[0] + " has it's '" + PROPERTY_NAME_LOCATIONS 
+                    + "' property incorrectly defined in the configuration file.\n" + RULES_PROPERTY_LOCATIONS;
                 break;
-            case ErrorCode.UNSUPPORTED_FILETYPE:
+            case UNSUPPORTED_FILETYPE:
                 formattedString += "The Option " + args[0] + " has an invalid or unsupported file '" + args[1]
-                    + "' in it's '" + Constants.PROPERTY_NAME_LOCATIONS + "' list.\n" + Constants.SUPPORTED_FILETYPES_DESCRIPTION;
+                    + "' in it's '" + PROPERTY_NAME_LOCATIONS + "' list.\n" + SUPPORTED_FILETYPES_DESCRIPTION;
                 break;
-            case ErrorCode.DUPLICATE_LABEL:
+            case DUPLICATE_LABEL:
                 formattedString += "The label " + args[0] + " is used multiple times in the configuration file."
                     + " A label may only be used to define one Option.";
                 break;
-            case ErrorCode.MOD_DIRECTORY_NOT_FOUND:
+            // Mod building errors
+            case MOD_DIRECTORY_NOT_FOUND:
                 formattedString += "The mod directory " + args[0] + " does not exist.";
                 break;
-            case ErrorCode.MOD_FILE_NOT_FOUND:
+            case MOD_FILE_NOT_FOUND:
                 formattedString += "The file " + args[0] + " was specified in the configuration file but does not actually exist in the mod."
                     + " This filepath will be ignored.";
                 terminateProgram = false;
                 break;
-            case ErrorCode.UNRECOGNIZED_LABEL:
+            case UNRECOGNIZED_LABEL:
                 formattedString += "The file " + args[0] + " contains an unrecognized label '" + args[1] + "'\n"
                     + "This label may have an invalid format or location, have a typo in the name, or be missing entirely from the configuration file.";
                 break;
-            case ErrorCode.INCOMPLETE_LABEL:
-                formattedString += "The file " + args[0] + " has an incomplete label that's missing a '" + Constants.LABEL_BORDER_VALUE + "' on it's right side.";
+            case INCOMPLETE_LABEL:
+                formattedString += "The file " + args[0] + " has an incomplete label that's missing a '" + LABEL_BORDER_VALUE + "' on it's right side.";
                 break;
-            case ErrorCode.EXTRA_END_TOGGLE:
-                formattedString += "The file " + args[0] + " has an '"
-                    + Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE 
-                    + "' label with no accompanying start label.";
+            case EXTRA_END_TOGGLE:
+                formattedString += "The file " + args[0] + " has an '" + SPECIAL_TOGGLEABLE_END
+                    + "' label with no accompanying start label.\n" + RULES_TOGGLE_BLOCK;
                 break;
-            case ErrorCode.MISSING_END_TOGGLE:
-                formattedString += "The file " + args[0] + " has a toggleable label " + args[1] + " without a '"
-                    + Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE + Constants.TYPE_TOGGLEABLE_END + Constants.LABEL_BORDER_VALUE 
-                    + "' label to denote the end of the toggle block.";
-                break;
-            case ErrorCode.CONFIG_NOT_TXT:
-                formattedString += "The configuration file " + args[0] + " is not recognized as a .txt file.";
-                break;
-            // Bad command line argument error codes
-            case ErrorCode.BAD_NUMBER_ARGUMENTS:
-                formattedString += "Invalid number of command line arguments. (Expected " + Constants.EXPECTED_ARG_COUNT + ", received " + args[0] + ")\n" + Constants.EXPECTED_USAGE;
-                break;
-            case ErrorCode.BAD_ARGUMENT:
-                formattedString += "Command line argument #" + args[0] + " is invalid.\n" + Constants.EXPECTED_USAGE;
+            case MISSING_END_TOGGLE:
+                formattedString += "The file " + args[0] + " has a toggleable label " + args[1] + " without a '" + SPECIAL_TOGGLEABLE_END
+                    + "' label to denote the end of the toggle block.\n" + RULES_TOGGLE_BLOCK;
                 break;
         }
         System.Console.WriteLine(formattedString);
@@ -89,7 +92,13 @@ class ErrorReporter
 
 enum ErrorCode
 {
+    // Anything not handled below
     UNKNOWN_ERROR,
+    // Command-line argument errors
+    BAD_NUMBER_ARGUMENTS,
+    BAD_ARGUMENT,
+    // Config. file parsing errors
+    CONFIG_NOT_TXT,
     CONFIG_DIRECTORY_NOT_FOUND,
     CONFIG_NOT_FOUND,
     BAD_JSON_FILE,
@@ -100,14 +109,11 @@ enum ErrorCode
     LOCATIONS_ISNT_STRING_ARRAY,
     UNSUPPORTED_FILETYPE,
     DUPLICATE_LABEL,
+    // Mod Building Errors
     MOD_DIRECTORY_NOT_FOUND,
     MOD_FILE_NOT_FOUND,
     UNRECOGNIZED_LABEL,
     INCOMPLETE_LABEL,
     EXTRA_END_TOGGLE,
-    MISSING_END_TOGGLE,
-    CONFIG_NOT_TXT,
-    // Bad command line argument error codes.
-    BAD_NUMBER_ARGUMENTS,
-    BAD_ARGUMENT
+    MISSING_END_TOGGLE
 }
