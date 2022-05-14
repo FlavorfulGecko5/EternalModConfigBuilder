@@ -18,22 +18,10 @@ class EternalModConfiguration
 
         // The individual option we're currently iterating through
         JObject currentOption;
-
         // The current option's label.
-        string currentLabel = "",
-        // The current label's type. 
-               currentType = "",
-        // The current label's name
-               currentName = "";
-        // The index where [LABEL_TYPE_NAME_SEPARATOR] is located
-        int    separatorIndex = -1,
-        // The length of [LABEL_BORDER_VALUE][LABEL_TYPE_PREFACE], and the index where the type should begin
-               typeStartIndex = Constants.LABEL_BORDER_VALUE.Length + Constants.LABEL_TYPE_PREFACE.Length;
-
+        string  currentLabel = "";
         // The current variable option's value
         string? currentVariableValue = "";
-        // The current toggleable option's value
-        bool?   currentToggleableValue = false;
 
         // The current option's Locations array
         JArray? currentLocations = new JArray();
@@ -42,12 +30,12 @@ class EternalModConfiguration
         // The current filepath we're iterating through - initially read into here
         string? nullCurrentFilePath = "";
         // The current filepath we're iterating through from the Locations array
-        string  currentFilePath = "",
+        string currentFilePath = "",
         // The current filepath's file extension
-                currentFileExtension = "";
+               currentFileExtension = "";
         try
         {
-            if(configFilePath.LastIndexOf(".txt", StringComparison.CurrentCultureIgnoreCase) != configFilePath.Length - 4)
+            if (configFilePath.LastIndexOf(".txt", StringComparison.CurrentCultureIgnoreCase) != configFilePath.Length - 4)
                 goto CATCH_CONFIG_NOT_TXT;
             using (StreamReader fileReader = new StreamReader(configFilePath))
             {
@@ -56,83 +44,36 @@ class EternalModConfiguration
 
                 foreach (JProperty currentRawOption in rawOptions)
                 {
-                    // The label syntax is parsed and error-checked inside this try-block
+                    // The label syntax is parsed and error-checked
                     currentLabel = currentRawOption.Name.ToUpper();
-                    try
-                    {
-                        separatorIndex = currentLabel.IndexOf(Constants.LABEL_TYPE_NAME_SEPARATOR, typeStartIndex);
-                        if ( // Does the first part of the label match the form [LABEL_BORDER_VALUE][LABEL_TYPE_PREFACE]?
-                            !currentLabel.Substring(0, typeStartIndex).Equals(Constants.LABEL_BORDER_VALUE + Constants.LABEL_TYPE_PREFACE)
-                            // Is the final character of the label [LABEL_BORDER_VALUE]?
-                            || !currentLabel[currentLabel.Length - 1].ToString().Equals(Constants.LABEL_BORDER_VALUE)
-                            // Is there exactly one [LABEL_TYPE_NAME_SEPARATOR] character in the label?
-                            || (separatorIndex != currentLabel.LastIndexOf(Constants.LABEL_TYPE_NAME_SEPARATOR) || separatorIndex == -1))
-                            goto CATCH_BAD_LABEL;
 
-                        // Duplicate switch statement, but this keeps the Option Label Type validation and Option Property validation
-                        // completely separate from each other.
-                        currentType = currentLabel.Substring(typeStartIndex, separatorIndex - typeStartIndex);
-                        switch (currentType)
-                        {
-                            case Constants.TYPE_VARIABLE:
-                            case Constants.TYPE_TOGGLEABLE:
-                                break;
-                            default:
-                                goto CATCH_BAD_LABEL;
-                        }
-
-                        // Validate that the label name meets rules for allowed characters
-                        currentName = currentLabel.Substring(separatorIndex + 1, currentLabel.Length - separatorIndex - 2);
-                        if (currentName.Length == 0)
+                    // Validate that the label name meets rules for allowed characters
+                    if (currentLabel.Length == 0)
+                        goto CATCH_BAD_LABEL;
+                    for (int i = 0; i < currentLabel.Length; i++)
+                        if (!Char.IsAscii(currentLabel[i]) || (!Char.IsLetterOrDigit(currentLabel[i]) && !Constants.NAME_SPECIAL_CHARACTERS.Contains(currentLabel[i])))
                             goto CATCH_BAD_LABEL;
-                        for (int i = 0; i < currentName.Length; i++)
-                            if (!Char.IsAscii(currentName[i]) || (!Char.IsLetterOrDigit(currentName[i]) && !Constants.NAME_SPECIAL_CHARACTERS.Contains(currentName[i])))
-                                goto CATCH_BAD_LABEL;
-                    }
-                    // Will be thrown by String.substring() if an index/length parameter is out of bounds.
-                    catch (System.ArgumentOutOfRangeException) { goto CATCH_BAD_LABEL; }
 
                     // Check for duplicate labels
-                    for(int i = 0; i < options.Count; i++)
-                        if(options[i].label.Equals(currentLabel))
-                            goto CATCH_DUPLICATE_LABEL;   
+                    for (int i = 0; i < options.Count; i++)
+                        if (options[i].label.Equals(currentLabel))
+                            goto CATCH_DUPLICATE_LABEL;
 
                     // Convert the raw option from JProperty to JObject
                     try { currentOption = (JObject)currentRawOption.Value; }
                     catch (System.InvalidCastException) { goto CATCH_OPTION_ISNT_OBJECT; }
 
-                    // Read the Option's value and create the appropriate 
-                    // Option object based upon it's type
-                    switch (currentType)
+                    // Read the Option's value and create an Option object for it
+                    try
                     {
-                        case Constants.TYPE_VARIABLE:
-                            try
-                            {
-                                currentVariableValue = (string?)currentOption[Constants.PROPERTY_NAME_VALUE];
-                                // If the property is defined as null, undefined, or absent entirely
-                                if (currentVariableValue == null)
-                                    goto CATCH_BAD_VARIABLE_VALUE;
-                                options.Add(new VariableOption(currentLabel, currentVariableValue));
-                            }
-                            // If the property is a list or object - cannot cast these to string
-                            catch (System.ArgumentException) { goto CATCH_BAD_VARIABLE_VALUE; };
-                            break;
-
-                        case Constants.TYPE_TOGGLEABLE:
-                            try
-                            {
-                                currentToggleableValue = (bool?)currentOption[Constants.PROPERTY_NAME_VALUE];
-                                // If the property is defined as null, undefined, or absent entirely
-                                if (currentToggleableValue == null)
-                                    goto CATCH_BAD_TOGGLEABLE_VALUE;
-                                options.Add(new ToggleOption(currentLabel, (bool)currentToggleableValue));
-                            }
-                            // If the property is a string that doesn't convert to 'true' or 'false'
-                            catch (System.FormatException) { goto CATCH_BAD_TOGGLEABLE_VALUE; }
-                            // If the property is a list or object - cannot cast these to string
-                            catch (System.ArgumentException) { goto CATCH_BAD_TOGGLEABLE_VALUE; }
-                            break;
+                        currentVariableValue = (string?)currentOption[Constants.PROPERTY_NAME_VALUE];
+                        // If the property is defined as null, undefined, or absent entirely
+                        if (currentVariableValue == null)
+                            goto CATCH_BAD_VARIABLE_VALUE;
+                        options.Add(new Option(currentLabel, currentVariableValue));
                     }
+                    // If the property is a list or object - cannot cast these to string
+                    catch (System.ArgumentException) { goto CATCH_BAD_VARIABLE_VALUE; };
 
                     // Process the Option's Locations array, checking if it's null or invalid
                     try
@@ -153,53 +94,51 @@ class EternalModConfiguration
                         for (int i = 0, j = 0; i < currentLocations.Count; i++)
                         {
                             nullCurrentFilePath = (string?)currentLocations[i];
-                            if(nullCurrentFilePath == null)
+                            if (nullCurrentFilePath == null)
                                 goto CATCH_LOCATIONS_NOT_STRING_ARRAY;
 
                             // This is just to fix a warning in the ErrorCode calls
                             currentFilePath = nullCurrentFilePath;
-                            
+
                             // Check if the file extension is valid
                             // This appears to be out-of-bounds-safe
                             j = currentFilePath.LastIndexOf('.') + 1;
                             currentFileExtension = currentFilePath.Substring(j, currentFilePath.Length - j);
-                            if(!Constants.SUPPORTED_FILETYPES.Contains(currentFileExtension))
+                            if (!Constants.SUPPORTED_FILETYPES.Contains(currentFileExtension))
                                 goto CATCH_UNSUPPORTED_FILETYPE;
-                            
+
                             // Check if this filePath has already been identified as having labels.
-                            if(!filesToCheck.Contains(currentFilePath))
+                            if (!filesToCheck.Contains(currentFilePath))
                                 filesToCheck.Add(currentFilePath);
                         }
                     }
-                    catch (System.ArgumentException) {goto CATCH_LOCATIONS_NOT_STRING_ARRAY;}
+                    catch (System.ArgumentException) { goto CATCH_LOCATIONS_NOT_STRING_ARRAY; }
                 }
             }
             return new ParsedConfig(filesToCheck, options, hasMissingLocations);
         }
         catch (System.IO.DirectoryNotFoundException)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_DIRECTORY_NOT_FOUND,  new string[] { configFilePath }); }
+        { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_DIRECTORY_NOT_FOUND, new string[] { configFilePath }); }
         catch (FileNotFoundException)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_FOUND,            new string[] { configFilePath }); }
+        { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_FOUND, new string[] { configFilePath }); }
         catch (Newtonsoft.Json.JsonReaderException e)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.BAD_JSON_FILE,               new string[] { e.Message }); }
+        { ErrorReporter.ProcessErrorCode(ErrorCode.BAD_JSON_FILE, new string[] { e.Message }); }
         catch (Exception e)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.UNKNOWN_ERROR,               new string[] { e.ToString() }); }
+        { ErrorReporter.ProcessErrorCode(ErrorCode.UNKNOWN_ERROR, new string[] { e.ToString() }); }
         CATCH_CONFIG_NOT_TXT:
-          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_TXT,              new string[] { configFilePath });
+          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_TXT, new string[] { configFilePath });
         CATCH_BAD_LABEL:
-          ErrorReporter.ProcessErrorCode(ErrorCode.BAD_LABEL_FORMATTING,        new string[] { currentLabel });
+          ErrorReporter.ProcessErrorCode(ErrorCode.BAD_LABEL_FORMATTING, new string[] { currentLabel });
         CATCH_OPTION_ISNT_OBJECT:
-          ErrorReporter.ProcessErrorCode(ErrorCode.OPTION_ISNT_OBJECT,          new string[] { currentLabel });
+          ErrorReporter.ProcessErrorCode(ErrorCode.OPTION_ISNT_OBJECT, new string[] { currentLabel });
         CATCH_BAD_VARIABLE_VALUE:
-          ErrorReporter.ProcessErrorCode(ErrorCode.BAD_VARIABLE_VALUE,          new string[] { currentLabel });
-        CATCH_BAD_TOGGLEABLE_VALUE:
-          ErrorReporter.ProcessErrorCode(ErrorCode.BAD_TOGGLEABLE_VALUE,        new string[] { currentLabel });
+          ErrorReporter.ProcessErrorCode(ErrorCode.BAD_VARIABLE_VALUE, new string[] { currentLabel });
         CATCH_LOCATIONS_NOT_STRING_ARRAY:
           ErrorReporter.ProcessErrorCode(ErrorCode.LOCATIONS_ISNT_STRING_ARRAY, new string[] { currentLabel });
         CATCH_UNSUPPORTED_FILETYPE:
-          ErrorReporter.ProcessErrorCode(ErrorCode.UNSUPPORTED_FILETYPE,        new string[] { currentLabel, currentFilePath });
+          ErrorReporter.ProcessErrorCode(ErrorCode.UNSUPPORTED_FILETYPE, new string[] { currentLabel, currentFilePath });
         CATCH_DUPLICATE_LABEL:
-          ErrorReporter.ProcessErrorCode(ErrorCode.DUPLICATE_LABEL,             new string[] { currentLabel });
+          ErrorReporter.ProcessErrorCode(ErrorCode.DUPLICATE_LABEL, new string[] { currentLabel });
 
         // Return empty ParsedConfig to prevent warnings. This line won't ever be executed.
         return new ParsedConfig(new List<string>() { }, new List<Option>() { }, false);

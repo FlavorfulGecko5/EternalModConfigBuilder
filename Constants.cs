@@ -1,9 +1,9 @@
 class Constants
 {
     // Constants pertaining to labels
-    public const string LABEL_BORDER_VALUE        = "%";
+    public const string LABEL_BORDER_VALUE        = "$";
     public const string LABEL_TYPE_PREFACE        = "_INJECTOR_";
-    public const string LABEL_TYPE_NAME_SEPARATOR = "$";
+    public const string LABEL_TYPE_NAME_SEPARATOR = "#";
     public const char   LABEL_NAME_EXP_SEPARATOR  = '#';
     public const string TYPE_VARIABLE             = "VARIABLE_";
     public const string TYPE_TOGGLEABLE           = "TOGGLEABLE_";
@@ -62,5 +62,9 @@ class Constants
     
     public const string RULES_TOGGLE_BLOCK      = "Each toggle label placed in a mod file must have exactly one '" + SPECIAL_TOGGLEABLE_END + "' label placed after it "
         + "somewhere in the file. Together, these two labels denote what region of the file will be turned on and off by the toggle Option.";
+
+    // NEW STUFF
+
+    public const string RULES_VARIABLE_NAME     = "Variables names cannot be empty, and can only consist of the allowed characters. (letters, numbers, underscores)";
 }
 
