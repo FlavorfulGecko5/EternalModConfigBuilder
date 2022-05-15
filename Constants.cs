@@ -7,12 +7,26 @@ class Constants
     public const string CONFIG_FILE_EXTENSION = ".txt";
     public static readonly List<string> SUPPORTED_FILETYPES = new List<string>() { "decl", "json" };
 
+    // Constants pertaining to directories
+    public const string TEMPORARY_DIRECTORY = "TEMP_DIRECTORY_ETERNAL_MOD_CONFIG_BUILDER";
+    
     // Constants pertaining to option names
     public const string NAME_SPECIAL_CHARACTERS = "_";
 
     // Constants pertaining to Option properties
     public const string PROPERTY_VALUE = "Value";
     public const string PROPERTY_LOCATIONS = "Locations";
+
+    // Constants pertaining to expressions
+    public const int INFINITE_LOOP_THRESHOLD = 500;
+
+    // Constants pertaining to labels
+    public const string LABEL_BORDER_VALUE       = "$";
+    public const string LABEL_NAME_EXP_SEPARATOR = "#";
+    public const string LABEL_ANY                = LABEL_BORDER_VALUE + "_INJECTOR_";
+    public const string LABEL_ANY_VARIABLE       = LABEL_ANY + "VARIABLE_";
+    public const string LABEL_ANY_TOGGLEABLE     = LABEL_ANY + "TOGGLEABLE_";
+    public const string LABEL_END_TOGGLEABLE     = LABEL_ANY_TOGGLEABLE + "END_" + LABEL_BORDER_VALUE;
 
     // Rules
     public const string RULES_EXPECTED_USAGE = "Usage: ./EternalConfig.exe -c [" + CONFIG_FILE_EXTENSION
@@ -23,7 +37,8 @@ class Constants
     public const string RULES_OPTION_NAME_CHARACTERS = "Option names cannot be empty, and may only contain the following characters:\n"
         + "- Letters (a-z, A-Z)\n"
         + "- Numbers (0-9)\n"
-        + "- Underscores (_)";
+        + "- Underscores (_)\n"
+        + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.";
 
     public const string RULES_OPTION_VALUE = "An Option's '" + PROPERTY_VALUE + "' Property can be defined in the following ways:\n"
         + "- String: Any text encased in double-quotes.\n"
@@ -45,31 +60,26 @@ class Constants
     public const string RULES_SUPPORTED_FILETYPES = "Currently, this application only supports injecting configuration data into files of types:\n"
         + "- .decl\n- .json";
 
+    public const string RULES_LABEL_FORMATTING = "Labels must have the form "
+        + LABEL_ANY + "[TYPE]" + LABEL_NAME_EXP_SEPARATOR + "[EXPRESSION]" + LABEL_BORDER_VALUE + " where:\n"
+        + "- [TYPE] is a pre-defined string, with possible values listed in the documentation.\n"
+        + "- Case-insensitivity of the [TYPE] and it's preface is allowed.\n"
+        + "- [EXPRESSION] is a syntactically valid arithmetic or logical expression - see documentation for examples.\n"
+        + "- To insert an option from your configuration file into an expression, use the notation {NAME}";
 
+    public const string RULES_TOGGLE_BLOCK = "Each toggle label placed in a mod file must have exactly one '" + LABEL_END_TOGGLEABLE + "' label placed after it "
+        + "somewhere in the file. Together, these two labels denote what region of the file will be turned on and off by the toggle Option.";
 
 
 
      /* UNREVISED SHIT BELOW*/
-    // Constants pertaining to labels
-    public const string LABEL_BORDER_VALUE        = "$";
-    public const string LABEL_TYPE_PREFACE        = "_INJECTOR_";
-    public const string LABEL_TYPE_NAME_SEPARATOR = "#";
-    public const char   LABEL_NAME_EXP_SEPARATOR  = '#';
-    public const string TYPE_VARIABLE             = "VARIABLE_";
-    public const string TYPE_TOGGLEABLE           = "TOGGLEABLE_";
-    public const string SPECIAL_TOGGLEABLE_END    = LABEL_BORDER_VALUE + LABEL_TYPE_PREFACE + TYPE_TOGGLEABLE + "END_" + LABEL_BORDER_VALUE;
+ 
 
 
 
 
     // Rules to print for the user in error messages
-    public const string RULES_LABEL_FORMATTING    = "Labels must have the form "
-        + LABEL_BORDER_VALUE + LABEL_TYPE_PREFACE + "[TYPE]" + LABEL_TYPE_NAME_SEPARATOR + "[NAME]" + LABEL_BORDER_VALUE + " where:\n"
-        + "- [TYPE] is a pre-defined string, with possible values listed in the documentation.\n"
-        + "- Case-insensitivity of the [TYPE] and it's preface is allowed, but discouraged by convention.\n"
-        + "- [NAME] may only contain letters (a-z, A-Z), numbers (0-9), spaces ( ), or underscores ( _ ).\n"
-        + "- Names cannot be blank, and are case-insensitive. For example, 'ITEM' and 'item' are considered equivalent names.\n"
-        + "- Labels may only be defined once per configuration file.";    
+
 
     public const string RULES_TOGGLEABLE_VALUE    = "A Toggleable's '" + PROPERTY_VALUE + "' Property can be defined in the following ways:\n"
         + "- Boolean: Either 'true' or 'false' (case sensitive). For all intents and purposes, this is what you should be using.\n"
@@ -78,8 +88,7 @@ class Constants
         + "- Json lists and objects cannot be converted to strings and will cause an error if used.\n"
         + "- A null, empty or missing '" + PROPERTY_VALUE + "' field is not allowed.";
     
-    public const string RULES_TOGGLE_BLOCK      = "Each toggle label placed in a mod file must have exactly one '" + SPECIAL_TOGGLEABLE_END + "' label placed after it "
-        + "somewhere in the file. Together, these two labels denote what region of the file will be turned on and off by the toggle Option.";
+
 
     // NEW STUFF
 

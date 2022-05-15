@@ -63,19 +63,19 @@ class ErrorReporter
                     + " This filepath will be ignored.";
                 terminateProgram = false;
                 break;
-            case UNRECOGNIZED_LABEL:
-                formattedString += "The file " + args[0] + " contains an unrecognized label '" + args[1] + "'\n"
-                    + "This label may have an invalid format or location, have a typo in the name, or be missing entirely from the configuration file.";
-                break;
             case INCOMPLETE_LABEL:
-                formattedString += "The file " + args[0] + " has an incomplete label that's missing a '" + LABEL_BORDER_VALUE + "' on it's right side.";
+                formattedString += "The file " + args[0] + " has an incomplete label that's missing a '" + LABEL_BORDER_VALUE 
+                    + "' on it's right side.\n" + RULES_LABEL_FORMATTING;
+                break;
+            case UNRECOGNIZED_TYPE:
+                formattedString += "The file " + args[0] + " contains a label with an unrecognized type '" + args[1] + "'\n" + RULES_LABEL_FORMATTING;
                 break;
             case EXTRA_END_TOGGLE:
-                formattedString += "The file " + args[0] + " has an '" + SPECIAL_TOGGLEABLE_END
+                formattedString += "The file " + args[0] + " has an '" + LABEL_END_TOGGLEABLE
                     + "' label with no accompanying start label.\n" + RULES_TOGGLE_BLOCK;
                 break;
             case MISSING_END_TOGGLE:
-                formattedString += "The file " + args[0] + " has a toggleable label " + args[1] + " without a '" + SPECIAL_TOGGLEABLE_END
+                formattedString += "The file " + args[0] + " has a toggleable label " + args[1] + " without a '" + LABEL_END_TOGGLEABLE
                     + "' label to denote the end of the toggle block.\n" + RULES_TOGGLE_BLOCK;
                 break;
         }
@@ -107,8 +107,8 @@ enum ErrorCode
     // Mod Building Errors
     MOD_DIRECTORY_NOT_FOUND,
     MOD_FILE_NOT_FOUND,
-    UNRECOGNIZED_LABEL,
     INCOMPLETE_LABEL,
+    UNRECOGNIZED_TYPE,
     EXTRA_END_TOGGLE,
     MISSING_END_TOGGLE
 }
