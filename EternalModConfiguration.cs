@@ -1,6 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using static System.StringComparison;
+using static Constants;
+using static ErrorCode;
+using static ErrorReporter;
 class EternalModConfiguration
 {
     static ParsedConfig readConfig(string configFilePath)
@@ -13,13 +17,11 @@ class EternalModConfiguration
 
         // The Json file when initially read into a JObject
         JObject rawJson;
-        // Each individual option divided into one JProperty each
-        IEnumerable<JProperty> rawOptions;
 
         // The individual option we're currently iterating through
         JObject currentOption;
-        // The current option's label.
-        string  currentLabel = "";
+        // The current option's name.
+        string  currentName = "";
         // The current variable option's value
         string? currentVariableValue = "";
 
@@ -35,29 +37,30 @@ class EternalModConfiguration
                currentFileExtension = "";
         try
         {
-            if (configFilePath.LastIndexOf(".txt", StringComparison.CurrentCultureIgnoreCase) != configFilePath.Length - 4)
-                goto CATCH_CONFIG_NOT_TXT;
+            if (configFilePath.LastIndexOf(CONFIG_FILE_EXTENSION, CurrentCultureIgnoreCase) != configFilePath.Length - CONFIG_FILE_EXTENSION.Length)
+                goto CATCH_BAD_CONFIG_EXTENSION;
             using (StreamReader fileReader = new StreamReader(configFilePath))
             {
                 rawJson = JObject.Parse(fileReader.ReadToEnd());
-                rawOptions = rawJson.Properties();
 
-                foreach (JProperty currentRawOption in rawOptions)
+                foreach (JProperty currentRawOption in rawJson.Properties())
                 {
-                    // The label syntax is parsed and error-checked
-                    currentLabel = currentRawOption.Name.ToUpper();
+                    // Convert to uppercase to allow case-insensitivity
+                    currentName = currentRawOption.Name.ToUpper();
 
-                    // Validate that the label name meets rules for allowed characters
-                    if (currentLabel.Length == 0)
-                        goto CATCH_BAD_LABEL;
-                    for (int i = 0; i < currentLabel.Length; i++)
-                        if (!Char.IsAscii(currentLabel[i]) || (!Char.IsLetterOrDigit(currentLabel[i]) && !Constants.NAME_SPECIAL_CHARACTERS.Contains(currentLabel[i])))
-                            goto CATCH_BAD_LABEL;
+                    // Validate that the name meets rules for allowed characters
+                    if (currentName.Length == 0)
+                        goto CATCH_BAD_NAME;
+                    for (int i = 0; i < currentName.Length; i++)
+                        if (!Char.IsAscii(currentName[i]) || (!Char.IsLetterOrDigit(currentName[i]) && !NAME_SPECIAL_CHARACTERS.Contains(currentName[i])))
+                            goto CATCH_BAD_NAME;
 
-                    // Check for duplicate labels
+                    // Check for duplicate names
+                    // This won't identify exact duplicates, only duplicates with variations in capitalization
+                    // (Newtonsoft seems to filter out exact-duplicate properties, using the final one defined)
                     for (int i = 0; i < options.Count; i++)
-                        if (options[i].label.Equals(currentLabel))
-                            goto CATCH_DUPLICATE_LABEL;
+                        if (options[i].name.Equals(currentName))
+                            goto CATCH_DUPLICATE_NAME;
 
                     // Convert the raw option from JProperty to JObject
                     try { currentOption = (JObject)currentRawOption.Value; }
@@ -66,19 +69,20 @@ class EternalModConfiguration
                     // Read the Option's value and create an Option object for it
                     try
                     {
-                        currentVariableValue = (string?)currentOption[Constants.PROPERTY_NAME_VALUE];
+                        currentVariableValue = (string?)currentOption[PROPERTY_VALUE];
                         // If the property is defined as null, undefined, or absent entirely
                         if (currentVariableValue == null)
-                            goto CATCH_BAD_VARIABLE_VALUE;
-                        options.Add(new Option(currentLabel, currentVariableValue));
+                            goto CATCH_BAD_OPTION_VALUE;
+                        options.Add(new Option(currentName, currentVariableValue));
                     }
-                    // If the property is a list or object - cannot cast these to string
-                    catch (System.ArgumentException) { goto CATCH_BAD_VARIABLE_VALUE; };
+                    // If the property is a json list or object - cannot cast these to string
+                    catch (System.ArgumentException) { goto CATCH_BAD_OPTION_VALUE; };
+
 
                     // Process the Option's Locations array, checking if it's null or invalid
                     try
                     {
-                        currentLocations = (JArray?)currentOption[Constants.PROPERTY_NAME_LOCATIONS];
+                        currentLocations = (JArray?)currentOption[PROPERTY_LOCATIONS];
                         if (currentLocations == null)
                         {
                             hasMissingLocations = true;
@@ -93,18 +97,17 @@ class EternalModConfiguration
                     {
                         for (int i = 0, j = 0; i < currentLocations.Count; i++)
                         {
+                            // This is just to fix a null warning in the ErrorCode calls
                             nullCurrentFilePath = (string?)currentLocations[i];
                             if (nullCurrentFilePath == null)
                                 goto CATCH_LOCATIONS_NOT_STRING_ARRAY;
-
-                            // This is just to fix a warning in the ErrorCode calls
                             currentFilePath = nullCurrentFilePath;
 
                             // Check if the file extension is valid
                             // This appears to be out-of-bounds-safe
                             j = currentFilePath.LastIndexOf('.') + 1;
                             currentFileExtension = currentFilePath.Substring(j, currentFilePath.Length - j);
-                            if (!Constants.SUPPORTED_FILETYPES.Contains(currentFileExtension))
+                            if (!SUPPORTED_FILETYPES.Contains(currentFileExtension))
                                 goto CATCH_UNSUPPORTED_FILETYPE;
 
                             // Check if this filePath has already been identified as having labels.
@@ -112,33 +115,34 @@ class EternalModConfiguration
                                 filesToCheck.Add(currentFilePath);
                         }
                     }
+                    // If the list element is a json list or object
                     catch (System.ArgumentException) { goto CATCH_LOCATIONS_NOT_STRING_ARRAY; }
                 }
             }
             return new ParsedConfig(filesToCheck, options, hasMissingLocations);
         }
         catch (System.IO.DirectoryNotFoundException)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_DIRECTORY_NOT_FOUND, new string[] { configFilePath }); }
+        { ProcessErrorCode(CONFIG_DIRECTORY_NOT_FOUND, new string[] { configFilePath }); }
         catch (FileNotFoundException)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_FOUND, new string[] { configFilePath }); }
+        { ProcessErrorCode(CONFIG_NOT_FOUND, new string[] { configFilePath }); }
         catch (Newtonsoft.Json.JsonReaderException e)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.BAD_JSON_FILE, new string[] { e.Message }); }
+        { ProcessErrorCode(BAD_JSON_FILE, new string[] { e.Message }); }
         catch (Exception e)
-        { ErrorReporter.ProcessErrorCode(ErrorCode.UNKNOWN_ERROR, new string[] { e.ToString() }); }
-        CATCH_CONFIG_NOT_TXT:
-          ErrorReporter.ProcessErrorCode(ErrorCode.CONFIG_NOT_TXT, new string[] { configFilePath });
-        CATCH_BAD_LABEL:
-          ErrorReporter.ProcessErrorCode(ErrorCode.BAD_LABEL_FORMATTING, new string[] { currentLabel });
+        { ProcessErrorCode(UNKNOWN_ERROR, new string[] { e.ToString() }); }
+        CATCH_BAD_CONFIG_EXTENSION:
+          ProcessErrorCode(BAD_CONFIG_EXTENSION, new string[] { configFilePath });
+        CATCH_BAD_NAME:
+          ProcessErrorCode(BAD_NAME_FORMATTING, new string[] { currentName });
+        CATCH_DUPLICATE_NAME:
+          ProcessErrorCode(DUPLICATE_NAME, new string[] { currentName });
         CATCH_OPTION_ISNT_OBJECT:
-          ErrorReporter.ProcessErrorCode(ErrorCode.OPTION_ISNT_OBJECT, new string[] { currentLabel });
-        CATCH_BAD_VARIABLE_VALUE:
-          ErrorReporter.ProcessErrorCode(ErrorCode.BAD_VARIABLE_VALUE, new string[] { currentLabel });
+          ProcessErrorCode(OPTION_ISNT_OBJECT, new string[] { currentName });
+        CATCH_BAD_OPTION_VALUE:
+          ProcessErrorCode(BAD_OPTION_VALUE, new string[] { currentName });
         CATCH_LOCATIONS_NOT_STRING_ARRAY:
-          ErrorReporter.ProcessErrorCode(ErrorCode.LOCATIONS_ISNT_STRING_ARRAY, new string[] { currentLabel });
+          ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, new string[] { currentName });
         CATCH_UNSUPPORTED_FILETYPE:
-          ErrorReporter.ProcessErrorCode(ErrorCode.UNSUPPORTED_FILETYPE, new string[] { currentLabel, currentFilePath });
-        CATCH_DUPLICATE_LABEL:
-          ErrorReporter.ProcessErrorCode(ErrorCode.DUPLICATE_LABEL, new string[] { currentLabel });
+          ProcessErrorCode(UNSUPPORTED_FILETYPE, new string[] { currentName, currentFilePath });
 
         // Return empty ParsedConfig to prevent warnings. This line won't ever be executed.
         return new ParsedConfig(new List<string>() { }, new List<Option>() { }, false);
@@ -146,12 +150,12 @@ class EternalModConfiguration
 
     static void Main(string[] args)
     {
-        string configFilePath = "", sourceDirectory = "", outputDirectory = "";
-        bool hasConfig = false,   hasSource = false, hasOutput = false, 
+        string configPath = "", sourcePath = "", outputPath = "";
+        bool hasConfig = false, hasSource = false, hasOutput = false, 
              sourceIsZip = false, outputToZip = false;
-        int i = 0, extensionIndex = 0;
+        int i = 0;
         
-        if(args.Length != Constants.EXPECTED_ARG_COUNT)
+        if(args.Length != EXPECTED_ARG_COUNT)
             goto CATCH_INVALID_NUMBER_ARGUMENTS;
         
         // Read in each pair of arguments
@@ -163,7 +167,7 @@ class EternalModConfiguration
                 case "-c":
                     if(!hasConfig)
                     {
-                        configFilePath = args[i + 1];
+                        configPath = args[i + 1];
                         hasConfig = true;
                     }
                     else
@@ -173,7 +177,7 @@ class EternalModConfiguration
                 case "-s":
                     if(!hasSource)
                     {
-                        sourceDirectory = args[i+1];
+                        sourcePath = args[i+1];
                         hasSource = true;
                     }
                     else
@@ -183,7 +187,7 @@ class EternalModConfiguration
                 case "-o":
                     if(!hasOutput)
                     {
-                        outputDirectory = args[i+1];
+                        outputPath = args[i+1];
                         hasOutput = true;
                     }
                     else
@@ -196,21 +200,18 @@ class EternalModConfiguration
         }
         
         // Check whether the input and outputs are zip files or directories
-        extensionIndex = sourceDirectory.LastIndexOf(".zip", StringComparison.CurrentCultureIgnoreCase);
-        if(extensionIndex == sourceDirectory.Length - 4)
+        if(sourcePath.LastIndexOf(".zip", CurrentCultureIgnoreCase) == sourcePath.Length - 4)
             sourceIsZip = true;
-        
-        extensionIndex = outputDirectory.LastIndexOf(".zip", StringComparison.CurrentCultureIgnoreCase);
-        if(extensionIndex == outputDirectory.Length - 4)
+        if(outputPath.LastIndexOf(".zip", CurrentCultureIgnoreCase) == outputPath.Length - 4)
             outputToZip = true;
         
-        ParsedConfig config = readConfig(configFilePath);
-        config.buildMod(sourceDirectory, sourceIsZip, outputDirectory, outputToZip);
+        ParsedConfig config = readConfig(configPath);
+        config.buildMod(sourcePath, sourceIsZip, outputPath, outputToZip);
         return;
 
         CATCH_INVALID_NUMBER_ARGUMENTS:
-        ErrorReporter.ProcessErrorCode(ErrorCode.BAD_NUMBER_ARGUMENTS, new string[]{args.Length.ToString()});
+        ProcessErrorCode(BAD_NUMBER_ARGUMENTS, new string[]{args.Length.ToString()});
         CATCH_INVALID_ARGUMENT:
-        ErrorReporter.ProcessErrorCode(ErrorCode.BAD_ARGUMENT,         new string[]{(i + 1).ToString()});
+        ProcessErrorCode(BAD_ARGUMENT,         new string[]{(i + 1).ToString()});
     }
 }

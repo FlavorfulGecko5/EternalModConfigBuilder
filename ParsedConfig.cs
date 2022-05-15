@@ -18,7 +18,7 @@ class ParsedConfig
     {
         for(int i = 0; i < configOptions.Count; i++)
         {
-            if(configOptions[i].label.Equals(label))
+            if(configOptions[i].name.Equals(label))
                 return configOptions[i];
         }
         return null;
@@ -186,11 +186,11 @@ class ParsedConfig
             replacedThisCycle = false;
             for (int i = 0; i < configOptions.Count; i++)
             {
-                currentSearchString = '{' + configOptions[i].label + '}';
+                currentSearchString = '{' + configOptions[i].name + '}';
                 if(expression.IndexOf(currentSearchString) != -1)
                 {
                     replacedThisCycle = true;
-                    expression = expression.Replace(currentSearchString, configOptions[i].varValue);
+                    expression = expression.Replace(currentSearchString, configOptions[i].value);
                 }
             }    
         }

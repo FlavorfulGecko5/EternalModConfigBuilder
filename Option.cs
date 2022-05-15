@@ -1,23 +1,18 @@
 class Option
 {
-    public string label { get; }
-    public string varValue {get;}
+    public string name { get; }
+    public string value {get;}
 
-    public Option(string labelParameter)
+    public Option(string labelParameter, string valueParameter)
     {
-        label = labelParameter;
-        varValue = "";
-    }
-
-    public Option(string labelParameter, string varValueParameter)
-    {
-        label = labelParameter;
-        varValue = varValueParameter;
+        name = labelParameter;
+        value = valueParameter;
     }
 
     public override string ToString()
     {
-        return "Configuration Option of type 'Option'\n"
-            + "Label: " + label + "\n";
+        return "Configuration Option\n"
+            + "Name: " + name + "\n"
+            + "Value: " + value;
     }
 }
