@@ -19,7 +19,7 @@ class EternalModConfiguration
         JObject rawJson;
 
         // The individual option we're currently iterating through
-        JObject currentOption;
+        JObject currentOption = new JObject();
         // The current option's name.
         string  currentName = "";
         // The current variable option's value
@@ -38,7 +38,7 @@ class EternalModConfiguration
         try
         {
             if (configFilePath.LastIndexOf(CONFIG_FILE_EXTENSION, CurrentCultureIgnoreCase) != configFilePath.Length - CONFIG_FILE_EXTENSION.Length)
-                goto CATCH_BAD_CONFIG_EXTENSION;
+                ProcessErrorCode(BAD_CONFIG_EXTENSION, configFilePath);
             using (StreamReader fileReader = new StreamReader(configFilePath))
             {
                 rawJson = JObject.Parse(fileReader.ReadToEnd());
@@ -60,11 +60,11 @@ class EternalModConfiguration
                     // (Newtonsoft seems to filter out exact-duplicate properties, using the final one defined)
                     for (int i = 0; i < options.Count; i++)
                         if (options[i].name.Equals(currentName))
-                            goto CATCH_DUPLICATE_NAME;
+                            ProcessErrorCode(DUPLICATE_NAME, currentName);
 
                     // Convert the raw option from JProperty to JObject
                     try { currentOption = (JObject)currentRawOption.Value; }
-                    catch (System.InvalidCastException) { goto CATCH_OPTION_ISNT_OBJECT; }
+                    catch (System.InvalidCastException) { ProcessErrorCode(OPTION_ISNT_OBJECT, currentName); }
 
                     // Read the Option's value and create an Option object for it
                     try
@@ -108,10 +108,9 @@ class EternalModConfiguration
                             j = currentFilePath.LastIndexOf('.') + 1;
                             currentFileExtension = currentFilePath.Substring(j, currentFilePath.Length - j);
                             if (!SUPPORTED_FILETYPES.Contains(currentFileExtension))
-                                goto CATCH_UNSUPPORTED_FILETYPE;
-
+                                ProcessErrorCode(UNSUPPORTED_FILETYPE, currentName, currentFilePath);
                             // Check if this filePath has already been identified as having labels.
-                            if (!filesToCheck.Contains(currentFilePath))
+                            else if (!filesToCheck.Contains(currentFilePath))
                                 filesToCheck.Add(currentFilePath);
                         }
                     }
@@ -122,27 +121,18 @@ class EternalModConfiguration
             return new ParsedConfig(filesToCheck, options, hasMissingLocations);
         }
         catch (System.IO.DirectoryNotFoundException)
-        { ProcessErrorCode(CONFIG_DIRECTORY_NOT_FOUND, new string[] { configFilePath }); }
+        { ProcessErrorCode(CONFIG_DIRECTORY_NOT_FOUND, configFilePath); }
         catch (FileNotFoundException)
-        { ProcessErrorCode(CONFIG_NOT_FOUND, new string[] { configFilePath }); }
+        { ProcessErrorCode(CONFIG_NOT_FOUND, configFilePath); }
         catch (Newtonsoft.Json.JsonReaderException e)
-        { ProcessErrorCode(BAD_JSON_FILE, new string[] { e.Message }); }
-        catch (Exception e)
-        { ProcessErrorCode(UNKNOWN_ERROR, new string[] { e.ToString() }); }
-        CATCH_BAD_CONFIG_EXTENSION:
-          ProcessErrorCode(BAD_CONFIG_EXTENSION, new string[] { configFilePath });
+        { ProcessErrorCode(BAD_JSON_FILE, e.Message); }
+        // If the same error code might be used in multiple lines, it will be called here 
         CATCH_BAD_NAME:
-          ProcessErrorCode(BAD_NAME_FORMATTING, new string[] { currentName });
-        CATCH_DUPLICATE_NAME:
-          ProcessErrorCode(DUPLICATE_NAME, new string[] { currentName });
-        CATCH_OPTION_ISNT_OBJECT:
-          ProcessErrorCode(OPTION_ISNT_OBJECT, new string[] { currentName });
+          ProcessErrorCode(BAD_NAME_FORMATTING, currentName);
         CATCH_BAD_OPTION_VALUE:
-          ProcessErrorCode(BAD_OPTION_VALUE, new string[] { currentName });
+          ProcessErrorCode(BAD_OPTION_VALUE, currentName);
         CATCH_LOCATIONS_NOT_STRING_ARRAY:
-          ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, new string[] { currentName });
-        CATCH_UNSUPPORTED_FILETYPE:
-          ProcessErrorCode(UNSUPPORTED_FILETYPE, new string[] { currentName, currentFilePath });
+          ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName);      
 
         // Return empty ParsedConfig to prevent warnings. This line won't ever be executed.
         return new ParsedConfig(new List<string>() { }, new List<Option>() { }, false);
@@ -156,7 +146,7 @@ class EternalModConfiguration
         int i = 0;
         
         if(args.Length != EXPECTED_ARG_COUNT)
-            goto CATCH_INVALID_NUMBER_ARGUMENTS;
+            ProcessErrorCode(BAD_NUMBER_ARGUMENTS, args.Length.ToString());
         
         // Read in each pair of arguments
         // Validates that the same parameter hasn't been entered multiple times.
@@ -205,13 +195,20 @@ class EternalModConfiguration
         if(outputPath.LastIndexOf(".zip", CurrentCultureIgnoreCase) == outputPath.Length - 4)
             outputToZip = true;
         
-        ParsedConfig config = readConfig(configPath);
-        config.buildMod(sourcePath, sourceIsZip, outputPath, outputToZip);
-        return;
+        try
+        {
+            ParsedConfig config = readConfig(configPath);
+            config.buildMod(sourcePath, sourceIsZip, outputPath, outputToZip);
+        }
+        // Any unexpected errors that arise from the building process will be caught here
+        catch (Exception e) 
+        {ProcessErrorCode(UNKNOWN_ERROR, e.ToString());}
 
-        CATCH_INVALID_NUMBER_ARGUMENTS:
-        ProcessErrorCode(BAD_NUMBER_ARGUMENTS, new string[]{args.Length.ToString()});
+        // Report successful execution
+        System.Console.WriteLine(MESSAGE_SUCCESS);
+        return;
+        
         CATCH_INVALID_ARGUMENT:
-        ProcessErrorCode(BAD_ARGUMENT,         new string[]{(i + 1).ToString()});
+        ProcessErrorCode(BAD_ARGUMENT,(i + 1).ToString());
     }
 }

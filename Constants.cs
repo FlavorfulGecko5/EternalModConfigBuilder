@@ -25,8 +25,15 @@ class Constants
     public const string LABEL_NAME_EXP_SEPARATOR = "#";
     public const string LABEL_ANY                = LABEL_BORDER_VALUE + "_INJECTOR_";
     public const string LABEL_ANY_VARIABLE       = LABEL_ANY + "VARIABLE_";
-    public const string LABEL_ANY_TOGGLEABLE     = LABEL_ANY + "TOGGLEABLE_";
+    public const string LABEL_ANY_TOGGLEABLE     = LABEL_ANY + "TOGGLE_";
     public const string LABEL_END_TOGGLEABLE     = LABEL_ANY_TOGGLEABLE + "END_" + LABEL_BORDER_VALUE;
+
+    // Constants pertaining to program termination
+    public const string MESSAGE_SUCCESS = "Your mod has been successfully built from the configuration file.\n"
+        + "Please remember that this program cannot catch every conceivable typo made when inserting labels into your mod files.\n"
+        + "If your game crashes after injecting the mod, please double-check your mod files for errors.";
+    
+    public const string MESSAGE_FAILURE = "Mod building has halted due to the critical errors described above";
 
     // Rules
     public const string RULES_EXPECTED_USAGE = "Usage: ./EternalConfig.exe -c [" + CONFIG_FILE_EXTENSION
@@ -70,28 +77,7 @@ class Constants
     public const string RULES_TOGGLE_BLOCK = "Each toggle label placed in a mod file must have exactly one '" + LABEL_END_TOGGLEABLE + "' label placed after it "
         + "somewhere in the file. Together, these two labels denote what region of the file will be turned on and off by the toggle Option.";
 
-
-
-     /* UNREVISED SHIT BELOW*/
- 
-
-
-
-
-    // Rules to print for the user in error messages
-
-
-    public const string RULES_TOGGLEABLE_VALUE    = "A Toggleable's '" + PROPERTY_VALUE + "' Property can be defined in the following ways:\n"
-        + "- Boolean: Either 'true' or 'false' (case sensitive). For all intents and purposes, this is what you should be using.\n"
-        + "- String: Any string that can be parsed as 'true' or 'false' is accepted.\n"
-        + "- Number: Use '1' for 'true' and '0' for 'false'. Other values give unpredictable results. Not recommended.\n"
-        + "- Json lists and objects cannot be converted to strings and will cause an error if used.\n"
-        + "- A null, empty or missing '" + PROPERTY_VALUE + "' field is not allowed.";
-    
-
-
-    // NEW STUFF
-
-    
+    public const string RULES_TOGGLE_EXP_RESULT = "A Toggle label's expression must yield one of the following types of results:\n"
+        + "- A Boolean (true/false) value, from evaluating a logical expression or translating a string to one of these values.\n"
+        + "- A numerical value. A number less than one is interpeted as false, and one or higher is interpreted as true.";
 }
-

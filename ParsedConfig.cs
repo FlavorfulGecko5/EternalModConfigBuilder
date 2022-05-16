@@ -35,6 +35,11 @@ class ParsedConfig
 
     public void buildMod(string inputDirectory, bool inputIsZip, string outputDirectory, bool outputToZip)
     {
+        // The temporary directory is not removed when the program terminates due to errors.
+        // This leads to future executions failing because you can't unzip to an already-existing directory.
+        if(Directory.Exists(TEMPORARY_DIRECTORY))
+            Directory.Delete(TEMPORARY_DIRECTORY, true);
+
         // If the output is a zip file, we should use a temporary directory 
         // instead of assuming a directory of the same w/o the extension is available to use
         string activeOutputDirectory = outputToZip ? TEMPORARY_DIRECTORY : outputDirectory,
@@ -75,7 +80,7 @@ class ParsedConfig
                         parseFile(currentFilePath);
                     else
                         // Need this here to prevent unwanted shutdowns
-                        ProcessErrorCode(MOD_FILE_NOT_FOUND, new string[]{currentFilePath});
+                        ProcessErrorCode(MOD_FILE_NOT_FOUND, currentFilePath);
                 }
             
             if(outputToZip)
@@ -88,9 +93,7 @@ class ParsedConfig
             }
         }
         catch (System.IO.DirectoryNotFoundException)
-        {ProcessErrorCode(MOD_DIRECTORY_NOT_FOUND, new string[]{ inputDirectory });}
-        catch (Exception e)
-        {ProcessErrorCode(UNKNOWN_ERROR,           new string[]{ e.ToString()   });}
+        {ProcessErrorCode(MOD_DIRECTORY_NOT_FOUND, inputDirectory);}
     }
     
     // Used to copy the mod folder to the output directory.
@@ -110,6 +113,8 @@ class ParsedConfig
         string fileText = "",
         // The label we're currently parsing
                label = "",
+        // The type in the current label (everything before the separator)
+               type = "",
         // The expression in the current label
                expression = "",
                expressionResult = "";
@@ -127,23 +132,29 @@ class ParsedConfig
                 // Get the complete label by utilizing the border characters.
                 labelEndIndex = fileText.IndexOf(LABEL_BORDER_VALUE, labelStartIndex + 1);
                 if(labelEndIndex == -1)
-                    goto CATCH_INCOMPLETE_LABEL;
+                    ProcessErrorCode(INCOMPLETE_LABEL, filePath);
                 label = fileText.Substring(labelStartIndex, labelEndIndex - labelStartIndex + 1);
 
                 // Isolate the expression, if it exists
                 expressionSeparatorIndex = label.IndexOf(LABEL_NAME_EXP_SEPARATOR);
                 if(expressionSeparatorIndex == -1)
-                    goto CATCH_INCOMPLETE_LABEL; // NEED A NEW ERRORCODE FOR THIS
+                {
+                    // Edge Case: A toggleable-end label with no toggleable-beginning label preceding it
+                    if(label.Equals(LABEL_END_TOGGLEABLE))
+                        ProcessErrorCode(EXTRA_END_TOGGLE, filePath);
+                    else
+                        ProcessErrorCode(MISSING_EXP_SEPARATOR, filePath, label);
+                }      
 
                 // Don't uppercase the expression to prevent string-literals from being modified
                 expression = label.Substring(expressionSeparatorIndex + 1, label.Length - expressionSeparatorIndex - 2);
-                expressionResult = parseExpression(expression);
+                expressionResult = parseExpression(filePath, label, expression);
 
                 // Everything up to and excluding the separator index
-                label = label.Substring(0, expressionSeparatorIndex).ToUpper();
+                type = label.Substring(0, expressionSeparatorIndex).ToUpper();
 
-                // Check if the label is valid - default if it isn't.
-                switch (label)
+                // Check if the type is valid - default if it isn't.
+                switch (type)
                 {
                     case LABEL_ANY_VARIABLE:
                         fileText = fileText.Substring(0, labelStartIndex) // Everything before the label
@@ -157,11 +168,8 @@ class ParsedConfig
                         break;
 
                     default:
-                        // Edge Case: A toggleable-end label with no toggleable-beginning label preceding it
-                        if (label.Equals(LABEL_END_TOGGLEABLE))
-                            goto CATCH_EXTRA_END_TOGGLE;
-                        else
-                            goto CATCH_UNRECOGNIZED_TYPE;
+                        ProcessErrorCode(UNRECOGNIZED_TYPE, filePath, label);
+                        break;
                 }
                 // Starts search from the location of the previous label.
                 labelStartIndex = fileText.IndexOf(LABEL_ANY, labelStartIndex, CurrentCultureIgnoreCase);
@@ -170,25 +178,22 @@ class ParsedConfig
         using(StreamWriter fileWriter = new StreamWriter(filePath))
         {
             fileWriter.Write(fileText);
-        }
-        return;
-
-        CATCH_INCOMPLETE_LABEL:
-        ProcessErrorCode(INCOMPLETE_LABEL, new string[]{ filePath });
-        CATCH_UNRECOGNIZED_TYPE:
-        ProcessErrorCode(UNRECOGNIZED_TYPE, new string[]{ filePath, label });
-        CATCH_EXTRA_END_TOGGLE:
-        ProcessErrorCode(EXTRA_END_TOGGLE, new string[]{ filePath });
+        } 
     }
 
-    private string parseExpression(string originalExpression)
+    private string parseExpression(string filePath, string label, string expression)
     {
+        // Prevents infinite loops
         int numIterations = 0;
+        // Allows options to represent other options
         bool replacedThisCycle = true;
-        string expression = originalExpression, currentSearchString = "";
-        while(replacedThisCycle && numIterations++ < INFINITE_LOOP_THRESHOLD)
+        string currentSearchString = "";
+        while(replacedThisCycle)
         {
+            if(numIterations++ == INFINITE_LOOP_THRESHOLD)
+                ProcessErrorCode(EXP_LOOPS_INFINITELY, filePath, label, expression);
             replacedThisCycle = false;
+
             for (int i = 0; i < configOptions.Count; i++)
             {
                 currentSearchString = '{' + configOptions[i].name + '}';
@@ -199,7 +204,12 @@ class ParsedConfig
                 }
             }    
         }
-        string? result = expressionEvaluator.Compute(expression, "").ToString();
+
+        string? result = "";
+        try {result = expressionEvaluator.Compute(expression, "").ToString(); }
+        catch(Exception e)
+        {ProcessErrorCode(EXP_FAILED_TO_EVALUATE, filePath, label, expression, e.Message);}
+
         if(result != null)
             return result;
         else
@@ -208,47 +218,54 @@ class ParsedConfig
 
     private string parseToggle(string filePath, string fileText, string label, string expressionResult, int startLabelStartIndex, int startLabelEndIndex)
     {
+        // Allows for toggles to be nested inside of other toggles
         int numEndLabelsNeeded = 1;
+        bool interpretedResult = false;
 
         int endLabelStartIndex = startLabelStartIndex, endLabelEndIndex = 0;
         while(numEndLabelsNeeded > 0)
         {
             endLabelStartIndex = fileText.IndexOf(LABEL_ANY_TOGGLEABLE, endLabelStartIndex + 1, CurrentCultureIgnoreCase);
             if(endLabelStartIndex == -1)
-                goto CATCH_MISSING_END_TOGGLE;
+                ProcessErrorCode(MISSING_END_TOGGLE, filePath, label);
             
             if(fileText.IndexOf(LABEL_END_TOGGLEABLE, endLabelStartIndex, CurrentCultureIgnoreCase) == endLabelStartIndex)
                 numEndLabelsNeeded--;
             // No need to go too in-depth with error checking here, since one way or another invalid labels will get detected in parseFile
             else
             {
+                // Iffy error-checking, but errors are detected
+
                 // Just check if the toggle-non-end label we found is actually valid.
                 // This way, all labels are validated even if the toggle is false
                 endLabelEndIndex = fileText.IndexOf(LABEL_BORDER_VALUE, endLabelStartIndex + 1);
                 if(endLabelEndIndex == -1)
-                    goto CATCH_INCOMPLETE_LABEL;
-                numEndLabelsNeeded++;
+                    ProcessErrorCode(INCOMPLETE_LABEL, filePath);
+
+                // If true, the type is that of a toggle start label
+                if(fileText.IndexOf(LABEL_ANY_TOGGLEABLE + LABEL_NAME_EXP_SEPARATOR, endLabelStartIndex, CurrentCultureIgnoreCase) == endLabelStartIndex)
+                    numEndLabelsNeeded++;
+                else
+                    ProcessErrorCode(UNRECOGNIZED_TYPE, filePath, fileText.Substring(endLabelStartIndex, endLabelEndIndex - endLabelStartIndex + 1));
             }
-                
         }
         endLabelEndIndex = fileText.IndexOf(LABEL_BORDER_VALUE, endLabelStartIndex + 1);
 
-        // TODO: FAILED CONVERSIONS, NUMERICAL RESULTS
-        bool toggleStatus = Convert.ToBoolean(expressionResult);
-        if(toggleStatus)
+        // Try to resolve the expression result as a Boolean. If it's not possible, throw an error
+        try{interpretedResult = Convert.ToBoolean(expressionResult);}
+        catch(System.FormatException)
+        {
+            try{interpretedResult = Convert.ToDouble(expressionResult) >= 1 ? true : false;}
+            catch(Exception)
+            {ProcessErrorCode(BAD_TOGGLE_EXP_RESULT, filePath, label, expressionResult);}
+        }
+
+        if(interpretedResult)
             return fileText.Substring(0, startLabelStartIndex) // Everything before the start label
                 + fileText.Substring(startLabelEndIndex + 1, endLabelStartIndex - startLabelEndIndex - 1) // Everything in-between the two labels
                 + fileText.Substring(endLabelEndIndex + 1, fileText.Length - endLabelEndIndex - 1); // Everything after the end label
         else
             return fileText.Substring(0, startLabelStartIndex) // Everything before the start label
                 + fileText.Substring(endLabelEndIndex + 1, fileText.Length - endLabelEndIndex - 1); // Everthing after the end label
-        
-        CATCH_MISSING_END_TOGGLE:
-        ProcessErrorCode(MISSING_END_TOGGLE, new string[]{ filePath, label });
-        CATCH_INCOMPLETE_LABEL:
-        ProcessErrorCode(INCOMPLETE_LABEL, new string[]{ filePath });
-
-        // This return statement will never execute
-        return "";
     }
 }
