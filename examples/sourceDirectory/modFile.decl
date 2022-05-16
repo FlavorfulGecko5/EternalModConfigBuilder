@@ -1,0 +1,77 @@
+To best understand what is happening here, you should have "config.txt" open and readable alongside this file.
+To read all the syntax rules for options and names, see "Constants.cs"
+
+Let's start simple: the following label has a constant "999" as it's expression.
+This means the label will be replaced with "999" when this file is parsed.
+$_injector_variable_#999$
+
+To insert an option we defined in our configuration file into the expression,
+we encase the option's name in braces {}. The following label would be replaced
+with the value of the option "x", which is defined in the configuration file.
+$_injector_variable_#{x}$
+
+Of course, our expressions can be more complicated than just single values.
+We can have a full range of arithmetic expressions - as the following two 
+examples show. Note that both "x" and "y" are defined in our configuration file.
+$_injector_variable_#{x} + {y}$
+$_injector_variable_#(10 + {x}) / 5 * 2$
+
+
+
+
+
+What if the values we want to insert are strings? Wherever this is the case,
+we must put single quotes ('') around string literals or variables representing strings
+$_injector_variable_#'The Revenant'$
+$_injector_variable_#'{name}'$
+
+Using these rules, we can concatenate (combine) two strings together like so:
+$_injector_variable_#'{name}' + ' is the best demon'$
+
+
+
+
+
+We can also perform a rule range of logical expressions:
+$_injector_variable_#true AND false$
+$_injector_variable_#{binary} OR false$
+$_injector_variable_#NOT {binary}$
+
+
+
+
+
+Variables can be used to represent other variables. The following label will
+be replaced with the value of "y":
+$_injector_variable_#{z}$
+
+
+
+
+
+Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
+it's expression evaluates to, a toggle label can be used to keep or remove an entire
+section of a file, based on what it's expression evaluates to. Toggle label expressions
+MUST evaluate to a Boolean (true/false), or a numerical value.
+$_injector_toggle_#true$
+I will still be visible when this file is parsed.
+$_injector_toggle_end_$
+
+$_injector_toggle_#{x} = 0$
+I will not be visible when this file is parsed.
+$_injector_toggle_end_$
+
+Toggle labels can be nested inside of each other
+$_injector_toggle_#1$
+I will be visible when this file is parsed.
+
+$_injector_toggle_#0.85$
+However, I will not be visible! (Any number < 1 is considered false for a toggle label)
+$_injector_toggle_end_$
+
+$_injector_toggle_end_$
+
+
+There are many other features you can include in these expressions. To get a better idea of what
+operators and functions are available, consult the following documentation:
+https://docs.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression?redirectedfrom=MSDN&view=net-6.0#System_Data_DataColumn_Expression

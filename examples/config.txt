@@ -1,0 +1,35 @@
+{
+    "Standards": {
+        "Purpose": "OPTIONAL - Describes what this option does or controls",
+        "Locations": ["What files is this option used in?", 
+            "gameresources_patch1/generated/decls/path/somewhere.decl"],
+        "PossibleValues": ["OPTIONAL - WHAT VALUES CAN THIS OPTION BE SET TO?",
+            "100", "true", "any integer between 0 and 1, inclusive"],
+        "Value": "REQUIRED - Any string, numerical, or boolean value"
+    },
+
+    "x":{
+        "Locations": ["modFile.decl"],
+        "Value": 123
+    },
+
+    "y":{
+        "Locations": ["modFile.decl"],
+        "Value": -30
+    },
+
+    "z":{
+        "Locations": ["modFile.decl"],
+        "Value": "{y}"
+    },
+
+    "name":{
+        "Locations": ["modFile.decl"],
+        "Value": "cacodemon"
+    },
+
+    "binary":{
+        "Locations": ["modFile.decl"],
+        "Value": true
+    }
+}

@@ -93,14 +93,18 @@ class ErrorReporter
                     + "' label to denote the end of the toggle block.\n" + RULES_TOGGLE_BLOCK;
                 break;
             case BAD_TOGGLE_EXP_RESULT:
-                formattedString += "The file " + arg0 + "has a toggle label " + arg1 + " whose expression result cannot be interpreted "
+                formattedString += "The file " + arg0 + " has a toggle label " + arg1 + " whose expression result cannot be interpreted "
                     + "correctly by a toggle label.\n" + "Expression Result: \"" + arg2 + "\"\n" + RULES_TOGGLE_EXP_RESULT;
                 break;
         }
-        System.Console.WriteLine(formattedString + "\n" + MESSAGE_FAILURE);
+        System.Console.WriteLine(formattedString);
         
         if(terminateProgram)
+        {
+            System.Console.WriteLine(MESSAGE_FAILURE);
             Environment.Exit(1);
+        }
+            
     }
 }
 
