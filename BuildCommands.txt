@@ -1,0 +1,1 @@
+dotnet publish -p:PublishSingleFile=true -p:AssemblyName=EternalModBuilder -r win-x64 -c Release --self-contained true 

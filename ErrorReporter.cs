@@ -55,6 +55,11 @@ class ErrorReporter
                     + "' in it's '" + PROPERTY_LOCATIONS + "' list. This file will not be checked.\n" + RULES_SUPPORTED_FILETYPES;
                 terminateProgram = false;
                 break;
+            // Propagation Errors
+            case BAD_PROPAGATION_ARRAY:
+                formattedString += "The special '" + PROPAGATE_PROPERTY + "' property in the configuration file has an incorrectly defined "
+                    + "sub-property '" + arg0 + "'\n" + RULES_PROPAGATE_PROPERTY;
+                break;
             // Mod building errors
             case MOD_DIRECTORY_NOT_FOUND:
                 formattedString += "The mod directory " + arg0 + " does not exist.";
@@ -126,6 +131,8 @@ enum ErrorCode
     BAD_OPTION_VALUE,
     LOCATIONS_ISNT_STRING_ARRAY,
     UNSUPPORTED_FILETYPE,
+    // Propagation Errors
+    BAD_PROPAGATION_ARRAY,
     // Mod Building Errors
     MOD_DIRECTORY_NOT_FOUND,
     MOD_FILE_NOT_FOUND,

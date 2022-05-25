@@ -1,5 +1,8 @@
 class Constants
 {
+    // Constants pertaining to the names of published files
+    public const string EXECUTABLE_NAME = "EternalModBuilder";
+
     // Constants pertaining to command-line arguments
     public const int EXPECTED_ARG_COUNT = 6;
     
@@ -28,6 +31,10 @@ class Constants
     public const string LABEL_ANY_TOGGLEABLE     = LABEL_ANY + "TOGGLE_";
     public const string LABEL_END_TOGGLEABLE     = LABEL_ANY_TOGGLEABLE + "END_" + LABEL_BORDER_VALUE;
 
+    // Constants pertaining to file propagation
+    public const string PROPAGATE_PROPERTY  = "PROPAGATE";
+    public const string PROPAGATE_DIRECTORY = "propagate";
+
     // Constants pertaining to program termination
     public const string MESSAGE_SUCCESS = "Your mod has been successfully built from the configuration file.\n"
         + "Please remember that this program cannot catch every conceivable typo made when inserting labels into your mod files.\n"
@@ -36,7 +43,7 @@ class Constants
     public const string MESSAGE_FAILURE = "Mod building has halted due to the critical errors described above";
 
     // Rules
-    public const string RULES_EXPECTED_USAGE = "Usage: ./EternalConfig.exe -c [" + CONFIG_FILE_EXTENSION
+    public const string RULES_EXPECTED_USAGE = "Usage: ./"  + EXECUTABLE_NAME + ".exe -c [" + CONFIG_FILE_EXTENSION
         + " config file] -s [mod directory or zip file] -o [output directory or zip file]\n"
         + "WARNING - IF THE OUTPUT DIRECTORY ALREADY EXISTS, ANY FILES INSIDE OF IT MAY BE OVERWRITTEN.\n"
         + "IF YOU OUTPUT A ZIP FILE, IT WILL OVERWRITE ANY ZIP FILE THAT ALREADY EXISTS WITH THAT NAME.";
@@ -63,6 +70,13 @@ class Constants
         + "- If at least one '" + PROPERTY_LOCATIONS + "' list is null, undefined, or missing entirely, then every file of all "
             + "supported filetypes in your mod will be checked for labels, which may have a noticeable effect on build time " 
             + "if your mod has lots of files that don't need to be configured.";
+    
+    public const string RULES_PROPAGATE_PROPERTY = "Configuration files may have a '" + PROPAGATE_PROPERTY + "' property that must defined in a special way:\n"
+        + "- This property must be a Json object.\n"
+        + "- Each sub-property should be a directory in a valid DOOM Eternal .resource file, such as 'gameresources_patch1' or 'warehouse/generated/decls'.\n"
+        + "- Each sub-property must be defined as a list of strings.\n" 
+        + "- These strings must be paths to files inside your unbuilt mod's '" + PROPAGATE_DIRECTORY + "' folder.\n"
+        + "When your mod is built, files listed in the sub-property arrays will be copied to the resource file the array belongs to.";
 
     public const string RULES_SUPPORTED_FILETYPES = "Currently, this application only supports injecting configuration data into files of types:\n"
         + "- .decl\n- .json";

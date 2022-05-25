@@ -9,11 +9,15 @@ class ParsedConfig
     private bool mustCheckAllFiles;
     private List<string> filePaths { get; }
     private List<Option> configOptions { get; }
+    private List<PropagateResource> propagationLists {get;}
     private DataTable expressionEvaluator;
-    public ParsedConfig(List<string> filePathsParameter, List<Option> configOptionsParameter, bool mustCheckAllFilesParameter)
+
+    public ParsedConfig(List<string> filePathsParameter, List<Option> configOptionsParameter, 
+        List<PropagateResource> propagationListsParameter, bool mustCheckAllFilesParameter)
     {
         filePaths = filePathsParameter;
         configOptions = configOptionsParameter;
+        propagationLists = propagationListsParameter;
         mustCheckAllFiles = mustCheckAllFilesParameter;
         expressionEvaluator = new DataTable();
     }
@@ -29,7 +33,10 @@ class ParsedConfig
 
         formattedString += "\nOptions\n----------\n";
         for (int i = 0; i < configOptions.Count; i++)
-            formattedString += configOptions[i].ToString();
+            formattedString += configOptions[i].ToString() + "\n";
+        
+        for(int i = 0; i < propagationLists.Count; i++)
+            formattedString += propagationLists[i].ToString();
         return formattedString;
     }
 
@@ -83,6 +90,14 @@ class ParsedConfig
                         ProcessErrorCode(MOD_FILE_NOT_FOUND, currentFilePath);
                 }
             
+            // Handle Propagation
+            if(Directory.Exists(PROPAGATE_DIRECTORY))
+            {
+                foreach(PropagateResource resource in propagationLists)
+                    resource.propagate();
+                Directory.Delete(PROPAGATE_DIRECTORY, true);
+            }
+
             if(outputToZip)
             {
                 Directory.SetCurrentDirectory(workingDirectory);
@@ -140,7 +155,7 @@ class ParsedConfig
                 if(expressionSeparatorIndex == -1)
                 {
                     // Edge Case: A toggleable-end label with no toggleable-beginning label preceding it
-                    if(label.Equals(LABEL_END_TOGGLEABLE))
+                    if(label.Equals(LABEL_END_TOGGLEABLE, CurrentCultureIgnoreCase))
                         ProcessErrorCode(EXTRA_END_TOGGLE, filePath);
                     else
                         ProcessErrorCode(MISSING_EXP_SEPARATOR, filePath, label);

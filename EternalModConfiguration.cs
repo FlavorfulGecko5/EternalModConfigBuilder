@@ -14,6 +14,7 @@ class EternalModConfiguration
         // be used to construct the ParsedConfig object
         List<string> filesToCheck = new List<string>();
         List<Option> options = new List<Option>();
+        List<PropagateResource> resources = new List<PropagateResource>();
 
         // The Json file when initially read into a JObject
         JObject rawJson;
@@ -66,6 +67,14 @@ class EternalModConfiguration
                     try { currentOption = (JObject)currentRawOption.Value; }
                     catch (System.InvalidCastException) { ProcessErrorCode(OPTION_ISNT_OBJECT, currentName); }
 
+                    // Check for any special properties (propagate)
+                    // TODO - Throw error if propagate was already defined using boolean value
+                    if (currentName.Equals(PROPAGATE_PROPERTY))
+                    {
+                        resources = readPropagateData(currentOption);
+                        continue;
+                    }
+
                     // Read the Option's value and create an Option object for it
                     try
                     {
@@ -88,13 +97,9 @@ class EternalModConfiguration
                             hasMissingLocations = true;
                             currentLocations = new JArray();
                         }
-                    }
-                    catch (System.InvalidCastException) { goto CATCH_LOCATIONS_NOT_STRING_ARRAY; }
 
-                    // Process each filepath in Locations, checking if it's parseable as a Json string,
-                    // and eliminating duplicate filepaths
-                    try
-                    {
+                        // Process each filepath in Locations, checking if it's parseable as a Json string,
+                        // and eliminating duplicate filepaths
                         for (int i = 0, j = 0; i < currentLocations.Count; i++)
                         {
                             // This is just to fix a null warning in the ErrorCode calls
@@ -114,11 +119,13 @@ class EternalModConfiguration
                                 filesToCheck.Add(currentFilePath);
                         }
                     }
+                    // Locations is not defined as an array
+                    catch (System.InvalidCastException) { goto CATCH_LOCATIONS_NOT_STRING_ARRAY; }
                     // If the list element is a json list or object
                     catch (System.ArgumentException) { goto CATCH_LOCATIONS_NOT_STRING_ARRAY; }
                 }
             }
-            return new ParsedConfig(filesToCheck, options, hasMissingLocations);
+            return new ParsedConfig(filesToCheck, options, resources, hasMissingLocations);
         }
         catch (System.IO.DirectoryNotFoundException)
         { ProcessErrorCode(CONFIG_DIRECTORY_NOT_FOUND, configFilePath); }
@@ -135,7 +142,46 @@ class EternalModConfiguration
           ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName);      
 
         // Return empty ParsedConfig to prevent warnings. This line won't ever be executed.
-        return new ParsedConfig(new List<string>() { }, new List<Option>() { }, false);
+        return new ParsedConfig(new List<string>() { }, new List<Option>() { }, new List<PropagateResource>(), false);
+    }
+
+    static List<PropagateResource> readPropagateData(JObject propagateData)
+    {
+        List<PropagateResource> resourceLists = new List<PropagateResource>();
+        JArray? currentResource = new JArray();
+        string? nullCurrentFilePath = "";
+        string[] currentFilePaths;
+
+        foreach (JProperty rawResource in propagateData.Properties())
+        {
+            // Check if the current sub-property is an array.
+            try
+            {
+                currentResource = (JArray?)propagateData[rawResource.Name];
+                if (currentResource == null)
+                    currentResource = new JArray();
+
+                // Process each item in the currentResource
+                currentFilePaths = new string[currentResource.Count];
+
+                for (int i = 0; i < currentResource.Count; i++)
+                {
+                    // This is just to fix a null warning in the ErrorCode calls
+                    nullCurrentFilePath = (string?)currentResource[i];
+                    if (nullCurrentFilePath == null)
+                        ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name);
+                    else
+                        currentFilePaths[i] = nullCurrentFilePath;
+                }
+                resourceLists.Add(new PropagateResource(rawResource.Name, currentFilePaths));
+            }
+            // The resource property is not an array.
+            catch (System.InvalidCastException) { ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name); }
+            // If the list element is a json list or object
+            catch (System.ArgumentException) { ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name); }
+
+        }
+        return resourceLists;      
     }
 
     static void Main(string[] args)
@@ -198,6 +244,7 @@ class EternalModConfiguration
         try
         {
             ParsedConfig config = readConfig(configPath);
+            System.Console.WriteLine(config.ToString());
             config.buildMod(sourcePath, sourceIsZip, outputPath, outputToZip);
         }
         // Any unexpected errors that arise from the building process will be caught here
