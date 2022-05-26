@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using System.IO.Compression;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using static System.StringComparison;
@@ -17,7 +18,7 @@ class EternalModConfiguration
         List<PropagateResource> resources = new List<PropagateResource>();
 
         // The Json file when initially read into a JObject
-        JObject rawJson;
+        JObject rawJson = new JObject();
 
         // The individual option we're currently iterating through
         JObject currentOption = new JObject();
@@ -36,113 +37,98 @@ class EternalModConfiguration
         string currentFilePath = "",
         // The current filepath's file extension
                currentFileExtension = "";
+
         try
         {
-            if (configFilePath.LastIndexOf(CONFIG_FILE_EXTENSION, CurrentCultureIgnoreCase) != configFilePath.Length - CONFIG_FILE_EXTENSION.Length)
-                ProcessErrorCode(BAD_CONFIG_EXTENSION, configFilePath);
-            using (StreamReader fileReader = new StreamReader(configFilePath))
-            {
-                rawJson = JObject.Parse(fileReader.ReadToEnd());
-
-                foreach (JProperty currentRawOption in rawJson.Properties())
-                {
-                    // Convert to uppercase to allow case-insensitivity
-                    currentName = currentRawOption.Name.ToUpper();
-
-                    // Validate that the name meets rules for allowed characters
-                    if (currentName.Length == 0)
-                        goto CATCH_BAD_NAME;
-                    for (int i = 0; i < currentName.Length; i++)
-                        if (!Char.IsAscii(currentName[i]) || (!Char.IsLetterOrDigit(currentName[i]) && !NAME_SPECIAL_CHARACTERS.Contains(currentName[i])))
-                            goto CATCH_BAD_NAME;
-
-                    // Check for duplicate names
-                    // This won't identify exact duplicates, only duplicates with variations in capitalization
-                    // (Newtonsoft seems to filter out exact-duplicate properties, using the final one defined)
-                    for (int i = 0; i < options.Count; i++)
-                        if (options[i].name.Equals(currentName))
-                            ProcessErrorCode(DUPLICATE_NAME, currentName);
-
-                    // Convert the raw option from JProperty to JObject
-                    try { currentOption = (JObject)currentRawOption.Value; }
-                    catch (System.InvalidCastException) { ProcessErrorCode(OPTION_ISNT_OBJECT, currentName); }
-
-                    // Check for any special properties (propagate)
-                    // TODO - Throw error if propagate was already defined using boolean value
-                    if (currentName.Equals(PROPAGATE_PROPERTY))
-                    {
-                        resources = readPropagateData(currentOption);
-                        continue;
-                    }
-
-                    // Read the Option's value and create an Option object for it
-                    try
-                    {
-                        currentVariableValue = (string?)currentOption[PROPERTY_VALUE];
-                        // If the property is defined as null, undefined, or absent entirely
-                        if (currentVariableValue == null)
-                            goto CATCH_BAD_OPTION_VALUE;
-                        options.Add(new Option(currentName, currentVariableValue));
-                    }
-                    // If the property is a json list or object - cannot cast these to string
-                    catch (System.ArgumentException) { goto CATCH_BAD_OPTION_VALUE; };
-
-
-                    // Process the Option's Locations array, checking if it's null or invalid
-                    try
-                    {
-                        currentLocations = (JArray?)currentOption[PROPERTY_LOCATIONS];
-                        if (currentLocations == null)
-                        {
-                            hasMissingLocations = true;
-                            currentLocations = new JArray();
-                        }
-
-                        // Process each filepath in Locations, checking if it's parseable as a Json string,
-                        // and eliminating duplicate filepaths
-                        for (int i = 0, j = 0; i < currentLocations.Count; i++)
-                        {
-                            // This is just to fix a null warning in the ErrorCode calls
-                            nullCurrentFilePath = (string?)currentLocations[i];
-                            if (nullCurrentFilePath == null)
-                                goto CATCH_LOCATIONS_NOT_STRING_ARRAY;
-                            currentFilePath = nullCurrentFilePath;
-
-                            // Check if the file extension is valid
-                            // This appears to be out-of-bounds-safe
-                            j = currentFilePath.LastIndexOf('.') + 1;
-                            currentFileExtension = currentFilePath.Substring(j, currentFilePath.Length - j);
-                            if (!SUPPORTED_FILETYPES.Contains(currentFileExtension))
-                                ProcessErrorCode(UNSUPPORTED_FILETYPE, currentName, currentFilePath);
-                            // Check if this filePath has already been identified as having labels.
-                            else if (!filesToCheck.Contains(currentFilePath))
-                                filesToCheck.Add(currentFilePath);
-                        }
-                    }
-                    // Locations is not defined as an array
-                    catch (System.InvalidCastException) { goto CATCH_LOCATIONS_NOT_STRING_ARRAY; }
-                    // If the list element is a json list or object
-                    catch (System.ArgumentException) { goto CATCH_LOCATIONS_NOT_STRING_ARRAY; }
-                }
-            }
-            return new ParsedConfig(filesToCheck, options, resources, hasMissingLocations);
+            StreamReader fileReader = new StreamReader(configFilePath);
+            // Allows for detection of exact duplicates.
+            rawJson = JObject.Parse(fileReader.ReadToEnd(), new JsonLoadSettings() { DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error });
+            fileReader.Close();
         }
-        catch (System.IO.DirectoryNotFoundException)
-        { ProcessErrorCode(CONFIG_DIRECTORY_NOT_FOUND, configFilePath); }
-        catch (FileNotFoundException)
-        { ProcessErrorCode(CONFIG_NOT_FOUND, configFilePath); }
         catch (Newtonsoft.Json.JsonReaderException e)
         { ProcessErrorCode(BAD_JSON_FILE, e.Message); }
-        // If the same error code might be used in multiple lines, it will be called here 
-        CATCH_BAD_NAME:
-          ProcessErrorCode(BAD_NAME_FORMATTING, currentName);
-        CATCH_BAD_OPTION_VALUE:
-          ProcessErrorCode(BAD_OPTION_VALUE, currentName);
-        CATCH_LOCATIONS_NOT_STRING_ARRAY:
-          ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName);      
 
-        // Return empty ParsedConfig to prevent warnings. This line won't ever be executed.
-        return new ParsedConfig(new List<string>() { }, new List<Option>() { }, new List<PropagateResource>(), false);
+        foreach (JProperty currentRawOption in rawJson.Properties())
+        {
+            // Validate that the name meets rules for allowed characters
+            currentName = currentRawOption.Name;
+            if (currentName.Length == 0)
+                ProcessErrorCode(BAD_NAME_FORMATTING, currentName);
+            for (int i = 0; i < currentName.Length; i++)
+                if( !(currentName[i] <= 'z' && currentName[i] >= 'a') && !(currentName[i] <= 'Z' && currentName[i] >= 'A') 
+                    && !(currentName[i] <= '9' && currentName[i] >= '0') && !NAME_SPECIAL_CHARACTERS.Contains(currentName[i]))
+                    ProcessErrorCode(BAD_NAME_FORMATTING, currentName);
+
+            // Check for duplicate names with variations in capitalization
+            for (int i = 0; i < options.Count; i++)
+                if (options[i].name.Equals(currentName, CurrentCultureIgnoreCase))
+                    ProcessErrorCode(DUPLICATE_NAME, currentName);
+
+            // Convert the raw option from JProperty to JObject
+            try { currentOption = (JObject)currentRawOption.Value; }
+            catch (System.InvalidCastException) { ProcessErrorCode(OPTION_ISNT_OBJECT, currentName); }
+
+            // Check for any special properties (propagate)
+            // The above code protects against duplicate special properties,
+            // and ensures the special properties are Json objects.
+            if (currentName.Equals(PROPAGATE_PROPERTY, CurrentCultureIgnoreCase))
+            {
+                resources = readPropagateData(currentOption);
+                continue;
+            }
+
+            // Read the Option's value and create an Option object for it
+            try
+            {
+                currentVariableValue = (string?)currentOption[PROPERTY_VALUE];
+                // If the property is defined as null, undefined, or absent entirely
+                if (currentVariableValue == null)
+                    ProcessErrorCode(BAD_OPTION_VALUE, currentName);
+                else
+                    options.Add(new Option(currentName, currentVariableValue));
+            }
+            // If the property is a json list or object - cannot cast these to string
+            catch (System.ArgumentException) { ProcessErrorCode(BAD_OPTION_VALUE, currentName); };
+
+
+            // Process the Option's Locations array, checking if it's null or invalid
+            try
+            {
+                currentLocations = (JArray?)currentOption[PROPERTY_LOCATIONS];
+                if (currentLocations == null)
+                {
+                    hasMissingLocations = true;
+                    currentLocations = new JArray();
+                }
+
+                // Process each filepath in Locations, checking if it's parseable as a Json string,
+                // and eliminating duplicate filepaths
+                for (int i = 0, j = 0; i < currentLocations.Count; i++)
+                {
+                    // This is just to fix a null warning in the ErrorCode calls
+                    nullCurrentFilePath = (string?)currentLocations[i];
+                    if (nullCurrentFilePath == null)
+                        ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName);
+                    else
+                        currentFilePath = nullCurrentFilePath;
+
+                    // Check if the file extension is valid
+                    // This appears to be out-of-bounds-safe
+                    j = currentFilePath.LastIndexOf('.') + 1;
+                    currentFileExtension = currentFilePath.Substring(j, currentFilePath.Length - j);
+                    if (!SUPPORTED_FILETYPES.Contains(currentFileExtension))
+                        ProcessErrorCode(UNSUPPORTED_FILETYPE, currentName, currentFilePath);
+                    // Check if this filePath has already been identified as having labels.
+                    else if (!filesToCheck.Contains(currentFilePath))
+                        filesToCheck.Add(currentFilePath);
+                }
+            }
+            // Locations is not defined as an array
+            catch (System.InvalidCastException) { ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName); }
+            // If the list element is a json list or object
+            catch (System.ArgumentException) { ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName); }
+        }
+        return new ParsedConfig(filesToCheck, options, resources, hasMissingLocations);
     }
 
     static List<PropagateResource> readPropagateData(JObject propagateData)
@@ -186,17 +172,23 @@ class EternalModConfiguration
 
     static void Main(string[] args)
     {
+        // The temporary directory is not removed when the program terminates due to errors.
+        // This leads to future executions failing because you can't unzip to an already-existing directory.
+        if (Directory.Exists(TEMPORARY_DIRECTORY))
+            Directory.Delete(TEMPORARY_DIRECTORY, true);
+        
+        /*******************************
+         * READ COMMAND-LINE ARGUMENTS *
+         *******************************/
         string configPath = "", sourcePath = "", outputPath = "";
-        bool hasConfig = false, hasSource = false, hasOutput = false, 
-             sourceIsZip = false, outputToZip = false;
-        int i = 0;
+        bool hasConfig = false, hasSource = false, hasOutput = false;
         
         if(args.Length != EXPECTED_ARG_COUNT)
             ProcessErrorCode(BAD_NUMBER_ARGUMENTS, args.Length.ToString());
         
         // Read in each pair of arguments
         // Validates that the same parameter hasn't been entered multiple times.
-        for(i = 0; i < args.Length; i += 2)
+        for(int i = 0; i < args.Length; i += 2)
         {
             switch(args[i].ToLower())
             {
@@ -231,16 +223,68 @@ class EternalModConfiguration
                     break;
 
                 default:
-                    goto CATCH_INVALID_ARGUMENT;
+                    CATCH_INVALID_ARGUMENT:
+                    ProcessErrorCode(BAD_ARGUMENT, (i + 1).ToString());
+                    break;
             }
         }
-        
-        // Check whether the input and outputs are zip files or directories
-        if(sourcePath.LastIndexOf(".zip", CurrentCultureIgnoreCase) == sourcePath.Length - 4)
-            sourceIsZip = true;
-        if(outputPath.LastIndexOf(".zip", CurrentCultureIgnoreCase) == outputPath.Length - 4)
-            outputToZip = true;
-        
+
+        /***************************************************
+         * VALIDATE FILEPATH ARGUMENT TYPES AND EXISTENCES *
+         ***************************************************/
+        /*
+        * First validate that the config file has the proper extension, and that it exists.
+        */
+        if(!hasExtension(configPath, CONFIG_FILE_EXTENSION))
+            ProcessErrorCode(BAD_CONFIG_EXTENSION, configPath);
+        if(!File.Exists(configPath))
+            ProcessErrorCode(CONFIG_NOT_FOUND, configPath);
+
+        /*
+        * Next validate whether the source is a valid zip file or directory, and if it exists.
+        * Detects edge cases (such as a directory ending in .zip, or other file types ending in .zip)
+        */
+        bool sourceIsZip = false;
+        // The source is a file
+        if(File.Exists(sourcePath))
+        {
+            // Does it have a .zip extension
+            if(hasExtension(sourcePath, ".zip"))
+                // Is it an actual, valid zip file or some other file disguised as a zip file.
+                // This level of error checking is likely completely unnecessary to implement, but whatever.
+                try { using (ZipArchive z = ZipFile.OpenRead(sourcePath))
+                {
+                    System.Collections.ObjectModel.ReadOnlyCollection<ZipArchiveEntry> entries = z.Entries;
+                    sourceIsZip = true;
+                }}
+                catch (InvalidDataException) {ProcessErrorCode(MOD_NOT_VALID, sourcePath);}
+                catch(Exception e){ProcessErrorCode(UNKNOWN_ERROR, e.ToString());}
+            else
+                ProcessErrorCode(MOD_NOT_VALID, sourcePath);
+        }
+        // Source does not exist as a directory either
+        else if(!Directory.Exists(sourcePath))
+            ProcessErrorCode(MOD_NOT_FOUND, sourcePath);
+
+        /*
+        * Finally, determine whether the output is a valid zip file or directory
+        */
+        bool outputToZip = hasExtension(outputPath, ".zip");
+        // Any pre-existing file at the output location will throw an error
+        if(File.Exists(outputPath))
+            ProcessErrorCode(OUTPUT_PREEXISTING_FILE, outputPath);
+        // A non-empty directory at the output location will throw an error
+        else if(Directory.Exists(outputPath))
+            try
+            {
+                if(Directory.EnumerateFileSystemEntries(outputPath).Any())
+                    ProcessErrorCode(OUTPUT_NONEMPTY_DIRECTORY, outputPath);
+            }
+            catch(Exception e) {ProcessErrorCode(UNKNOWN_ERROR, e.ToString());}
+
+        /*************
+         * BUILD MOD *
+         *************/
         try
         {
             ParsedConfig config = readConfig(configPath);
@@ -251,11 +295,15 @@ class EternalModConfiguration
         catch (Exception e) 
         {ProcessErrorCode(UNKNOWN_ERROR, e.ToString());}
 
-        // Report successful execution
         System.Console.WriteLine(MESSAGE_SUCCESS);
-        return;
-        
-        CATCH_INVALID_ARGUMENT:
-        ProcessErrorCode(BAD_ARGUMENT,(i + 1).ToString());
+    }
+
+    static bool hasExtension(string filePath, string extension)
+    {
+        int extensionIndex = filePath.LastIndexOf(extension, CurrentCultureIgnoreCase);
+        if(extensionIndex > -1)
+            if(extensionIndex == filePath.Length - extension.Length)
+                return true;
+        return false;
     }
 }

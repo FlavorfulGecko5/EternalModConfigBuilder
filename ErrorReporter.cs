@@ -5,7 +5,7 @@ class ErrorReporter
     public static void ProcessErrorCode(ErrorCode error, string arg0 = "", string arg1 = "", string arg2 = "", string arg3 = "")
     {
         bool terminateProgram = true;
-        string formattedString = "ERROR: ";
+        string formattedString = "";
         switch (error)
         {
             // Anything not handled below
@@ -14,21 +14,30 @@ class ErrorReporter
                 break;
             // Command-line argument errors
             case BAD_NUMBER_ARGUMENTS:
-                formattedString += "Invalid number of command line arguments. (Expected " + EXPECTED_ARG_COUNT + ", received " + arg0 + ")\n" + RULES_EXPECTED_USAGE;
+                formattedString += "Invalid number of command line arguments. (Expected " + EXPECTED_ARG_COUNT + ", received " + arg0 + ")\n\n" + RULES_EXPECTED_USAGE;
                 break;
             case BAD_ARGUMENT:
-                formattedString += "Command line argument #" + arg0 + " is invalid.\n" + RULES_EXPECTED_USAGE;
+                formattedString += "Command line argument #" + arg0 + " is invalid.\n\n" + RULES_EXPECTED_USAGE;
                 break;
-            // Config. file parsing errors
             case BAD_CONFIG_EXTENSION:
-                formattedString += "The configuration file " + arg0 + " must be a " + CONFIG_FILE_EXTENSION + " file.";
-                break;
-            case CONFIG_DIRECTORY_NOT_FOUND:
-                formattedString += "The configuration file is in a non-existant directory: " + arg0;
+                formattedString += "The configuration file '" + arg0 + "' must be a " + CONFIG_FILE_EXTENSION + " file.";
                 break;
             case CONFIG_NOT_FOUND:
-                formattedString += "Failed to find the configuration file in the specified directory: " + arg0;
+                formattedString += "Failed to find the configuration file '" + arg0 + "'";
                 break;
+            case MOD_NOT_FOUND:
+                formattedString += "The mod directory or .zip file '" + arg0 + "' does not exist.";
+                break;
+            case MOD_NOT_VALID:
+                formattedString += "The mod location '" + arg0 + "' is not recognized as a valid directory or .zip file.";
+                break;
+            case OUTPUT_PREEXISTING_FILE:
+                formattedString += "There is a pre-existing file at your output location " + arg0 + "\n\n" + RULES_OUTPUT_LOCATION;
+                break;
+            case OUTPUT_NONEMPTY_DIRECTORY:
+                formattedString += "There is a pre-existing, non-empty directory at your output location " + arg0 + "\n\n" + RULES_OUTPUT_LOCATION;
+                break;
+            // Config. file parsing errors
             case BAD_JSON_FILE:
                 formattedString += "The configuration file has a syntax error, printing Exception message:\n" + arg0;
                 break;
@@ -61,9 +70,6 @@ class ErrorReporter
                     + "sub-property '" + arg0 + "'\n" + RULES_PROPAGATE_PROPERTY;
                 break;
             // Mod building errors
-            case MOD_DIRECTORY_NOT_FOUND:
-                formattedString += "The mod directory " + arg0 + " does not exist.";
-                break;
             case MOD_FILE_NOT_FOUND:
                 formattedString += "The file " + arg0 + " was specified in the configuration file but does not actually exist in the mod."
                     + " This filepath will be ignored.";
@@ -102,14 +108,15 @@ class ErrorReporter
                     + "correctly by a toggle label.\n" + "Expression Result: \"" + arg2 + "\"\n" + RULES_TOGGLE_EXP_RESULT;
                 break;
         }
-        System.Console.WriteLine(formattedString);
         
         if(terminateProgram)
         {
-            System.Console.WriteLine(MESSAGE_FAILURE);
+            System.Console.WriteLine(MESSAGE_ERROR + formattedString);
+            System.Console.WriteLine("\n" + MESSAGE_FAILURE);
             Environment.Exit(1);
         }
-            
+        else
+            System.Console.WriteLine(MESSAGE_WARNING + formattedString);
     }
 }
 
@@ -120,10 +127,13 @@ enum ErrorCode
     // Command-line argument errors
     BAD_NUMBER_ARGUMENTS,
     BAD_ARGUMENT,
-    // Config. file parsing errors
     BAD_CONFIG_EXTENSION,
-    CONFIG_DIRECTORY_NOT_FOUND,
     CONFIG_NOT_FOUND,
+    MOD_NOT_FOUND,
+    MOD_NOT_VALID,
+    OUTPUT_PREEXISTING_FILE,
+    OUTPUT_NONEMPTY_DIRECTORY,
+    // Config. file parsing errors
     BAD_JSON_FILE,
     BAD_NAME_FORMATTING,
     DUPLICATE_NAME,
@@ -134,7 +144,6 @@ enum ErrorCode
     // Propagation Errors
     BAD_PROPAGATION_ARRAY,
     // Mod Building Errors
-    MOD_DIRECTORY_NOT_FOUND,
     MOD_FILE_NOT_FOUND,
     INCOMPLETE_LABEL,
     MISSING_EXP_SEPARATOR,

@@ -11,7 +11,7 @@ class Constants
     public static readonly List<string> SUPPORTED_FILETYPES = new List<string>() { "decl", "json" };
 
     // Constants pertaining to directories
-    public const string TEMPORARY_DIRECTORY = "TEMP_DIRECTORY_ETERNAL_MOD_CONFIG_BUILDER";
+    public const string TEMPORARY_DIRECTORY = "eternalmodbuilder_temp";
     
     // Constants pertaining to option names
     public const string NAME_SPECIAL_CHARACTERS = "_";
@@ -32,10 +32,13 @@ class Constants
     public const string LABEL_END_TOGGLEABLE     = LABEL_ANY_TOGGLEABLE + "END_" + LABEL_BORDER_VALUE;
 
     // Constants pertaining to file propagation
-    public const string PROPAGATE_PROPERTY  = "PROPAGATE";
+    public const string PROPAGATE_PROPERTY  = "Propagate";
     public const string PROPAGATE_DIRECTORY = "propagate";
 
-    // Constants pertaining to program termination
+    // Constants pertaining to program termination and error messages
+    public const string MESSAGE_ERROR   = EXECUTABLE_NAME + " ERROR: ";
+    public const string MESSAGE_WARNING = EXECUTABLE_NAME + " WARNING: ";
+
     public const string MESSAGE_SUCCESS = "Your mod has been successfully built from the configuration file.\n"
         + "Please remember that this program cannot catch every conceivable typo made when inserting labels into your mod files.\n"
         + "If your game crashes after injecting the mod, please double-check your mod files for errors.";
@@ -45,8 +48,13 @@ class Constants
     // Rules
     public const string RULES_EXPECTED_USAGE = "Usage: ./"  + EXECUTABLE_NAME + ".exe -c [" + CONFIG_FILE_EXTENSION
         + " config file] -s [mod directory or zip file] -o [output directory or zip file]\n"
-        + "WARNING - IF THE OUTPUT DIRECTORY ALREADY EXISTS, ANY FILES INSIDE OF IT MAY BE OVERWRITTEN.\n"
-        + "IF YOU OUTPUT A ZIP FILE, IT WILL OVERWRITE ANY ZIP FILE THAT ALREADY EXISTS WITH THAT NAME.";
+        + "WARNING - IF THE OUTPUT DIRECTORY ALREADY EXISTS, IT MUST BE EMPTY UNLESS USING '" + TEMPORARY_DIRECTORY + "'.\n"
+        + "IF YOU OUTPUT A ZIP FILE, THERE MUST BE NO OTHER FILE THAT EXISTS WITH THE SAME NAME AND PATHWAY.";
+
+    public const string RULES_OUTPUT_LOCATION = "For data security and safety purposes, your output location must obey the following rules:\n" 
+        + "- If outputting to a directory, it must be empty or non-existant, unless you use '" + TEMPORARY_DIRECTORY
+        + "' as your output directory. This directory will ALWAYS be deleted if it is detected at the start of program execution.\n"
+        + "- There must be no pre-existing file at the output location. This program will not delete pre-existing files.";
 
     public const string RULES_OPTION_NAME_CHARACTERS = "Option names cannot be empty, and may only contain the following characters:\n"
         + "- Letters (a-z, A-Z)\n"
