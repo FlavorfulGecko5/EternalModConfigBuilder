@@ -59,6 +59,10 @@ class ErrorReporter
                 formattedString += "The Option '" + arg0 + "' has it's '" + PROPERTY_LOCATIONS 
                     + "' property incorrectly defined in the configuration file.\n\n" + RULES_PROPERTY_LOCATIONS;
                 break;
+            case ROOTED_LOCATIONS_FILE:
+                formattedString += "The Option '" + arg0 + "' has a non-relative filepath '" + arg1 + "' inside it's '"
+                    + PROPERTY_LOCATIONS + "' property. All listed filepaths MUST be relative.";
+                break;
             case UNSUPPORTED_FILETYPE:
                 formattedString += "The Option '" + arg0 + "' has an invalid or unsupported file '" + arg1
                     + "' in it's '" + PROPERTY_LOCATIONS + "' list. This file will not be checked. " + RULES_SUPPORTED_FILETYPES;
@@ -73,6 +77,14 @@ class ErrorReporter
             case BAD_PROPAGATION_ARRAY:
                 formattedString += "The special '" + PROPAGATE_PROPERTY + "' property in the configuration file has an incorrectly defined "
                     + "sub-property '" + arg0 + "'\n\n" + RULES_PROPAGATE_PROPERTY;
+                break;
+            case ROOTED_PROPAGATION_DIRECTORY:
+                formattedString += "The '" + PROPAGATE_PROPERTY + "' property in the configuration file has a sub-property named '" + arg0
+                    + "', which is a non-relative filepath. These sub-properties MUST have relative filepaths as their names.";
+                break;
+            case ROOTED_PROPAGATION_FILE:
+                formattedString += "The '" + PROPAGATE_PROPERTY + "' property in the configuration file has a list '" + arg0 + "' with filepath '"
+                    + arg1 + "'. This filepath is non-relative, when all listed filepaths MUST be relative.";
                 break;
             // Mod building errors
             case LOCATIONS_FILE_NOT_FOUND:
@@ -145,10 +157,13 @@ enum ErrorCode
     OPTION_ISNT_OBJECT,
     BAD_OPTION_VALUE,
     LOCATIONS_ISNT_STRING_ARRAY,
+    ROOTED_LOCATIONS_FILE,
     UNSUPPORTED_FILETYPE,
     MISSING_LOCATIONS_ARRAY,
     // Propagation Errors
     BAD_PROPAGATION_ARRAY,
+    ROOTED_PROPAGATION_DIRECTORY,
+    ROOTED_PROPAGATION_FILE,
     // Mod Building Errors
     LOCATIONS_FILE_NOT_FOUND,
     INCOMPLETE_LABEL,

@@ -24,11 +24,11 @@ class Util
         return false;
     }
 
-    // Reads a Json list that is assumed can be parsed into an array of strings.
+    // Reads a Json list that is assumed can be parsed into an array of relative filepath strings.
     // Possible return values:
     // 1. null - if the Json property is missing entirely, undefined or equals null
     // 2. A list of strings if the Json property is a list, and all of it's elements are strings.
-    public static string[]? readJsonStringList(JToken? inputProperty, ErrorCode terminateOnFail, string arg0 = "")
+    public static string[]? readRelativePathJsonStringList(JToken? inputProperty, ErrorCode onFailure, ErrorCode onRootedPath, string arg0 = "")
     {
         string[]? list = null;
         try
@@ -41,17 +41,21 @@ class Util
             
             for(int i = 0; i < rawData.Count; i++)
             {
-                string? nullCurrentElement = (string?)rawData[i];
-                if(nullCurrentElement == null)
-                    ProcessErrorCode(terminateOnFail, arg0);
+                string? currentElement = (string?)rawData[i];
+                if(currentElement == null)
+                    ProcessErrorCode(onRootedPath, arg0);
                 else
-                    list[i] = nullCurrentElement;
+                {
+                    if(Path.IsPathRooted(currentElement))
+                        ProcessErrorCode(onRootedPath, arg0, currentElement);
+                    list[i] = currentElement;
+                }      
             }
         }
         // The property is not defined as an array
-        catch (System.InvalidCastException) { ProcessErrorCode(terminateOnFail, arg0); }
+        catch (System.InvalidCastException) { ProcessErrorCode(onRootedPath, arg0); }
         // A list's element is a Json list or object
-        catch (System.ArgumentException) { ProcessErrorCode(terminateOnFail, arg0); }
+        catch (System.ArgumentException) { ProcessErrorCode(onRootedPath, arg0); }
         return list;
     }
 

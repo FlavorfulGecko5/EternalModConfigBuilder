@@ -72,7 +72,7 @@ class Constants
     public const string RULES_PROPERTY_LOCATIONS = "An Option's '" + PROPERTY_LOCATIONS + "' array must obey the following rules:\n"
         + "- A Json list is the only acceptable way to define this property.\n"
         + "- Each entry in the list should be a string, or errors will result when parsing it.\n"
-        + "- Each string should represent a filepath to a supported filetype, starting from the .resources file.\n"
+        + "- Each string should represent a relative filepath to a supported file, starting from inside your mod folder.\n"
             + "   Example: gameresources_patch1/path/to/a/file.decl\n"
         + "- The list may be empty.\n"
         + "- If at least one Option's '" + PROPERTY_LOCATIONS + "' property is missing, then every file of all "
@@ -81,9 +81,9 @@ class Constants
     
     public const string RULES_PROPAGATE_PROPERTY = "Configuration files may have a '" + PROPAGATE_PROPERTY + "' property that must defined in a special way:\n"
         + "- This property must be a Json object.\n"
-        + "- Each sub-property should be a directory in a valid DOOM Eternal .resource file, such as 'gameresources_patch1' or 'warehouse/generated/decls'.\n"
+        + "- Each sub-property should be a relative directory in a valid DOOM Eternal .resource file, such as 'gameresources_patch1' or 'warehouse/generated/decls'.\n"
         + "- Each sub-property must be defined as a list of strings.\n" 
-        + "- These strings must be paths to files inside your unbuilt mod's '" + PROPAGATE_DIRECTORY + "' folder.\n"
+        + "- These strings must be relative paths to files inside your unbuilt mod's '" + PROPAGATE_DIRECTORY + "' folder.\n"
         + "When your mod is built, files listed in the sub-property arrays will be copied to the resource file the array belongs to.";
 
     public const string RULES_SUPPORTED_FILETYPES = "This application only supports injecting configuration data into .decl and .json files.";

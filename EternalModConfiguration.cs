@@ -49,17 +49,17 @@ class EternalModConfiguration
             try { currentOption = (JObject)currentRawOption.Value; }
             catch (System.InvalidCastException) { ProcessErrorCode(OPTION_ISNT_OBJECT, currentName); }
 
-            // Check for any special properties (propagate)
-            // The above code ensures the special properties are Json objects.
+            // Check for any special properties (propagate) - above code ensures they're objects
             if (currentName.Equals(PROPAGATE_PROPERTY, CurrentCultureIgnoreCase))
             {
-                // Technically not an option, hence needing to specially check for duplicates
-                if(hasPropagateProperty)
+                if(hasPropagateProperty)  // Technically not an option, hence needing to specially check for duplicates
                     ProcessErrorCode(DUPLICATE_NAME, currentName);
                 hasPropagateProperty = true;
                 foreach (JProperty rawResource in currentOption.Properties())
                 {
-                    string[]? filePaths = readJsonStringList(currentOption[rawResource.Name], BAD_PROPAGATION_ARRAY, rawResource.Name);
+                    if(Path.IsPathRooted(rawResource.Name))
+                        ProcessErrorCode(ROOTED_PROPAGATION_DIRECTORY, rawResource.Name);
+                    string[]? filePaths = readRelativePathJsonStringList(currentOption[rawResource.Name], BAD_PROPAGATION_ARRAY, ROOTED_PROPAGATION_FILE, rawResource.Name);
                     if (filePaths == null)
                         ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name);
                     else
@@ -82,7 +82,7 @@ class EternalModConfiguration
             catch (System.ArgumentException) { ProcessErrorCode(BAD_OPTION_VALUE, currentName); };
 
             // Process the Option's Locations array, checking if it's null or invalid
-            string []? currentLocations = readJsonStringList(currentOption[PROPERTY_LOCATIONS], LOCATIONS_ISNT_STRING_ARRAY, currentName);
+            string []? currentLocations = readRelativePathJsonStringList(currentOption[PROPERTY_LOCATIONS], LOCATIONS_ISNT_STRING_ARRAY, ROOTED_LOCATIONS_FILE, currentName);
             if (currentLocations == null)
             {
                 hasMissingLocations = true;
