@@ -42,35 +42,40 @@ class ErrorReporter
                 formattedString += "The configuration file has a syntax error, printing Exception message:\n" + arg0;
                 break;
             case BAD_NAME_FORMATTING:
-                formattedString += "The Option name '" + arg0 + "' is invalid.\n" + RULES_OPTION_NAME_CHARACTERS;
+                formattedString += "The Option name '" + arg0 + "' is invalid.\n\n" + RULES_OPTION_NAME_CHARACTERS;
                 break;
             case DUPLICATE_NAME:
-                formattedString += "The name " + arg0 + " is used multiple times in the configuration file."
+                formattedString += "The name '" + arg0 + "' is used multiple times in the configuration file."
                     + " A name may only be used to define one Option.";
                 break;
             case OPTION_ISNT_OBJECT:
-                formattedString += "The Option " + arg0 + " is not defined as a Json object in the configuration file.";
+                formattedString += "The Option '" + arg0 + "' is not defined as a Json object in the configuration file.";
                 break;
             case BAD_OPTION_VALUE:
-                formattedString += "The Option " + arg0 + " has it's required '" + PROPERTY_VALUE 
-                    + "' property incorrectly defined, or missing entirely in the configuration file.\n" + RULES_OPTION_VALUE;
+                formattedString += "The Option '" + arg0 + "' has it's required '" + PROPERTY_VALUE 
+                    + "' property incorrectly defined, or missing entirely in the configuration file.\n\n" + RULES_OPTION_VALUE;
                 break;
             case LOCATIONS_ISNT_STRING_ARRAY:
-                formattedString += "The Option " + arg0 + " has it's '" + PROPERTY_LOCATIONS 
-                    + "' property incorrectly defined in the configuration file.\n" + RULES_PROPERTY_LOCATIONS;
+                formattedString += "The Option '" + arg0 + "' has it's '" + PROPERTY_LOCATIONS 
+                    + "' property incorrectly defined in the configuration file.\n\n" + RULES_PROPERTY_LOCATIONS;
                 break;
             case UNSUPPORTED_FILETYPE:
-                formattedString += "The Option " + arg0 + " has an invalid or unsupported file '" + arg1
-                    + "' in it's '" + PROPERTY_LOCATIONS + "' list. This file will not be checked.\n" + RULES_SUPPORTED_FILETYPES;
+                formattedString += "The Option '" + arg0 + "' has an invalid or unsupported file '" + arg1
+                    + "' in it's '" + PROPERTY_LOCATIONS + "' list. This file will not be checked. " + RULES_SUPPORTED_FILETYPES;
+                terminateProgram = false;
+                break;
+            case MISSING_LOCATIONS_ARRAY:
+                formattedString += "One of more of your configuration file's Options is missing it's '" + PROPERTY_LOCATIONS + "' property."
+                    + " ALL of your mod's supported files will be checked for labels.";
                 terminateProgram = false;
                 break;
             // Propagation Errors
             case BAD_PROPAGATION_ARRAY:
                 formattedString += "The special '" + PROPAGATE_PROPERTY + "' property in the configuration file has an incorrectly defined "
-                    + "sub-property '" + arg0 + "'\n" + RULES_PROPAGATE_PROPERTY;
+                    + "sub-property '" + arg0 + "'\n\n" + RULES_PROPAGATE_PROPERTY;
                 break;
             // Mod building errors
-            case MOD_FILE_NOT_FOUND:
+            case LOCATIONS_FILE_NOT_FOUND:
                 formattedString += "The file " + arg0 + " was specified in the configuration file but does not actually exist in the mod."
                     + " This filepath will be ignored.";
                 terminateProgram = false;
@@ -141,10 +146,11 @@ enum ErrorCode
     BAD_OPTION_VALUE,
     LOCATIONS_ISNT_STRING_ARRAY,
     UNSUPPORTED_FILETYPE,
+    MISSING_LOCATIONS_ARRAY,
     // Propagation Errors
     BAD_PROPAGATION_ARRAY,
     // Mod Building Errors
-    MOD_FILE_NOT_FOUND,
+    LOCATIONS_FILE_NOT_FOUND,
     INCOMPLETE_LABEL,
     MISSING_EXP_SEPARATOR,
     UNRECOGNIZED_TYPE,

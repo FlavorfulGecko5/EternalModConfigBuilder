@@ -8,7 +8,7 @@ class Constants
     
     // Constants pertaining to file extensions.
     public const string CONFIG_FILE_EXTENSION = ".txt";
-    public static readonly List<string> SUPPORTED_FILETYPES = new List<string>() { "decl", "json" };
+    public static readonly string[] SUPPORTED_FILETYPES = new string[] { ".decl", ".json" };
 
     // Constants pertaining to directories
     public const string TEMPORARY_DIRECTORY = "eternalmodbuilder_temp";
@@ -75,7 +75,7 @@ class Constants
         + "- Each string should represent a filepath to a supported filetype, starting from the .resources file.\n"
             + "   Example: gameresources_patch1/path/to/a/file.decl\n"
         + "- The list may be empty.\n"
-        + "- If at least one '" + PROPERTY_LOCATIONS + "' list is null, undefined, or missing entirely, then every file of all "
+        + "- If at least one Option's '" + PROPERTY_LOCATIONS + "' property is missing, then every file of all "
             + "supported filetypes in your mod will be checked for labels, which may have a noticeable effect on build time " 
             + "if your mod has lots of files that don't need to be configured.";
     
@@ -86,8 +86,7 @@ class Constants
         + "- These strings must be paths to files inside your unbuilt mod's '" + PROPAGATE_DIRECTORY + "' folder.\n"
         + "When your mod is built, files listed in the sub-property arrays will be copied to the resource file the array belongs to.";
 
-    public const string RULES_SUPPORTED_FILETYPES = "Currently, this application only supports injecting configuration data into files of types:\n"
-        + "- .decl\n- .json";
+    public const string RULES_SUPPORTED_FILETYPES = "This application only supports injecting configuration data into .decl and .json files.";
 
     public const string RULES_LABEL_FORMATTING = "Labels must have the form "
         + LABEL_ANY + "[TYPE]" + LABEL_NAME_EXP_SEPARATOR + "[EXPRESSION]" + LABEL_BORDER_VALUE + " where:\n"

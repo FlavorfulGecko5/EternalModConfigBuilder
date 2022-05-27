@@ -1,43 +1,25 @@
 ﻿using System.IO.Compression;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
 using static System.StringComparison;
 using static Constants;
 using static ErrorCode;
 using static ErrorReporter;
+using static Util;
 class EternalModConfiguration
 {
     static ParsedConfig readConfig(string configFilePath)
     {
-        // The final lists of decl filepaths
-        // and configuration option objects that will
-        // be used to construct the ParsedConfig object
+        // Data structures used to construct the ParsedConfig
         List<string> filesToCheck = new List<string>();
         List<Option> options = new List<Option>();
-        List<PropagateResource> resources = new List<PropagateResource>();
+        List<PropagateList> resources = new List<PropagateList>();
+        bool hasMissingLocations = false,
+             hasPropagateProperty = false;
 
         // The Json file when initially read into a JObject
-        JObject rawJson = new JObject();
-
+        JObject rawJson = new JObject(),
         // The individual option we're currently iterating through
-        JObject currentOption = new JObject();
-        // The current option's name.
-        string  currentName = "";
-        // The current variable option's value
-        string? currentVariableValue = "";
-
-        // The current option's Locations array
-        JArray? currentLocations = new JArray();
-        // Whether a Locations array is undefined or not
-        bool    hasMissingLocations = false;
-        // The current filepath we're iterating through - initially read into here
-        string? nullCurrentFilePath = "";
-        // The current filepath we're iterating through from the Locations array
-        string currentFilePath = "",
-        // The current filepath's file extension
-               currentFileExtension = "";
-
+                currentOption = new JObject();
         try
         {
             StreamReader fileReader = new StreamReader(configFilePath);
@@ -51,17 +33,16 @@ class EternalModConfiguration
         foreach (JProperty currentRawOption in rawJson.Properties())
         {
             // Validate that the name meets rules for allowed characters
-            currentName = currentRawOption.Name;
+            string currentName = currentRawOption.Name;
             if (currentName.Length == 0)
                 ProcessErrorCode(BAD_NAME_FORMATTING, currentName);
-            for (int i = 0; i < currentName.Length; i++)
-                if( !(currentName[i] <= 'z' && currentName[i] >= 'a') && !(currentName[i] <= 'Z' && currentName[i] >= 'A') 
-                    && !(currentName[i] <= '9' && currentName[i] >= '0') && !NAME_SPECIAL_CHARACTERS.Contains(currentName[i]))
+            foreach (char c in currentName)
+                if( !(c <= 'z' && c >= 'a') && !(c <= 'Z' && c >= 'A')  && !(c <= '9' && c >= '0') && !NAME_SPECIAL_CHARACTERS.Contains(c))
                     ProcessErrorCode(BAD_NAME_FORMATTING, currentName);
 
             // Check for duplicate names with variations in capitalization
-            for (int i = 0; i < options.Count; i++)
-                if (options[i].name.Equals(currentName, CurrentCultureIgnoreCase))
+            foreach(Option o in options)
+                if (o.name.Equals(currentName, CurrentCultureIgnoreCase))
                     ProcessErrorCode(DUPLICATE_NAME, currentName);
 
             // Convert the raw option from JProperty to JObject
@@ -69,18 +50,28 @@ class EternalModConfiguration
             catch (System.InvalidCastException) { ProcessErrorCode(OPTION_ISNT_OBJECT, currentName); }
 
             // Check for any special properties (propagate)
-            // The above code protects against duplicate special properties,
-            // and ensures the special properties are Json objects.
+            // The above code ensures the special properties are Json objects.
             if (currentName.Equals(PROPAGATE_PROPERTY, CurrentCultureIgnoreCase))
             {
-                resources = readPropagateData(currentOption);
+                // Technically not an option, hence needing to specially check for duplicates
+                if(hasPropagateProperty)
+                    ProcessErrorCode(DUPLICATE_NAME, currentName);
+                hasPropagateProperty = true;
+                foreach (JProperty rawResource in currentOption.Properties())
+                {
+                    string[]? filePaths = readJsonStringList(currentOption[rawResource.Name], BAD_PROPAGATION_ARRAY, rawResource.Name);
+                    if (filePaths == null)
+                        ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name);
+                    else
+                        resources.Add(new PropagateList(rawResource.Name, filePaths));
+                }
                 continue;
             }
 
             // Read the Option's value and create an Option object for it
             try
             {
-                currentVariableValue = (string?)currentOption[PROPERTY_VALUE];
+                string? currentVariableValue = (string?)currentOption[PROPERTY_VALUE];
                 // If the property is defined as null, undefined, or absent entirely
                 if (currentVariableValue == null)
                     ProcessErrorCode(BAD_OPTION_VALUE, currentName);
@@ -90,84 +81,28 @@ class EternalModConfiguration
             // If the property is a json list or object - cannot cast these to string
             catch (System.ArgumentException) { ProcessErrorCode(BAD_OPTION_VALUE, currentName); };
 
-
             // Process the Option's Locations array, checking if it's null or invalid
-            try
+            string []? currentLocations = readJsonStringList(currentOption[PROPERTY_LOCATIONS], LOCATIONS_ISNT_STRING_ARRAY, currentName);
+            if (currentLocations == null)
             {
-                currentLocations = (JArray?)currentOption[PROPERTY_LOCATIONS];
-                if (currentLocations == null)
-                {
-                    hasMissingLocations = true;
-                    currentLocations = new JArray();
-                }
-
-                // Process each filepath in Locations, checking if it's parseable as a Json string,
-                // and eliminating duplicate filepaths
-                for (int i = 0, j = 0; i < currentLocations.Count; i++)
-                {
-                    // This is just to fix a null warning in the ErrorCode calls
-                    nullCurrentFilePath = (string?)currentLocations[i];
-                    if (nullCurrentFilePath == null)
-                        ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName);
-                    else
-                        currentFilePath = nullCurrentFilePath;
-
-                    // Check if the file extension is valid
-                    // This appears to be out-of-bounds-safe
-                    j = currentFilePath.LastIndexOf('.') + 1;
-                    currentFileExtension = currentFilePath.Substring(j, currentFilePath.Length - j);
-                    if (!SUPPORTED_FILETYPES.Contains(currentFileExtension))
-                        ProcessErrorCode(UNSUPPORTED_FILETYPE, currentName, currentFilePath);
-                    // Check if this filePath has already been identified as having labels.
-                    else if (!filesToCheck.Contains(currentFilePath))
-                        filesToCheck.Add(currentFilePath);
-                }
+                hasMissingLocations = true;
+                currentLocations = new string[0];
             }
-            // Locations is not defined as an array
-            catch (System.InvalidCastException) { ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName); }
-            // If the list element is a json list or object
-            catch (System.ArgumentException) { ProcessErrorCode(LOCATIONS_ISNT_STRING_ARRAY, currentName); }
+            // Process each filepath in Locations, checking if the extension is valid and eliminating duplicate filepaths
+            foreach (string file in currentLocations)
+            {
+                if(hasValidModFileExtension(file))
+                {
+                    if(!filesToCheck.Contains(file))
+                        filesToCheck.Add(file);
+                }
+                else
+                    ProcessErrorCode(UNSUPPORTED_FILETYPE, currentName, file);
+            }
         }
+        if(hasMissingLocations)
+            ProcessErrorCode(MISSING_LOCATIONS_ARRAY);
         return new ParsedConfig(filesToCheck, options, resources, hasMissingLocations);
-    }
-
-    static List<PropagateResource> readPropagateData(JObject propagateData)
-    {
-        List<PropagateResource> resourceLists = new List<PropagateResource>();
-        JArray? currentResource = new JArray();
-        string? nullCurrentFilePath = "";
-        string[] currentFilePaths;
-
-        foreach (JProperty rawResource in propagateData.Properties())
-        {
-            // Check if the current sub-property is an array.
-            try
-            {
-                currentResource = (JArray?)propagateData[rawResource.Name];
-                if (currentResource == null)
-                    currentResource = new JArray();
-
-                // Process each item in the currentResource
-                currentFilePaths = new string[currentResource.Count];
-
-                for (int i = 0; i < currentResource.Count; i++)
-                {
-                    // This is just to fix a null warning in the ErrorCode calls
-                    nullCurrentFilePath = (string?)currentResource[i];
-                    if (nullCurrentFilePath == null)
-                        ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name);
-                    else
-                        currentFilePaths[i] = nullCurrentFilePath;
-                }
-                resourceLists.Add(new PropagateResource(rawResource.Name, currentFilePaths));
-            }
-            // The resource property is not an array.
-            catch (System.InvalidCastException) { ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name); }
-            // If the list element is a json list or object
-            catch (System.ArgumentException) { ProcessErrorCode(BAD_PROPAGATION_ARRAY, rawResource.Name); }
-
-        }
-        return resourceLists;      
     }
 
     static void Main(string[] args)
@@ -296,14 +231,5 @@ class EternalModConfiguration
         {ProcessErrorCode(UNKNOWN_ERROR, e.ToString());}
 
         System.Console.WriteLine(MESSAGE_SUCCESS);
-    }
-
-    static bool hasExtension(string filePath, string extension)
-    {
-        int extensionIndex = filePath.LastIndexOf(extension, CurrentCultureIgnoreCase);
-        if(extensionIndex > -1)
-            if(extensionIndex == filePath.Length - extension.Length)
-                return true;
-        return false;
     }
 }

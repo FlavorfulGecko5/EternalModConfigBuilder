@@ -11,8 +11,6 @@ class Option
 
     public override string ToString()
     {
-        return "Configuration Option\n"
-            + "Name: " + name + "\n"
-            + "Value: " + value;
+        return "Option '" + name + "'\n\tValue: '" + value + "'";
     }
 }

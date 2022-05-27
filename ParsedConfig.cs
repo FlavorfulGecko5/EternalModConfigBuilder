@@ -4,16 +4,17 @@ using static System.StringComparison;
 using static Constants;
 using static ErrorCode;
 using static ErrorReporter;
+using static Util;
 class ParsedConfig
 {
     private bool mustCheckAllFiles;
     private List<string> filePaths { get; }
     private List<Option> configOptions { get; }
-    private List<PropagateResource> propagationLists {get;}
+    private List<PropagateList> propagationLists {get;}
     private DataTable expressionEvaluator;
 
     public ParsedConfig(List<string> filePathsParameter, List<Option> configOptionsParameter, 
-        List<PropagateResource> propagationListsParameter, bool mustCheckAllFilesParameter)
+        List<PropagateList> propagationListsParameter, bool mustCheckAllFilesParameter)
     {
         filePaths = filePathsParameter;
         configOptions = configOptionsParameter;
@@ -24,19 +25,21 @@ class ParsedConfig
 
     public override string ToString()
     {
-        string formattedString = "ParsedConfig Object Data:\n"
-        + "mustCheckAllDecls: " + mustCheckAllFiles + "\n"
-        + "Files to Check:\n----------\n";
+        string formattedString = "**********\nParsedConfig Object Data:\n==========\n"
+        + "mustCheckAllDecls: " + mustCheckAllFiles + "\n==========\n"
+        + "Files to Check:\n";
 
-        for (int i = 0; i < filePaths.Count; i++)
-            formattedString += filePaths[i] + "\n";
+        foreach(string file in filePaths)
+            formattedString += '\'' + file + "'\n";
 
-        formattedString += "\nOptions\n----------\n";
-        for (int i = 0; i < configOptions.Count; i++)
-            formattedString += configOptions[i].ToString() + "\n";
+        formattedString += "==========\nOptions\n";
+        foreach(Option option in configOptions)
+            formattedString += option.ToString() + '\n';
         
-        for(int i = 0; i < propagationLists.Count; i++)
-            formattedString += propagationLists[i].ToString();
+        formattedString += "==========\nPropagation Lists\n";
+        foreach(PropagateList resource in propagationLists)
+            formattedString += resource.ToString();
+        formattedString += "**********";
         return formattedString;
     }
 
@@ -45,13 +48,11 @@ class ParsedConfig
         // If the output is a zip file, we should use a temporary directory 
         // instead of assuming a directory of the same w/o the extension is available to use
         string activeOutputDirectory = outputToZip ? TEMPORARY_DIRECTORY : outputDirectory,
-               workingDirectory = Directory.GetCurrentDirectory(), 
-               currentFilePath = "";
-
-        if (!Directory.Exists(activeOutputDirectory))
-            Directory.CreateDirectory(activeOutputDirectory);
+               workingDirectory = Directory.GetCurrentDirectory();
 
         // Clone the contents of inputDirectory to the active outputDirectory
+        if (!Directory.Exists(activeOutputDirectory))
+            Directory.CreateDirectory(activeOutputDirectory);
         if(inputIsZip)
             ZipFile.ExtractToDirectory(inputDirectory, activeOutputDirectory);
         else
@@ -59,36 +60,24 @@ class ParsedConfig
 
         // Begin working with the newly copied files
         Directory.SetCurrentDirectory(activeOutputDirectory);
-        string[] allFiles = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
-
         if (mustCheckAllFiles)
-            for (int i = 0, j = 0; i < allFiles.Length; i++)
-            {
-                currentFilePath = allFiles[i];
-
-                // Check the file extension to ensure we can parse this file
-                j = currentFilePath.LastIndexOf('.') + 1;
-                if (SUPPORTED_FILETYPES.Contains(currentFilePath.Substring(j, currentFilePath.Length - j)))
-                    parseFile(currentFilePath);
-            }
-        else
-            // All files in filepaths have already had their extensions validated
-            for (int i = 0; i < filePaths.Count; i++)
-            {
-                currentFilePath = filePaths[i];
-
-                // Verify the file actually exists in the mod
-                if (File.Exists(currentFilePath))
-                    parseFile(currentFilePath);
-                else
-                    // Need this here to prevent unwanted shutdowns
-                    ProcessErrorCode(MOD_FILE_NOT_FOUND, currentFilePath);
-            }
+        {
+            string[] allFiles = Directory.GetFiles(".", "*.*", SearchOption.AllDirectories);
+            foreach(string file in allFiles)
+                if(hasValidModFileExtension(file))
+                    parseFile(file);
+        }
+        // All files in filepaths have already had their extensions validated when parsing the config
+        else foreach(string file in filePaths)
+            if (File.Exists(file))
+                parseFile(file);
+            else
+                ProcessErrorCode(LOCATIONS_FILE_NOT_FOUND, file);
 
         // Handle Propagation
         if (Directory.Exists(PROPAGATE_DIRECTORY))
         {
-            foreach (PropagateResource resource in propagationLists)
+            foreach (PropagateList resource in propagationLists)
                 resource.propagate();
             Directory.Delete(PROPAGATE_DIRECTORY, true);
         }
@@ -99,50 +88,26 @@ class ParsedConfig
             ZipFile.CreateFromDirectory(TEMPORARY_DIRECTORY, outputDirectory);
             Directory.Delete(TEMPORARY_DIRECTORY, true);
         }
-
-    }
-    
-    // Used to copy the mod folder to the output directory.
-    // If any folders in the output directory do not exist, they will be created.
-    // If any files that are to be copied already exist, they will be overwritten.
-    private static void CopyFilesRecursively(DirectoryInfo source, DirectoryInfo target)
-    {
-        foreach (DirectoryInfo dir in source.GetDirectories())
-            CopyFilesRecursively(dir, target.CreateSubdirectory(dir.Name));
-        foreach (FileInfo file in source.GetFiles())
-            file.CopyTo(Path.Combine(target.FullName, file.Name), true);
     }
 
     private void parseFile(string filePath)
     {
-        // The full text of the file
-        string fileText = "",
-        // The label we're currently parsing
-               label = "",
-        // The type in the current label (everything before the separator)
-               type = "",
-        // The expression in the current label
-               expression = "",
-               expressionResult = "";
-        // The start, end and separator indices of the label we're currently parsing
-        int labelStartIndex = 0, labelEndIndex = 0, expressionSeparatorIndex = 0;
-
         StreamReader fileReader = new StreamReader(filePath);
-        fileText = fileReader.ReadToEnd();
+        string fileText = fileReader.ReadToEnd();
         fileReader.Close();
 
         // Labels are parsed sequentially by scanning the entire text file.
-        labelStartIndex = fileText.IndexOf(LABEL_ANY, CurrentCultureIgnoreCase);
+        int labelStartIndex = fileText.IndexOf(LABEL_ANY, CurrentCultureIgnoreCase);
         while (labelStartIndex != -1)
         {
             // Get the complete label by utilizing the border characters.
-            labelEndIndex = fileText.IndexOf(LABEL_BORDER_VALUE, labelStartIndex + 1);
+            int labelEndIndex = fileText.IndexOf(LABEL_BORDER_VALUE, labelStartIndex + 1);
             if (labelEndIndex == -1)
                 ProcessErrorCode(INCOMPLETE_LABEL, filePath);
-            label = fileText.Substring(labelStartIndex, labelEndIndex - labelStartIndex + 1);
+            string label = fileText.Substring(labelStartIndex, labelEndIndex - labelStartIndex + 1);
 
             // Isolate the expression, if it exists
-            expressionSeparatorIndex = label.IndexOf(LABEL_NAME_EXP_SEPARATOR);
+            int expressionSeparatorIndex = label.IndexOf(LABEL_NAME_EXP_SEPARATOR);
             if (expressionSeparatorIndex == -1)
             {
                 // Edge Case: A toggleable-end label with no toggleable-beginning label preceding it
@@ -153,11 +118,11 @@ class ParsedConfig
             }
 
             // Don't uppercase the expression to prevent string-literals from being modified
-            expression = label.Substring(expressionSeparatorIndex + 1, label.Length - expressionSeparatorIndex - 2);
-            expressionResult = parseExpression(filePath, label, expression);
+            string expression = label.Substring(expressionSeparatorIndex + 1, label.Length - expressionSeparatorIndex - 2),
+                   expressionResult = parseExpression(filePath, label, expression);
 
             // Everything up to and excluding the separator index
-            type = label.Substring(0, expressionSeparatorIndex).ToUpper();
+            string type = label.Substring(0, expressionSeparatorIndex).ToUpper();
 
             // Check if the type is valid - default if it isn't.
             switch (type)
@@ -186,24 +151,21 @@ class ParsedConfig
 
     private string parseExpression(string filePath, string label, string expression)
     {
-        // Prevents infinite loops
-        int numIterations = 0;
-        // Allows options to represent other options
-        bool replacedThisCycle = true;
-        string currentSearchString = "";
+        int numIterations = 0;         // Prevents infinite loops
+        bool replacedThisCycle = true; // Allows options to represent other options
         while(replacedThisCycle)
         {
             if(numIterations++ == INFINITE_LOOP_THRESHOLD)
                 ProcessErrorCode(EXP_LOOPS_INFINITELY, filePath, label, expression);
             replacedThisCycle = false;
 
-            for (int i = 0; i < configOptions.Count; i++)
+            foreach(Option option in configOptions)
             {
-                currentSearchString = '{' + configOptions[i].name + '}';
+                string currentSearchString = '{' + option.name + '}';
                 if(expression.IndexOf(currentSearchString, CurrentCultureIgnoreCase) != -1)
                 {
                     replacedThisCycle = true;
-                    expression = expression.Replace(currentSearchString, configOptions[i].value, CurrentCultureIgnoreCase);
+                    expression = expression.Replace(currentSearchString, option.value, CurrentCultureIgnoreCase);
                 }
             }    
         }

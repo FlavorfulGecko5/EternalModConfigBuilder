@@ -1,22 +1,20 @@
 using static Constants;
-class PropagateResource
+class PropagateList
 {
     public string name {get;}
     public string[] filePaths {get;}
 
-    public PropagateResource(string nameParamter, string[] filePathsParameter)
+    public PropagateList(string nameParameter, string[] filePathsParameter)
     {
-        name = nameParamter;
+        name = nameParameter;
         filePaths = filePathsParameter;
     }
 
     public override string ToString()
     {
-        string formattedString = "PropagateResource object with resource name '" + name + "' contains the following filepaths: \n";
-        for(int i = 0; i < filePaths.Length; i++)
-            formattedString += filePaths[i] + '\n';
-        formattedString += "-----\n";
-
+        string formattedString = "Propagation List '" + name + "'\n";
+        foreach(string file in filePaths)
+            formattedString += "\t'" + file + "'\n";
         return formattedString;
     }
 
