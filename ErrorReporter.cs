@@ -86,6 +86,21 @@ class ErrorReporter
                 formattedString += "The '" + PROPAGATE_PROPERTY + "' property in the configuration file has a list '" + arg0 + "' with filepath '"
                     + arg1 + "'. This filepath is non-relative, when all listed filepaths MUST be relative.";
                 break;
+            case PROPAGATE_DIR_NO_LISTS:
+                formattedString += "The '" + PROPAGATE_DIRECTORY + "' directory exists in your mods folder, but no valid propagation lists are defined. "
+                    + "Propagation will not occur.";
+                terminateProgram = false;
+                break;
+            case PROPAGATE_LISTS_NO_DIR:
+                formattedString += "You have valid propagation lists, but the '" + PROPAGATE_DIRECTORY 
+                    + "' directory does not exist in your mod folder. Propagation will not occur.";
+                terminateProgram = false;
+                break;
+            case PROPAGATE_PATH_NOT_FOUND:
+                formattedString += "The path '" + arg0 + "' in propagation list '" + arg1 + "' could not be found in the '"
+                    + PROPAGATE_DIRECTORY + "' folder. This file will be ignored.";
+                terminateProgram = false;
+                break;
             // Mod building errors
             case LOCATIONS_FILE_NOT_FOUND:
                 formattedString += "The file " + arg0 + " was specified in the configuration file but does not actually exist in the mod."
@@ -164,6 +179,9 @@ enum ErrorCode
     BAD_PROPAGATION_ARRAY,
     ROOTED_PROPAGATION_DIRECTORY,
     ROOTED_PROPAGATION_FILE,
+    PROPAGATE_DIR_NO_LISTS,
+    PROPAGATE_LISTS_NO_DIR,
+    PROPAGATE_PATH_NOT_FOUND,
     // Mod Building Errors
     LOCATIONS_FILE_NOT_FOUND,
     INCOMPLETE_LABEL,

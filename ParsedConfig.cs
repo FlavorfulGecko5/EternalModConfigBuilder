@@ -45,14 +45,12 @@ class ParsedConfig
 
     public void buildMod(string inputDirectory, bool inputIsZip, string outputDirectory, bool outputToZip)
     {
-        // If the output is a zip file, we should use a temporary directory 
-        // instead of assuming a directory of the same w/o the extension is available to use
+        // If the output is a zip file, use temp. directory then zip after processing
         string activeOutputDirectory = outputToZip ? TEMPORARY_DIRECTORY : outputDirectory,
                workingDirectory = Directory.GetCurrentDirectory();
 
         // Clone the contents of inputDirectory to the active outputDirectory
-        if (!Directory.Exists(activeOutputDirectory))
-            Directory.CreateDirectory(activeOutputDirectory);
+        Directory.CreateDirectory(activeOutputDirectory);
         if(inputIsZip)
             ZipFile.ExtractToDirectory(inputDirectory, activeOutputDirectory);
         else
@@ -67,7 +65,7 @@ class ParsedConfig
                 if(hasValidModFileExtension(file))
                     parseFile(file);
         }
-        // All files in filepaths have already had their extensions validated when parsing the config
+        // All files in filepaths have already had their extensions validated by parsing Locations
         else foreach(string file in filePaths)
             if (File.Exists(file))
                 parseFile(file);
@@ -77,10 +75,14 @@ class ParsedConfig
         // Handle Propagation
         if (Directory.Exists(PROPAGATE_DIRECTORY))
         {
+            if(propagationLists.Count == 0)
+                ProcessErrorCode(PROPAGATE_DIR_NO_LISTS);
             foreach (PropagateList resource in propagationLists)
                 resource.propagate();
             Directory.Delete(PROPAGATE_DIRECTORY, true);
         }
+        else if(propagationLists.Count > 0)
+            ProcessErrorCode(PROPAGATE_LISTS_NO_DIR);
 
         if (outputToZip)
         {

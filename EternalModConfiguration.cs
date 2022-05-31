@@ -223,7 +223,7 @@ class EternalModConfiguration
         try
         {
             ParsedConfig config = readConfig(configPath);
-            System.Console.WriteLine(config.ToString());
+            //System.Console.WriteLine(config.ToString());
             config.buildMod(sourcePath, sourceIsZip, outputPath, outputToZip);
         }
         // Any unexpected errors that arise from the building process will be caught here

@@ -83,8 +83,8 @@ class Constants
         + "- This property must be a Json object.\n"
         + "- Each sub-property should be a relative directory in a valid DOOM Eternal .resource file, such as 'gameresources_patch1' or 'warehouse/generated/decls'.\n"
         + "- Each sub-property must be defined as a list of strings.\n" 
-        + "- These strings must be relative paths to files inside your unbuilt mod's '" + PROPAGATE_DIRECTORY + "' folder.\n"
-        + "When your mod is built, files listed in the sub-property arrays will be copied to the resource file the array belongs to.";
+        + "- These strings must be relative paths to files or directories inside your unbuilt mod's '" + PROPAGATE_DIRECTORY + "' folder.\n"
+        + "When your mod is built, files/directories listed in the sub-property arrays will be copied to the resource file the array belongs to.";
 
     public const string RULES_SUPPORTED_FILETYPES = "This application only supports injecting configuration data into .decl and .json files.";
 
