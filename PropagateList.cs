@@ -1,7 +1,3 @@
-using static Constants;
-using static ErrorReporter;
-using static ErrorCode;
-using static Util;
 class PropagateList
 {
     public string name {get;}
@@ -27,24 +23,20 @@ class PropagateList
         {
             string  copyFrom = Path.Combine(PROPAGATE_DIRECTORY, path),
                     copyTo = Path.Combine(name, path);
-            // Null values should be impossible, since file is relative and exists
+            // Null values should be impossible
             string? directory = Path.GetDirectoryName(path);
             if(File.Exists(copyFrom) && directory != null)
             {
                 Directory.CreateDirectory(Path.Combine(name, directory));
                 File.Copy(copyFrom, copyTo, true);
             }
-            else 
+            else if (Directory.Exists(copyFrom))
             {
-                if (Directory.Exists(copyFrom))
-                {
-                    Directory.CreateDirectory(copyTo);
-                    CopyFilesRecursively(new DirectoryInfo(copyFrom), new DirectoryInfo(copyTo));
-                }
-                    
-                else
-                    ProcessErrorCode(PROPAGATE_PATH_NOT_FOUND, path, name);
-            }
+                Directory.CreateDirectory(copyTo);
+                CopyDir(new DirectoryInfo(copyFrom), new DirectoryInfo(copyTo));
+            }    
+            else
+                ProcessErrorCode(PROPAGATE_PATH_NOT_FOUND, path, name);
         }
     }
 }

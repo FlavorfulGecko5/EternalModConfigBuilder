@@ -1,5 +1,3 @@
-using static Constants;
-using static ErrorCode;
 class ErrorReporter
 {
     public static void ProcessErrorCode(ErrorCode error, string arg0 = "", string arg1 = "", string arg2 = "", string arg3 = "")
@@ -41,6 +39,9 @@ class ErrorReporter
             case BAD_JSON_FILE:
                 formattedString += "The configuration file has a syntax error, printing Exception message:\n" + arg0;
                 break;
+            case OPTION_ISNT_OBJECT:
+                formattedString += "The Option '" + arg0 + "' is not defined as a Json object in the configuration file.";
+                break;
             case BAD_NAME_FORMATTING:
                 formattedString += "The Option name '" + arg0 + "' is invalid.\n\n" + RULES_OPTION_NAME_CHARACTERS;
                 break;
@@ -48,14 +49,11 @@ class ErrorReporter
                 formattedString += "The name '" + arg0 + "' is used multiple times in the configuration file."
                     + " A name may only be used to define one Option.";
                 break;
-            case OPTION_ISNT_OBJECT:
-                formattedString += "The Option '" + arg0 + "' is not defined as a Json object in the configuration file.";
-                break;
             case BAD_OPTION_VALUE:
                 formattedString += "The Option '" + arg0 + "' has it's required '" + PROPERTY_VALUE 
                     + "' property incorrectly defined, or missing entirely in the configuration file.\n\n" + RULES_OPTION_VALUE;
                 break;
-            case LOCATIONS_ISNT_STRING_ARRAY:
+            case BAD_LOCATIONS_ARRAY:
                 formattedString += "The Option '" + arg0 + "' has it's '" + PROPERTY_LOCATIONS 
                     + "' property incorrectly defined in the configuration file.\n\n" + RULES_PROPERTY_LOCATIONS;
                 break;
@@ -74,15 +72,15 @@ class ErrorReporter
                 terminateProgram = false;
                 break;
             // Propagation Errors
-            case BAD_PROPAGATION_ARRAY:
+            case BAD_PROP_ARRAY:
                 formattedString += "The special '" + PROPAGATE_PROPERTY + "' property in the configuration file has an incorrectly defined "
                     + "sub-property '" + arg0 + "'\n\n" + RULES_PROPAGATE_PROPERTY;
                 break;
-            case ROOTED_PROPAGATION_DIRECTORY:
+            case ROOTED_PROP_DIRECTORY:
                 formattedString += "The '" + PROPAGATE_PROPERTY + "' property in the configuration file has a sub-property named '" + arg0
                     + "', which is a non-relative filepath. These sub-properties MUST have relative filepaths as their names.";
                 break;
-            case ROOTED_PROPAGATION_FILE:
+            case ROOTED_PROP_FILE:
                 formattedString += "The '" + PROPAGATE_PROPERTY + "' property in the configuration file has a list '" + arg0 + "' with filepath '"
                     + arg1 + "'. This filepath is non-relative, when all listed filepaths MUST be relative.";
                 break;
@@ -115,25 +113,28 @@ class ErrorReporter
                 formattedString += "The file " + arg0 + " has a label " + arg1 + " with no '" + LABEL_NAME_EXP_SEPARATOR
                     + "' character separating the type from the expression. Unable to parse this label.\n" + RULES_LABEL_FORMATTING;
                 break;
-            case UNRECOGNIZED_TYPE:
+            case BAD_TYPE:
                 formattedString += "The file " + arg0 + " contains a label " + arg1 + " with an unrecognized type.\n" + RULES_LABEL_FORMATTING;
                 break;
             case EXP_LOOPS_INFINITELY:
                 formattedString += "The file " + arg0 + " contains a label " + arg1 + " whose expression caused an infinite loop when "
                     + "attempting to replace Option names with values.\n" + "Last edited form of the expression: \"" + arg2 + "\"\n"; 
                 break;
-            case EXP_FAILED_TO_EVALUATE:
+            case CANT_EVAL_EXP:
                 formattedString += "The file " + arg0 + " contains a label " + arg1 + " whose expression caused an error during evaluation.\n"
                     + "Expression form at evaluation: \"" + arg2 + "\"\n"
                     + "\nPrinting Error Message:\n" + arg3;
                 break;
             case EXTRA_END_TOGGLE:
-                formattedString += "The file " + arg0 + " has an '" + LABEL_END_TOGGLEABLE
+                formattedString += "The file " + arg0 + " has an '" + LABEL_END_TOG
                     + "' label with no accompanying start label.\n" + RULES_TOGGLE_BLOCK;
                 break;
             case MISSING_END_TOGGLE:
-                formattedString += "The file " + arg0 + " has a toggle label " + arg1 + " without a '" + LABEL_END_TOGGLEABLE
+                formattedString += "The file " + arg0 + " has a toggle label " + arg1 + " without a '" + LABEL_END_TOG
                     + "' label to denote the end of the toggle block.\n" + RULES_TOGGLE_BLOCK;
+                break;
+            case BAD_TOGGLE_TYPE:
+                formattedString += "The file " + arg0 + " has an invalid toggle label '" + arg1 + "'\n\n" + RULES_TOGGLE_BLOCK;
                 break;
             case BAD_TOGGLE_EXP_RESULT:
                 formattedString += "The file " + arg0 + " has a toggle label " + arg1 + " whose expression result cannot be interpreted "
@@ -167,18 +168,18 @@ enum ErrorCode
     OUTPUT_NONEMPTY_DIRECTORY,
     // Config. file parsing errors
     BAD_JSON_FILE,
+    OPTION_ISNT_OBJECT,
     BAD_NAME_FORMATTING,
     DUPLICATE_NAME,
-    OPTION_ISNT_OBJECT,
     BAD_OPTION_VALUE,
-    LOCATIONS_ISNT_STRING_ARRAY,
+    BAD_LOCATIONS_ARRAY,
     ROOTED_LOCATIONS_FILE,
     UNSUPPORTED_FILETYPE,
     MISSING_LOCATIONS_ARRAY,
     // Propagation Errors
-    BAD_PROPAGATION_ARRAY,
-    ROOTED_PROPAGATION_DIRECTORY,
-    ROOTED_PROPAGATION_FILE,
+    BAD_PROP_ARRAY,
+    ROOTED_PROP_DIRECTORY,
+    ROOTED_PROP_FILE,
     PROPAGATE_DIR_NO_LISTS,
     PROPAGATE_LISTS_NO_DIR,
     PROPAGATE_PATH_NOT_FOUND,
@@ -186,10 +187,11 @@ enum ErrorCode
     LOCATIONS_FILE_NOT_FOUND,
     INCOMPLETE_LABEL,
     MISSING_EXP_SEPARATOR,
-    UNRECOGNIZED_TYPE,
+    BAD_TYPE,
     EXP_LOOPS_INFINITELY,
-    EXP_FAILED_TO_EVALUATE,
+    CANT_EVAL_EXP,
     EXTRA_END_TOGGLE,
     MISSING_END_TOGGLE,
+    BAD_TOGGLE_TYPE,
     BAD_TOGGLE_EXP_RESULT
 }
