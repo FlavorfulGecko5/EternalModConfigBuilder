@@ -8,137 +8,297 @@ class ErrorReporter
         {
             // Anything not handled below
             case UNKNOWN_ERROR:
-                formattedString += "An unknown error occurred, printing Exception:\n" + arg0;
+                formattedString = String.Format
+                (
+                    "An unknown error occurred, printing Exception:\n\n{0}", 
+                    arg0 // Exception ToString()
+                );
                 break;
             // Command-line argument errors
             case BAD_NUMBER_ARGUMENTS:
-                formattedString += "Invalid number of command line arguments. (Expected " + EXPECTED_ARG_COUNT + ", received " + arg0 + ")\n\n" + RULES_EXPECTED_USAGE;
+                formattedString = String.Format
+                (
+                    "Invalid number of command line arguments. (Expected {0}, received {1})\n\n{2}",
+                    EXPECTED_ARG_COUNT, 
+                    arg0, // Number of arguments received. 
+                    RULES_EXPECTED_USAGE
+                );
                 break;
             case BAD_ARGUMENT:
-                formattedString += "Command line argument #" + arg0 + " is invalid.\n\n" + RULES_EXPECTED_USAGE;
+                formattedString = String.Format
+                (
+                    "Command line argument #{0} is invalid.\n\n{1}",
+                    arg0, // The invalid argument
+                    RULES_EXPECTED_USAGE
+                );
                 break;
             case BAD_CONFIG_EXTENSION:
-                formattedString += "The configuration file '" + arg0 + "' must be a " + CONFIG_FILE_EXTENSION + " file.";
+                formattedString = String.Format
+                (
+                    "The configuration file '{0}' must be a '{1}' file.",
+                    arg0, // The config. filepath 
+                    CONFIG_FILE_EXTENSION
+                );
                 break;
             case CONFIG_NOT_FOUND:
-                formattedString += "Failed to find the configuration file '" + arg0 + "'";
+                formattedString = String.Format
+                (
+                    "Failed to find the configuration file '{0}'",
+                    arg0 // The config. filepath
+                );
                 break;
             case MOD_NOT_FOUND:
-                formattedString += "The mod directory or .zip file '" + arg0 + "' does not exist.";
+                formattedString = String.Format
+                (
+                    "The mod directory or .zip file '{0}' does not exist.",
+                    arg0 // The mod filepath
+                );
                 break;
             case MOD_NOT_VALID:
-                formattedString += "The mod location '" + arg0 + "' is not recognized as a valid directory or .zip file.";
+                formattedString = String.Format
+                (
+                    "The mod file/folder '{0}' is not recognized as a valid directory or .zip file.",
+                    arg0 // The mod filepath
+                );
                 break;
             case OUTPUT_PREEXISTING_FILE:
-                formattedString += "There is a pre-existing file at your output location " + arg0 + "\n\n" + RULES_OUTPUT_LOCATION;
+                formattedString = String.Format
+                (
+                    "There is a pre-existing file at your output location '{0}'\n\n{1}",
+                    arg0, // The output path
+                    RULES_OUTPUT_LOCATION
+                );
                 break;
             case OUTPUT_NONEMPTY_DIRECTORY:
-                formattedString += "There is a pre-existing, non-empty directory at your output location " + arg0 + "\n\n" + RULES_OUTPUT_LOCATION;
+                formattedString = String.Format
+                (
+                    "There is a pre-existing, non-empty directory at your output location '{0}'\n\n{1}",
+                    arg0, // The output path
+                    RULES_OUTPUT_LOCATION
+                );
                 break;
             // Config. file parsing errors
             case BAD_JSON_FILE:
-                formattedString += "The configuration file has a syntax error, printing Exception message:\n" + arg0;
+                formattedString = String.Format
+                (
+                    "The configuration file has a syntax error, printing Exception message:\n\n{0}",
+                    arg0 // The exception message
+                );
                 break;
             case OPTION_ISNT_OBJECT:
-                formattedString += "The Option '" + arg0 + "' is not defined as a Json object in the configuration file.";
+                formattedString = String.Format
+                (
+                    "The Option '{0}' is not defined as a Json object in the configuration file.",
+                    arg0 // The option name
+                );
                 break;
             case BAD_NAME_FORMATTING:
-                formattedString += "The Option name '" + arg0 + "' is invalid.\n\n" + RULES_OPTION_NAME_CHARACTERS;
+                formattedString = String.Format
+                (
+                    "The Option name '{0}' is invalid.\n\n{1}",
+                    arg0, // The option name
+                    RULES_OPTION_NAME_CHARACTERS
+                );
                 break;
             case DUPLICATE_NAME:
-                formattedString += "The name '" + arg0 + "' is used multiple times in the configuration file."
-                    + " A name may only be used to define one Option.";
+                formattedString = String.Format
+                (
+                    "The name '{0}' is used multiple times in the configuration file. A name may only be used to define one Option.",
+                    arg0 // The option name
+                );
                 break;
             case BAD_OPTION_VALUE:
-                formattedString += "The Option '" + arg0 + "' has it's required '" + PROPERTY_VALUE 
-                    + "' property incorrectly defined, or missing entirely in the configuration file.\n\n" + RULES_OPTION_VALUE;
+                formattedString = String.Format
+                (
+                    "The Option '{0}' has it's required '{1}' property incorrectly defined, or missing entirely in the configuration file.\n\n{2}",
+                    arg0, // The option name
+                    PROPERTY_VALUE,
+                    RULES_OPTION_VALUE
+                );
                 break;
             case BAD_LOCATIONS_ARRAY:
-                formattedString += "The Option '" + arg0 + "' has it's '" + PROPERTY_LOCATIONS 
-                    + "' property incorrectly defined in the configuration file.\n\n" + RULES_PROPERTY_LOCATIONS;
+                formattedString = String.Format
+                (
+                    "The Option '{0}' has it's '{1}' property incorrectly defined in the configuration file.\n\n{2}",
+                    arg0, // The option name
+                    PROPERTY_LOCATIONS,
+                    RULES_PROPERTY_LOCATIONS
+                );
                 break;
             case ROOTED_LOCATIONS_FILE:
-                formattedString += "The Option '" + arg0 + "' has a non-relative filepath '" + arg1 + "' inside it's '"
-                    + PROPERTY_LOCATIONS + "' property. All listed filepaths MUST be relative.";
+                formattedString = String.Format
+                (
+                    "The Option '{0}' has a non-relative filepath '{1}' inside it's '{2}' list. All listed paths MUST be relative.",
+                    arg0, // The option name
+                    arg1, // The filepath
+                    PROPERTY_LOCATIONS
+                );
                 break;
             case UNSUPPORTED_FILETYPE:
-                formattedString += "The Option '" + arg0 + "' has an invalid or unsupported file '" + arg1
-                    + "' in it's '" + PROPERTY_LOCATIONS + "' list. This file will not be checked. " + RULES_SUPPORTED_FILETYPES;
+                formattedString = String.Format
+                (
+                    "The Option '{0}' has an unsupported file '{1}' in it's '{2}' list. This file will not be checked for labels. {3}",
+                    arg0, // The option name
+                    arg1, // The filepath
+                    PROPERTY_LOCATIONS,
+                    RULES_SUPPORTED_FILETYPES
+                );
                 terminateProgram = false;
                 break;
             case MISSING_LOCATIONS_ARRAY:
-                formattedString += "One of more of your configuration file's Options is missing it's '" + PROPERTY_LOCATIONS + "' property."
-                    + " ALL of your mod's supported files will be checked for labels.";
+                formattedString = String.Format
+                (
+                    "One of more of your configuration file's Options is missing it's '{0}' property. ALL of your mod's supported files will be checked for labels.",
+                    PROPERTY_LOCATIONS
+                );
                 terminateProgram = false;
                 break;
             // Propagation Errors
             case BAD_PROP_ARRAY:
-                formattedString += "The special '" + PROPAGATE_PROPERTY + "' property in the configuration file has an incorrectly defined "
-                    + "sub-property '" + arg0 + "'\n\n" + RULES_PROPAGATE_PROPERTY;
+                formattedString = String.Format
+                (
+                    "The '{0}' property in the configuration file has an incorrectly defined sub-property '{1}'\n\n{2}",
+                    PROPAGATE_PROPERTY,
+                    arg0, // Propagate list name
+                    RULES_PROPAGATE_PROPERTY
+                );
                 break;
             case ROOTED_PROP_DIRECTORY:
-                formattedString += "The '" + PROPAGATE_PROPERTY + "' property in the configuration file has a sub-property named '" + arg0
-                    + "', which is a non-relative filepath. These sub-properties MUST have relative filepaths as their names.";
+                formattedString = String.Format
+                (
+                    "The '{0}' property in the configuration file has a sub-property named '{1}', which is a non-relative filepath. These sub-properties MUST have relative filepaths as their names.",
+                    PROPAGATE_PROPERTY,
+                    arg0 // Propagate list name
+                );
                 break;
             case ROOTED_PROP_FILE:
-                formattedString += "The '" + PROPAGATE_PROPERTY + "' property in the configuration file has a list '" + arg0 + "' with filepath '"
-                    + arg1 + "'. This filepath is non-relative, when all listed filepaths MUST be relative.";
+                formattedString = String.Format
+                (
+                    "The '{0}' property in the configuration file has a list '{1}' with filepath '{2}'. This filepath is non-relative, when all listed filepaths MUST be relative.",
+                    PROPAGATE_PROPERTY,
+                    arg0, // The list name
+                    arg1 // The non-relative list element
+                );
                 break;
             case PROPAGATE_DIR_NO_LISTS:
-                formattedString += "The '" + PROPAGATE_DIRECTORY + "' directory exists in your mods folder, but no valid propagation lists are defined. "
-                    + "Propagation will not occur.";
+                formattedString = String.Format
+                (
+                    "The '{0}' directory exists in your mod folder, but no valid propagation lists are defined. Propagation will not occur.",
+                    PROPAGATE_DIRECTORY
+                );
                 terminateProgram = false;
                 break;
             case PROPAGATE_LISTS_NO_DIR:
-                formattedString += "You have valid propagation lists, but the '" + PROPAGATE_DIRECTORY 
-                    + "' directory does not exist in your mod folder. Propagation will not occur.";
+                formattedString = String.Format
+                (
+                    "You have valid propagation lists, but the '{0}' directory does not exist in your mod folder. Propagation will not occur.",
+                    PROPAGATE_DIRECTORY
+                );
                 terminateProgram = false;
                 break;
             case PROPAGATE_PATH_NOT_FOUND:
-                formattedString += "The path '" + arg0 + "' in propagation list '" + arg1 + "' could not be found in the '"
-                    + PROPAGATE_DIRECTORY + "' folder. This file will be ignored.";
+                formattedString = String.Format
+                (
+                    "The path '{0}' in propagation list '{1}' could not be found in the '{2}' folder. This path will be ignored.",
+                    arg0, // The filepath
+                    arg1, // The list name
+                    PROPAGATE_DIRECTORY
+                );
                 terminateProgram = false;
                 break;
             // Mod building errors
             case LOCATIONS_FILE_NOT_FOUND:
-                formattedString += "The file " + arg0 + " was specified in the configuration file but does not actually exist in the mod."
-                    + " This filepath will be ignored.";
+                formattedString = String.Format
+                (
+                    "The file '{0}' was specified in the configuration file but does not actually exist in the mod. This filepath will be ignored.",
+                    arg0 // The file name
+                );
                 terminateProgram = false;
                 break;
             case INCOMPLETE_LABEL:
-                formattedString += "The file " + arg0 + " has an incomplete label that's missing a '" + LABEL_BORDER_VALUE 
-                    + "' on it's right side.\n" + RULES_LABEL_FORMATTING;
+                formattedString = String.Format
+                (
+                    "The file '{0}' has an incomplete label that's missing a '{1}' on it's right side.\n\n{2}",
+                    arg0, // The file name
+                    LABEL_BORDER_VALUE,
+                    RULES_LABEL_FORMATTING
+                );
                 break;
             case MISSING_EXP_SEPARATOR:
-                formattedString += "The file " + arg0 + " has a label " + arg1 + " with no '" + LABEL_NAME_EXP_SEPARATOR
-                    + "' character separating the type from the expression. Unable to parse this label.\n" + RULES_LABEL_FORMATTING;
+                formattedString = String.Format
+                (
+                    "The file '{0}' has a label '{1}' with no '{2}' separating the type from the expression.\n\n{3}",
+                    arg0, // The file name
+                    arg1, // The label 
+                    LABEL_NAME_EXP_SEPARATOR,
+                    RULES_LABEL_FORMATTING
+                );
                 break;
             case BAD_TYPE:
-                formattedString += "The file " + arg0 + " contains a label " + arg1 + " with an unrecognized type.\n" + RULES_LABEL_FORMATTING;
+                formattedString = String.Format
+                (
+                    "The file '{0}' contains a label '{1}' with an unrecognized type.\n\n{2}",
+                    arg0, // The file name
+                    arg1, // The label
+                    RULES_LABEL_FORMATTING
+                );
                 break;
             case EXP_LOOPS_INFINITELY:
-                formattedString += "The file " + arg0 + " contains a label " + arg1 + " whose expression caused an infinite loop when "
-                    + "attempting to replace Option names with values.\n" + "Last edited form of the expression: \"" + arg2 + "\"\n"; 
+                formattedString = String.Format
+                (
+                    "The file '{0}' contains a label '{1}' whose expression loops infinitely when replacing Option names with values.\nLasted edited form of the expression: '{2}'",
+                    arg0, // The file name
+                    arg1, // The label
+                    arg2  // The last-edited form of the expression
+                );
                 break;
             case CANT_EVAL_EXP:
-                formattedString += "The file " + arg0 + " contains a label " + arg1 + " whose expression caused an error during evaluation.\n"
-                    + "Expression form at evaluation: \"" + arg2 + "\"\n"
-                    + "\nPrinting Error Message:\n" + arg3;
+                formattedString = String.Format
+                (
+                    "The file '{0}' contains a label '{1}' whose expression caused an error during evaluation.\nExpression form at evaluation: '{2}'\nPrinting Error Message\n{3}",
+                    arg0, // The file name
+                    arg1, // The label
+                    arg2, // Expression at evaluation
+                    arg3 // Exception message
+                );
                 break;
             case EXTRA_END_TOGGLE:
-                formattedString += "The file " + arg0 + " has an '" + LABEL_END_TOG
-                    + "' label with no accompanying start label.\n" + RULES_TOGGLE_BLOCK;
+                formattedString = String.Format
+                (
+                    "The file '{0}' has an '{1}' label with no accompanying start label.\n\n{2}",
+                    arg0, // File name
+                    LABEL_END_TOG,
+                    RULES_TOGGLE_BLOCK
+                );
                 break;
             case MISSING_END_TOGGLE:
-                formattedString += "The file " + arg0 + " has a toggle label " + arg1 + " without a '" + LABEL_END_TOG
-                    + "' label to denote the end of the toggle block.\n" + RULES_TOGGLE_BLOCK;
+                formattedString = String.Format
+                (
+                    "The file '{0}' has a toggle label '{1}' without a '{2}' label to denote the end of the toggle block.\n\n{3}",
+                    arg0, // The file name
+                    arg1, // The label
+                    LABEL_END_TOG,
+                    RULES_TOGGLE_BLOCK
+                );
                 break;
             case BAD_TOGGLE_TYPE:
-                formattedString += "The file " + arg0 + " has an invalid toggle label '" + arg1 + "'\n\n" + RULES_TOGGLE_BLOCK;
+                formattedString = String.Format
+                (
+                    "The file '{0}' has an invalid toggle label '{1}'\n\n{2}",
+                    arg0, // The file name
+                    arg1, // The label
+                    RULES_TOGGLE_BLOCK
+                );
                 break;
             case BAD_TOGGLE_EXP_RESULT:
-                formattedString += "The file " + arg0 + " has a toggle label " + arg1 + " whose expression result cannot be interpreted "
-                    + "correctly by a toggle label.\n" + "Expression Result: \"" + arg2 + "\"\n" + RULES_TOGGLE_EXP_RESULT;
+                formattedString = String.Format
+                (
+                    "The file '{0}' has a toggle label '{1}' whose expression result cannot be interpreted as a Boolean value.\nExpression Result: '{2}'\n\n{3}",
+                    arg0, // File name
+                    arg1, // Label
+                    arg2, // Expression result
+                    RULES_TOGGLE_EXP_RESULT
+                );
                 break;
         }
         
