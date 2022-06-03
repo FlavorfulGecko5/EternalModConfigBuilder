@@ -22,7 +22,6 @@ class Constants
 
     // Constants pertaining to Option properties
     public const string PROPERTY_VALUE = "Value";
-    public const string PROPERTY_LOCATIONS = "Locations";
 
     // Constants pertaining to expressions
     public const int INFINITE_LOOP_THRESHOLD = 500;
@@ -74,16 +73,6 @@ class Constants
         + "- Boolean: Either 'true' or 'false' (case sensitive)\n"
         + "- Json lists and objects cannot be converted to strings and will cause an error if used.\n"
         + "- A null, empty or missing '" + PROPERTY_VALUE + "' field is not allowed.";
-
-    public const string RULES_PROPERTY_LOCATIONS = "An Option's '" + PROPERTY_LOCATIONS + "' array must obey the following rules:\n"
-        + "- A Json list is the only acceptable way to define this property.\n"
-        + "- Each entry in the list should be a string, or errors will result when parsing it.\n"
-        + "- Each string should represent a relative filepath to a supported file, starting from inside your mod folder.\n"
-            + "   Example: gameresources_patch1/path/to/a/file.decl\n"
-        + "- The list may be empty.\n"
-        + "- If at least one Option's '" + PROPERTY_LOCATIONS + "' property is missing, then every file of all "
-            + "supported filetypes in your mod will be checked for labels, which may have a noticeable effect on build time " 
-            + "if your mod has lots of files that don't need to be configured.";
     
     public const string RULES_PROPAGATE_PROPERTY = "Configuration files may have a '" + PROPAGATE_PROPERTY + "' property that must defined in a special way:\n"
         + "- This property must be a Json object.\n"

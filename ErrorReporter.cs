@@ -116,43 +116,6 @@ class ErrorReporter
                     RULES_OPTION_VALUE
                 );
                 break;
-            case BAD_LOCATIONS_ARRAY:
-                formattedString = String.Format
-                (
-                    "The Option '{0}' has it's '{1}' property incorrectly defined in the configuration file.\n\n{2}",
-                    arg0, // The option name
-                    PROPERTY_LOCATIONS,
-                    RULES_PROPERTY_LOCATIONS
-                );
-                break;
-            case ROOTED_LOCATIONS_FILE:
-                formattedString = String.Format
-                (
-                    "The Option '{0}' has a non-relative filepath '{1}' inside it's '{2}' list. All listed paths MUST be relative.",
-                    arg0, // The option name
-                    arg1, // The filepath
-                    PROPERTY_LOCATIONS
-                );
-                break;
-            case UNSUPPORTED_FILETYPE:
-                formattedString = String.Format
-                (
-                    "The Option '{0}' has an unsupported file '{1}' in it's '{2}' list. This file will not be checked for labels. {3}",
-                    arg0, // The option name
-                    arg1, // The filepath
-                    PROPERTY_LOCATIONS,
-                    RULES_SUPPORTED_FILETYPES
-                );
-                terminateProgram = false;
-                break;
-            case MISSING_LOCATIONS_ARRAY:
-                formattedString = String.Format
-                (
-                    "One of more of your configuration file's Options is missing it's '{0}' property. ALL of your mod's supported files will be checked for labels.",
-                    PROPERTY_LOCATIONS
-                );
-                terminateProgram = false;
-                break;
             // Propagation Errors
             case BAD_PROP_ARRAY:
                 formattedString = String.Format
@@ -207,14 +170,6 @@ class ErrorReporter
                 terminateProgram = false;
                 break;
             // Mod building errors
-            case LOCATIONS_FILE_NOT_FOUND:
-                formattedString = String.Format
-                (
-                    "The file '{0}' was specified in the configuration file but does not actually exist in the mod. This filepath will be ignored.",
-                    arg0 // The file name
-                );
-                terminateProgram = false;
-                break;
             case INCOMPLETE_LABEL:
                 formattedString = String.Format
                 (
@@ -332,10 +287,6 @@ enum ErrorCode
     BAD_NAME_FORMATTING,
     DUPLICATE_NAME,
     BAD_OPTION_VALUE,
-    BAD_LOCATIONS_ARRAY,
-    ROOTED_LOCATIONS_FILE,
-    UNSUPPORTED_FILETYPE,
-    MISSING_LOCATIONS_ARRAY,
     // Propagation Errors
     BAD_PROP_ARRAY,
     ROOTED_PROP_DIRECTORY,
@@ -344,7 +295,6 @@ enum ErrorCode
     PROPAGATE_LISTS_NO_DIR,
     PROPAGATE_PATH_NOT_FOUND,
     // Mod Building Errors
-    LOCATIONS_FILE_NOT_FOUND,
     INCOMPLETE_LABEL,
     MISSING_EXP_SEPARATOR,
     BAD_TYPE,

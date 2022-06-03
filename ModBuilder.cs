@@ -20,19 +20,11 @@ class ModBuilder
         Directory.SetCurrentDirectory(activeDir);
 
         FileParser parser = new FileParser(cfg.options);
-        if (cfg.mustCheckAllFiles)
-        {
-            string[] allFiles = Directory.GetFiles(".", "*.*", AllDirectories);
-            foreach (string file in allFiles)
-                if (hasValidModFileExtension(file))
-                    parser.parseFile(file);
-        }
-        // All locations have already had extensions validated
-        else foreach (string file in cfg.locations)
-            if (File.Exists(file))
+
+        string[] allFiles = Directory.GetFiles(".", "*.*", AllDirectories);
+        foreach (string file in allFiles)
+            if (hasValidModFileExtension(file))
                 parser.parseFile(file);
-            else
-                ProcessErrorCode(LOCATIONS_FILE_NOT_FOUND, file);
 
         propagateAll();
         Directory.SetCurrentDirectory(startDir);

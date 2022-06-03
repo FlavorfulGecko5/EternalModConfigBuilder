@@ -1,8 +1,7 @@
 using Newtonsoft.Json.Linq;
 class ParsedConfig
 {
-    public bool mustCheckAllFiles, hasPropagations;
-    public List<string> locations { get; }
+    public bool hasPropagations;
     public List<Option> options { get; }
     public List<PropagateList> propagations {get;}
 
@@ -12,9 +11,7 @@ class ParsedConfig
 
     public ParsedConfig(string configPathParameter)
     {
-        mustCheckAllFiles = false;
         hasPropagations = false;
-        locations = new List<string>();
         options = new List<Option>();
         propagations = new List<PropagateList>();
 
@@ -40,8 +37,6 @@ class ParsedConfig
             }
             parseOption();
         }
-        if(mustCheckAllFiles)
-            ProcessErrorCode(MISSING_LOCATIONS_ARRAY);
     }
 
     private void parseOption()
@@ -50,10 +45,7 @@ class ParsedConfig
         if(name.Equals(PROPAGATE_PROPERTY, CCIC))
             parsePropagate();
         else
-        {
             parseOptionValue();
-            parseLocations();
-        }
     }
 
     private void parseOptionValue()
@@ -70,29 +62,6 @@ class ParsedConfig
         catch (System.ArgumentException)
         {
             ProcessErrorCode(BAD_OPTION_VALUE, name);
-        }
-    }
-
-    private void parseLocations()
-    {
-        string[] files = new string[0];
-        JProperty? list = option.Property(PROPERTY_LOCATIONS);
-        if (list == null)
-            mustCheckAllFiles = true;
-        else
-            files = readStringList(list, BAD_LOCATIONS_ARRAY);
-
-        foreach (string file in files)
-        {
-            if(Path.IsPathRooted(file))
-                ProcessErrorCode(ROOTED_LOCATIONS_FILE, name, file);
-            if (hasValidModFileExtension(file))
-            {
-                if (!locations.Contains(file))
-                    locations.Add(file);
-            }
-            else
-                ProcessErrorCode(UNSUPPORTED_FILETYPE, name, file);
         }
     }
 
@@ -191,13 +160,8 @@ class ParsedConfig
     public override string ToString()
     {
         string formattedString = "**********\nParsedConfig Object Data:"
-        + "\n==========\nmustCheckAllDecls: " + mustCheckAllFiles 
-        + "\n==========\nFiles to Check:\n";
+        + "\n==========\nOptions:\n";
 
-        foreach(string file in locations)
-            formattedString += '\'' + file + "'\n";
-
-        formattedString += "==========\nOptions\n";
         foreach(Option option in options)
             formattedString += option.ToString() + '\n';
         
