@@ -7,17 +7,22 @@ class ParsedConfig
 
     // Used to avoid constant constantly passing by value
     private string configPath, name;
-    private JObject option;
+
+    private bool isObject;
+    private JObject objectOption;
+    private JProperty nonObjectOption;
 
     public ParsedConfig(string configPathParameter)
     {
         hasPropagations = false;
         options = new List<Option>();
         propagations = new List<PropagateList>();
-
         configPath = configPathParameter;
+
         name = "";
-        option = new JObject();
+        isObject = false;
+        objectOption = new JObject();
+        nonObjectOption = new JProperty("");
 
         parseConfig();
     }
@@ -29,11 +34,13 @@ class ParsedConfig
             name = property.Name;
             try 
             {   
-                option = (JObject)property.Value;
+                objectOption = (JObject)property.Value;
+                isObject = true;
             }
             catch(System.InvalidCastException)
             {
-                ProcessErrorCode(OPTION_ISNT_OBJECT, name);
+                isObject = false;
+                nonObjectOption = property;
             }
             parseOption();
         }
@@ -50,18 +57,23 @@ class ParsedConfig
 
     private void parseOptionValue()
     {
+        string? value = null;
         try
         {
-            string? value = (string?)option[PROPERTY_VALUE];
+            if(isObject)
+                value = (string?)objectOption[PROPERTY_VALUE];
+            else
+                value = (string?)nonObjectOption.Value;
+
             if (value == null)
-                ProcessErrorCode(BAD_OPTION_VALUE, name);
+                ProcessErrorCode(BAD_OPTION_TYPE, name);
             else
                 options.Add(new Option(name, value));
         }
         // If the property is a json list or object
         catch (System.ArgumentException)
         {
-            ProcessErrorCode(BAD_OPTION_VALUE, name);
+            ProcessErrorCode(BAD_OPTION_TYPE, name);
         }
     }
 
@@ -70,7 +82,10 @@ class ParsedConfig
         if (hasPropagations)
             ProcessErrorCode(DUPLICATE_NAME, name);
         hasPropagations = true;
-        foreach (JProperty resource in option.Properties())
+        if(!isObject)
+            ProcessErrorCode(PROPAGATE_ISNT_OBJECT);
+
+        foreach (JProperty resource in objectOption.Properties())
         {
             string copyTo = resource.Name;
             if (Path.IsPathRooted(copyTo))

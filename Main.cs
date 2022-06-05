@@ -24,7 +24,7 @@ class EternalModConfiguration
         ArgContainer validArgs = new ArgContainer(args);
         ParsedConfig config = new ParsedConfig(validArgs.configPath);
 
-        System.Console.WriteLine(config.ToString());
+        //System.Console.WriteLine(config.ToString());
 
         ModBuilder builder = new ModBuilder(config, validArgs);
         builder.buildMod();

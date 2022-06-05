@@ -8,7 +8,8 @@ class Constants
     public const int EXPECTED_ARG_COUNT = 6;
     
     // Constants pertaining to file extensions.
-    public const string CONFIG_FILE_EXTENSION = ".txt";
+    public static readonly string[] CONFIG_EXTENSIONS = new string[] {".txt", ".json"};
+    public const string DESC_CONFIG_EXTENSIONS = ".txt or .json";
     public static readonly string[] SUPPORTED_FILETYPES = new string[] { ".decl", ".json" };
 
     // Constants pertaining to directories
@@ -32,9 +33,9 @@ class Constants
     public const string LABEL_NAME_EXP_SEPARATOR = "#";
     public const string LABEL_ANY                = LABEL_BORDER_VALUE + "_INJECTOR_";
     public const string LABEL_ANY_VARIABLE       = LABEL_ANY + "VARIABLE_";
-    public const string LABEL_ANY_TOG     = LABEL_ANY + "TOGGLE_";
-    public const string LABEL_START_TOG   = LABEL_ANY_TOG + LABEL_NAME_EXP_SEPARATOR;
-    public const string LABEL_END_TOG     = LABEL_ANY_TOG + "END_" + LABEL_BORDER_VALUE;
+    public const string LABEL_ANY_TOG            = LABEL_ANY + "TOGGLE_";
+    public const string LABEL_START_TOG          = LABEL_ANY_TOG + LABEL_NAME_EXP_SEPARATOR;
+    public const string LABEL_END_TOG            = LABEL_ANY_TOG + "END_" + LABEL_BORDER_VALUE;
 
     // Constants pertaining to file propagation
     public const string PROPAGATE_PROPERTY  = "Propagate";
@@ -51,37 +52,36 @@ class Constants
     public const string MESSAGE_FAILURE = "Mod building has halted due to the critical errors described above";
 
     // Rules
-    public const string RULES_EXPECTED_USAGE = "Usage: ./"  + EXECUTABLE_NAME + ".exe -c [" + CONFIG_FILE_EXTENSION
+    public const string RULES_EXPECTED_USAGE = "Usage: ./"  + EXECUTABLE_NAME + ".exe -c [" + DESC_CONFIG_EXTENSIONS
         + " config file] -s [mod directory or zip file] -o [output directory or zip file]\n"
-        + "WARNING - IF THE OUTPUT DIRECTORY ALREADY EXISTS, IT MUST BE EMPTY UNLESS USING '" + TEMP_DIRECTORY + "'.\n"
-        + "IF YOU OUTPUT A ZIP FILE, THERE MUST BE NO OTHER FILE THAT EXISTS WITH THE SAME NAME AND PATHWAY.";
+        + "WARNING - IF THE OUTPUT DIRECTORY ALREADY EXISTS, IT MUST BE EMPTY UNLESS USING '" + TEMP_DIRECTORY
+        + "'\nIF YOU OUTPUT A ZIP FILE, THERE MUST BE NO OTHER FILE THAT EXISTS WITH THE SAME NAME AND PATHWAY.";
 
     public const string RULES_OUTPUT_LOCATION = "For data security and safety purposes, your output location must obey the following rules:\n" 
         + "- If outputting to a directory, it must be empty or non-existant, unless you use '" + TEMP_DIRECTORY
         + "' as your output directory. This directory will ALWAYS be deleted if it is detected at the start of program execution.\n"
         + "- There must be no pre-existing file at the output location. This program will not delete pre-existing files.";
+    
+    public const string RULES_OPTION_TYPE = "Options must have their values defined in one of the following ways:\n"
+        + "- String: Any text encased in double-quotes.\n"
+        + "- Number: An integer or floating-point value.\n"
+        + "- Boolean: Either 'true' or 'false' (case sensitive).\n"
+        + "- Json Object: This must have a '" + PROPERTY_VALUE + "' (case-sensitive) property defined as a string, number or Boolean.\n"
+        + "- Json lists are not allowed.\n"
+        + "- A null or empty Option value is not allowed.";
 
     public const string RULES_OPTION_NAME_CHARACTERS = "Option names cannot be empty, and may only contain the following characters:\n"
         + "- Letters (a-z, A-Z)\n"
         + "- Numbers (0-9)\n"
         + "- Underscores (_)\n"
         + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.";
-
-    public const string RULES_OPTION_VALUE = "An Option's '" + PROPERTY_VALUE + "' Property can be defined in the following ways:\n"
-        + "- String: Any text encased in double-quotes.\n"
-        + "- Number: An integer or floating-point value\n"
-        + "- Boolean: Either 'true' or 'false' (case sensitive)\n"
-        + "- Json lists and objects cannot be converted to strings and will cause an error if used.\n"
-        + "- A null, empty or missing '" + PROPERTY_VALUE + "' field is not allowed.";
     
     public const string RULES_PROPAGATE_PROPERTY = "Configuration files may have a '" + PROPAGATE_PROPERTY + "' property that must defined in a special way:\n"
         + "- This property must be a Json object.\n"
-        + "- Each sub-property should be a relative directory in a valid DOOM Eternal .resource file, such as 'gameresources_patch1' or 'warehouse/generated/decls'.\n"
+        + "- Each sub-property's name should be a relative directory.\n"
         + "- Each sub-property must be defined as a list of strings.\n" 
         + "- These strings must be relative paths to files or directories inside your unbuilt mod's '" + PROPAGATE_DIRECTORY + "' folder.\n"
-        + "When your mod is built, files/directories listed in the sub-property arrays will be copied to the resource file the array belongs to.";
-
-    public const string RULES_SUPPORTED_FILETYPES = "This application only supports injecting configuration data into .decl and .json files.";
+        + "When your mod is built, files/directories listed in the sub-property arrays will be copied to the directory specified in the list's name.";
 
     public const string RULES_LABEL_FORMATTING = "Labels must have the form "
         + LABEL_ANY + "[TYPE]" + LABEL_NAME_EXP_SEPARATOR + "[EXPRESSION]" + LABEL_BORDER_VALUE + " where:\n"

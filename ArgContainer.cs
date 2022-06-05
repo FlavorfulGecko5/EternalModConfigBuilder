@@ -65,7 +65,7 @@ class ArgContainer
     private void validateConfigArg()
     {
         // Validate extension and existance
-        if (!hasExtension(configPath, CONFIG_FILE_EXTENSION))
+        if (!hasValidConfigFileExtension(configPath))
             ProcessErrorCode(BAD_CONFIG_EXTENSION, configPath);
         if (!File.Exists(configPath))
             ProcessErrorCode(CONFIG_NOT_FOUND, configPath);

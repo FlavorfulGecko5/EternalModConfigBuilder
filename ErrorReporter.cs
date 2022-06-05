@@ -35,9 +35,9 @@ class ErrorReporter
             case BAD_CONFIG_EXTENSION:
                 formattedString = String.Format
                 (
-                    "The configuration file '{0}' must be a '{1}' file.",
+                    "The configuration file '{0}' must be a {1} file.",
                     arg0, // The config. filepath 
-                    CONFIG_FILE_EXTENSION
+                    DESC_CONFIG_EXTENSIONS
                 );
                 break;
             case CONFIG_NOT_FOUND:
@@ -85,13 +85,6 @@ class ErrorReporter
                     arg0 // The exception message
                 );
                 break;
-            case OPTION_ISNT_OBJECT:
-                formattedString = String.Format
-                (
-                    "The Option '{0}' is not defined as a Json object in the configuration file.",
-                    arg0 // The option name
-                );
-                break;
             case BAD_NAME_FORMATTING:
                 formattedString = String.Format
                 (
@@ -107,16 +100,23 @@ class ErrorReporter
                     arg0 // The option name
                 );
                 break;
-            case BAD_OPTION_VALUE:
+            case BAD_OPTION_TYPE:
                 formattedString = String.Format
                 (
-                    "The Option '{0}' has it's required '{1}' property incorrectly defined, or missing entirely in the configuration file.\n\n{2}",
+                    "The Option '{0}' is not defined in a valid way in the configuration file.\n\n{1}",
                     arg0, // The option name
-                    PROPERTY_VALUE,
-                    RULES_OPTION_VALUE
+                    RULES_OPTION_TYPE
                 );
                 break;
             // Propagation Errors
+            case PROPAGATE_ISNT_OBJECT:
+                formattedString = String.Format
+                (
+                    "The '{0}' property in the configuration file is not defined as an object.\n\n{1}",
+                    PROPAGATE_PROPERTY,
+                    RULES_PROPAGATE_PROPERTY
+                );
+                break;
             case BAD_PROP_ARRAY:
                 formattedString = String.Format
                 (
@@ -283,11 +283,11 @@ enum ErrorCode
     OUTPUT_NONEMPTY_DIRECTORY,
     // Config. file parsing errors
     BAD_JSON_FILE,
-    OPTION_ISNT_OBJECT,
     BAD_NAME_FORMATTING,
     DUPLICATE_NAME,
-    BAD_OPTION_VALUE,
+    BAD_OPTION_TYPE,
     // Propagation Errors
+    PROPAGATE_ISNT_OBJECT,
     BAD_PROP_ARRAY,
     ROOTED_PROP_DIRECTORY,
     ROOTED_PROP_FILE,

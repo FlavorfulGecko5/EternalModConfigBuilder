@@ -8,6 +8,14 @@ class Util
         return false;
     }
 
+    public static bool hasValidConfigFileExtension(string filePath)
+    {
+        foreach (string extension in CONFIG_EXTENSIONS)
+            if (hasExtension(filePath, extension))
+                return true;
+        return false;
+    }
+
     // Returns true if a mod file has a valid extension for containing labels
     public static bool hasValidModFileExtension(string filePath)
     {

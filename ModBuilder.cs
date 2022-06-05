@@ -19,16 +19,12 @@ class ModBuilder
         createActiveOutputDir();
         Directory.SetCurrentDirectory(activeDir);
 
-        FileParser parser = new FileParser(cfg.options);
-
-        string[] allFiles = Directory.GetFiles(".", "*.*", AllDirectories);
-        foreach (string file in allFiles)
-            if (hasValidModFileExtension(file))
-                parser.parseFile(file);
-
+        parseFiles();
         propagateAll();
+
         Directory.SetCurrentDirectory(startDir);
-        buildZip();
+        if(io.outToZip)
+            buildZip();
     }
 
     private void createActiveOutputDir()
@@ -46,6 +42,16 @@ class ModBuilder
             DirectoryInfo copyTo = new DirectoryInfo(activeDir);
             CopyDir(copyFrom, copyTo);
         }
+    }
+
+    private void parseFiles()
+    {
+        FileParser parser = new FileParser(cfg.options);
+
+        string[] allFiles = Directory.GetFiles(".", "*.*", AllDirectories);
+        foreach (string file in allFiles)
+            if (hasValidModFileExtension(file))
+                parser.parseFile(file);
     }
 
     private void propagateAll()
@@ -66,10 +72,7 @@ class ModBuilder
 
     private void buildZip()
     {
-        if (io.outToZip)
-        {
-            ZipFile.CreateFromDirectory(TEMP_DIRECTORY, io.outPath);
-            Directory.Delete(TEMP_DIRECTORY, true);
-        }
+        ZipFile.CreateFromDirectory(TEMP_DIRECTORY, io.outPath);
+        Directory.Delete(TEMP_DIRECTORY, true);
     }
 }
