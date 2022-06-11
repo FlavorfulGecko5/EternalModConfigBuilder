@@ -11,6 +11,7 @@ class Constants
     public static readonly string[] CONFIG_EXTENSIONS = new string[] {".txt", ".json"};
     public const string DESC_CONFIG_EXTENSIONS = ".txt or .json";
     public static readonly string[] SUPPORTED_FILETYPES = new string[] { ".decl", ".json" };
+    public const string DESC_SUPPORTED_FILETYPES = ".decl and .json";
 
     // Constants pertaining to directories
     public const string TEMP_DIRECTORY = "eternalmodbuilder_temp";
@@ -47,7 +48,8 @@ class Constants
 
     public const string MESSAGE_SUCCESS = "Your mod has been successfully built from the configuration file.\n"
         + "Please remember that this program cannot catch every conceivable typo made when inserting labels into your mod files.\n"
-        + "If your game crashes after injecting the mod, please double-check your mod files for errors.";
+        + "If your game crashes after injecting the mod, please double-check your mod files for errors.\n"
+        + "Remember, only " + DESC_SUPPORTED_FILETYPES + " mod files are checked for labels/expressions.";
     
     public const string MESSAGE_FAILURE = "Mod building has halted due to the critical errors described above";
 

@@ -90,10 +90,15 @@ class FileParser
             ProcessErrorCode(CANT_EVAL_EXP, path, label, exp, e.Message); 
         }
 
-        if (result != null)
-            return result;
-        else
+        if(result == null)
             return NULL_EXP_RESULT;
+
+        // Decl files use lowercase true/false
+        // Variations in capitalization cause game crashes
+        if(result.Equals("true", CCIC) || result.Equals("false", CCIC))
+            result = result.ToLower(); // 
+
+        return result;
     }
 
     private void parseVariable()
