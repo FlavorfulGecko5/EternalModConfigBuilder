@@ -27,7 +27,8 @@ class PropagateList
             string? directory = Path.GetDirectoryName(path);
             if(File.Exists(copyFrom) && directory != null)
             {
-                Directory.CreateDirectory(Path.Combine(name, directory));
+                if(!directory.Equals(""))
+                    Directory.CreateDirectory(Path.Combine(name, directory));
                 File.Copy(copyFrom, copyTo, true);
             }
             else if (Directory.Exists(copyFrom))

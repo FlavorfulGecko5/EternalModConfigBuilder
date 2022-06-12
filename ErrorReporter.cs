@@ -61,6 +61,13 @@ class ErrorReporter
                     arg0 // The mod filepath
                 );
                 break;
+            case MOD_TOO_BIG:
+                formattedString = String.Format
+                (
+                    "For data security purposes, your input directory/zip may not be larger than ~{0} gigabytes.",
+                    MAX_INPUT_SIZE_BYTES / 1000000000.0
+                );
+                break;
             case OUTPUT_PREEXISTING_FILE:
                 formattedString = String.Format
                 (
@@ -74,6 +81,13 @@ class ErrorReporter
                 (
                     "There is a pre-existing, non-empty directory at your output location '{0}'\n\n{1}",
                     arg0, // The output path
+                    RULES_OUTPUT_LOCATION
+                );
+                break;
+            case OUTPUT_INSIDE_SRC:
+                formattedString = String.Format
+                (
+                    "You cannot output your built mod to a location inside your source directory.\n\n{0}",
                     RULES_OUTPUT_LOCATION
                 );
                 break;
@@ -279,8 +293,10 @@ enum ErrorCode
     CONFIG_NOT_FOUND,
     MOD_NOT_FOUND,
     MOD_NOT_VALID,
+    MOD_TOO_BIG,
     OUTPUT_PREEXISTING_FILE,
     OUTPUT_NONEMPTY_DIRECTORY,
+    OUTPUT_INSIDE_SRC,
     // Config. file parsing errors
     BAD_JSON_FILE,
     BAD_NAME_FORMATTING,

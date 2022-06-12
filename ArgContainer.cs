@@ -74,26 +74,60 @@ class ArgContainer
     private void validateSourceArg()
     {
         if(File.Exists(srcPath))
-        {
-            if(!hasExtension(srcPath, ".zip"))
-                ProcessErrorCode(MOD_NOT_VALID, srcPath);
-
-            // Check if it's an actual, valid zipfile.
-            try
-            {
-                using(ZipArchive z = ZipFile.OpenRead(srcPath))
-                {
-                    ReadOnlyCollection<ZipArchiveEntry> entries = z.Entries;
-                    srcIsZip = true;
-                }
-            }
-            catch (InvalidDataException) // Not a valid zip
-            { 
-                ProcessErrorCode(MOD_NOT_VALID, srcPath); 
-            }
-        }
-        else if (!Directory.Exists(srcPath))
+            validateZipSource();
+        else if (Directory.Exists(srcPath))
+            validateDirSource();
+        else
             ProcessErrorCode(MOD_NOT_FOUND, srcPath);
+    }
+
+    private void validateZipSource()
+    {
+        if (!hasExtension(srcPath, ".zip"))
+            ProcessErrorCode(MOD_NOT_VALID, srcPath);
+
+        // Check if it's an actual, valid zipfile.
+        try
+        {
+            ZipArchive zip = ZipFile.OpenRead(srcPath);
+            ReadOnlyCollection<ZipArchiveEntry> entries = zip.Entries;
+            zip.Dispose();
+        }
+        catch (InvalidDataException) // Not a valid zip
+        {
+            ProcessErrorCode(MOD_NOT_VALID, srcPath);
+        }
+
+        FileInfo zipInfo = new FileInfo(srcPath);
+        if (zipInfo.Length > MAX_INPUT_SIZE_BYTES)
+            ProcessErrorCode(MOD_TOO_BIG);
+
+        srcIsZip = true;
+    }
+
+    private void validateDirSource()
+    {
+        checkInputDirSize(new DirectoryInfo(srcPath));
+    }
+
+    private long checkInputDirSize(DirectoryInfo directory)
+    {
+        long size = 0;
+        // Add file sizes.
+        FileInfo[] files = directory.GetFiles();
+        foreach (FileInfo f in files)
+        {
+            size += f.Length;
+        }
+        // Add subdirectory sizes.
+        DirectoryInfo[] subDirectories = directory.GetDirectories();
+        foreach (DirectoryInfo subDir in subDirectories)
+        {
+            size += checkInputDirSize(subDir);
+            if(size > MAX_INPUT_SIZE_BYTES)
+                ProcessErrorCode(MOD_TOO_BIG);
+        }
+        return size;
     }
 
     private void validateOutputArg()
@@ -104,6 +138,15 @@ class ArgContainer
         {
             if (Directory.EnumerateFileSystemEntries(outPath).Any())
                 ProcessErrorCode(OUTPUT_NONEMPTY_DIRECTORY, outPath);
+        }
+
+        if (!srcIsZip)
+        {
+            string srcAbs = Path.GetFullPath(srcPath),
+                   outAbs = Path.GetFullPath(outPath);
+
+            if (outAbs.Contains(srcAbs, CCIC))
+                ProcessErrorCode(OUTPUT_INSIDE_SRC);
         }
         outToZip = hasExtension(outPath, ".zip");
     }

@@ -6,6 +6,7 @@ class Constants
 
     // Constants pertaining to command-line arguments
     public const int EXPECTED_ARG_COUNT = 6;
+    public const long MAX_INPUT_SIZE_BYTES = 2000000000; // ~2 gigabytes
     
     // Constants pertaining to file extensions.
     public static readonly string[] CONFIG_EXTENSIONS = new string[] {".txt", ".json"};
@@ -62,7 +63,8 @@ class Constants
     public const string RULES_OUTPUT_LOCATION = "For data security and safety purposes, your output location must obey the following rules:\n" 
         + "- If outputting to a directory, it must be empty or non-existant, unless you use '" + TEMP_DIRECTORY
         + "' as your output directory. This directory will ALWAYS be deleted if it is detected at the start of program execution.\n"
-        + "- There must be no pre-existing file at the output location. This program will not delete pre-existing files.";
+        + "- There must be no pre-existing file at the output location. This program will not delete pre-existing files.\n"
+        + "- If using a directory as your source, your output path cannot be a location inside of it.";
     
     public const string RULES_OPTION_TYPE = "Options must have their values defined in one of the following ways:\n"
         + "- String: Any text encased in double-quotes.\n"

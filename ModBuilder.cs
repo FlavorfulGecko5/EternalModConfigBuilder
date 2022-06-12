@@ -72,6 +72,11 @@ class ModBuilder
 
     private void buildZip()
     {
+        // Allows zips to be output to another folder
+        // (The zip can only be created inside a pre-existing directory)
+        string? zipDir = Path.GetDirectoryName(io.outPath);
+        if(zipDir != null && !zipDir.Equals("")) // Null should be impossible
+            Directory.CreateDirectory(zipDir);
         ZipFile.CreateFromDirectory(TEMP_DIRECTORY, io.outPath);
         Directory.Delete(TEMP_DIRECTORY, true);
     }
