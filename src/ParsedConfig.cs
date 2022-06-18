@@ -49,7 +49,7 @@ class ParsedConfig
     private void parseOption()
     {
         validateName();
-        if(name.Equals(PROPAGATE_PROPERTY, CCIC))
+        if(name.Equals(PROPERTY_PROPAGATE, CCIC))
             parsePropagate();
         else
             parseOptionValue();

@@ -21,7 +21,7 @@ class PropagateList
     {
         foreach(string path in filePaths)
         {
-            string  copyFrom = Path.Combine(PROPAGATE_DIRECTORY, path),
+            string  copyFrom = Path.Combine(DIRECTORY_PROPAGATE, path),
                     copyTo = Path.Combine(name, path);
             // Null values should be impossible
             string? directory = Path.GetDirectoryName(path);

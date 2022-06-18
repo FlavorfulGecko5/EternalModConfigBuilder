@@ -30,7 +30,7 @@ class ModBuilder
     private void createActiveOutputDir()
     {
         // If zip, use temp. directory then zip to output after processing
-        activeDir = io.outToZip ? TEMP_DIRECTORY : io.outPath;
+        activeDir = io.outToZip ? DIRECTORY_TEMP : io.outPath;
 
         // Clone the contents of src to the active output directory
         Directory.CreateDirectory(activeDir);
@@ -56,7 +56,7 @@ class ModBuilder
 
     private void propagateAll()
     {
-        if (Directory.Exists(PROPAGATE_DIRECTORY))
+        if (Directory.Exists(DIRECTORY_PROPAGATE))
         {
             if (cfg.propagations.Count == 0)
                 ProcessErrorCode(PROPAGATE_DIR_NO_LISTS);
@@ -64,7 +64,7 @@ class ModBuilder
             foreach (PropagateList resource in cfg.propagations)
                 resource.propagate();
 
-            Directory.Delete(PROPAGATE_DIRECTORY, true);
+            Directory.Delete(DIRECTORY_PROPAGATE, true);
         }
         else if (cfg.propagations.Count > 0)
             ProcessErrorCode(PROPAGATE_LISTS_NO_DIR);
@@ -77,7 +77,7 @@ class ModBuilder
         string? zipDir = Path.GetDirectoryName(io.outPath);
         if(zipDir != null && !zipDir.Equals("")) // Null should be impossible
             Directory.CreateDirectory(zipDir);
-        ZipFile.CreateFromDirectory(TEMP_DIRECTORY, io.outPath);
-        Directory.Delete(TEMP_DIRECTORY, true);
+        ZipFile.CreateFromDirectory(DIRECTORY_TEMP, io.outPath);
+        Directory.Delete(DIRECTORY_TEMP, true);
     }
 }

@@ -127,7 +127,7 @@ class ErrorReporter
                 formattedString = String.Format
                 (
                     "The '{0}' property in the configuration file is not defined as an object.\n\n{1}",
-                    PROPAGATE_PROPERTY,
+                    PROPERTY_PROPAGATE,
                     RULES_PROPAGATE_PROPERTY
                 );
                 break;
@@ -135,7 +135,7 @@ class ErrorReporter
                 formattedString = String.Format
                 (
                     "The '{0}' property in the configuration file has an incorrectly defined sub-property '{1}'\n\n{2}",
-                    PROPAGATE_PROPERTY,
+                    PROPERTY_PROPAGATE,
                     arg0, // Propagate list name
                     RULES_PROPAGATE_PROPERTY
                 );
@@ -144,7 +144,7 @@ class ErrorReporter
                 formattedString = String.Format
                 (
                     "The '{0}' property in the configuration file has a sub-property named '{1}', which is a non-relative filepath. These sub-properties MUST have relative filepaths as their names.",
-                    PROPAGATE_PROPERTY,
+                    PROPERTY_PROPAGATE,
                     arg0 // Propagate list name
                 );
                 break;
@@ -152,7 +152,7 @@ class ErrorReporter
                 formattedString = String.Format
                 (
                     "The '{0}' property in the configuration file has a list '{1}' with filepath '{2}'. This filepath is non-relative, when all listed filepaths MUST be relative.",
-                    PROPAGATE_PROPERTY,
+                    PROPERTY_PROPAGATE,
                     arg0, // The list name
                     arg1 // The non-relative list element
                 );
@@ -161,7 +161,7 @@ class ErrorReporter
                 formattedString = String.Format
                 (
                     "The '{0}' directory exists in your mod folder, but no valid propagation lists are defined. Propagation will not occur.",
-                    PROPAGATE_DIRECTORY
+                    DIRECTORY_PROPAGATE
                 );
                 terminateProgram = false;
                 break;
@@ -169,7 +169,7 @@ class ErrorReporter
                 formattedString = String.Format
                 (
                     "You have valid propagation lists, but the '{0}' directory does not exist in your mod folder. Propagation will not occur.",
-                    PROPAGATE_DIRECTORY
+                    DIRECTORY_PROPAGATE
                 );
                 terminateProgram = false;
                 break;
@@ -179,7 +179,7 @@ class ErrorReporter
                     "The path '{0}' in propagation list '{1}' could not be found in the '{2}' folder. This path will be ignored.",
                     arg0, // The filepath
                     arg1, // The list name
-                    PROPAGATE_DIRECTORY
+                    DIRECTORY_PROPAGATE
                 );
                 terminateProgram = false;
                 break;

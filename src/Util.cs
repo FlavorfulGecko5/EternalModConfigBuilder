@@ -19,7 +19,7 @@ class Util
     // Returns true if a mod file has a valid extension for containing labels
     public static bool hasValidModFileExtension(string filePath)
     {
-        foreach(string extension in SUPPORTED_FILETYPES)
+        foreach(string extension in LABEL_FILETYPES)
             if(hasExtension(filePath, extension))
                 return true;
         return false;

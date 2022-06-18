@@ -18,8 +18,8 @@ class EternalModConfiguration
 
     private static void run(string[] args)
     {
-        if (Directory.Exists(TEMP_DIRECTORY))
-            Directory.Delete(TEMP_DIRECTORY, true);
+        if (Directory.Exists(DIRECTORY_TEMP))
+            Directory.Delete(DIRECTORY_TEMP, true);
 
         ArgContainer validArgs = new ArgContainer(args);
         ParsedConfig config = new ParsedConfig(validArgs.configPath);
