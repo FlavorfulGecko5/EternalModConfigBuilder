@@ -1,9 +1,9 @@
-﻿global using static Constants;
-global using static ErrorReporter;
+﻿global using static RuntimeManager;
+global using static Constants;
 global using static Util;
 class RuntimeManager
 {
-    static void Main(string[] args)
+    public static void Main(string[] args)
     {
         try
         {
@@ -29,5 +29,25 @@ class RuntimeManager
         builder.buildMod();
         
         System.Console.WriteLine(MESSAGE_SUCCESS);
+    }
+
+    public static void reportError(string msg)
+    {
+        System.Console.WriteLine(MESSAGE_ERROR + msg);
+        System.Console.WriteLine("\n" + MESSAGE_FAILURE);
+        Environment.Exit(1);
+    }
+
+    public static void reportUnknownError(Exception e)
+    {
+        reportError(String.Format(
+            "An unknown error occurred, printing Exception:\n\n{0}",
+            e.ToString()
+        ));
+    }
+
+    public static void reportWarning(string msg)
+    {
+        System.Console.WriteLine(MESSAGE_WARNING + msg);
     }
 }
