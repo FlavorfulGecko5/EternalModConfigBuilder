@@ -1,3 +1,4 @@
+using static PropagateList.Error;
 class PropagateList
 {
     public string name {get;}
@@ -37,7 +38,29 @@ class PropagateList
                 CopyDir(new DirectoryInfo(copyFrom), new DirectoryInfo(copyTo));
             }    
             else
-                ProcessErrorCode(PROPAGATE_PATH_NOT_FOUND, path, name);
+                ThrowError(PROPAGATE_PATH_NOT_FOUND, path);
         }
+    }
+
+    public enum Error
+    {
+        PROPAGATE_PATH_NOT_FOUND
+    }
+
+    private void ThrowError(Error error, string arg0 = "")
+    {
+        switch(error)
+        {
+            case PROPAGATE_PATH_NOT_FOUND:
+            reportWarning(String.Format(
+                "The path '{0}' in propagation list '{1}' does not exist in"
+                + " '{2}'. This path will be ignored.",
+                arg0, // The filepath
+                name,
+                DIRECTORY_PROPAGATE
+            ));
+            break;
+        }
+
     }
 }

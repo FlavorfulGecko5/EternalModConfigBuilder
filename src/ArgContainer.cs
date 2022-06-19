@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Collections.ObjectModel;
+using static ArgContainer.Error;
 class ArgContainer
 {
     public string configPath = "", srcPath = "", outPath = "";
@@ -18,7 +19,7 @@ class ArgContainer
         bool hasConfig = false, hasSource = false, hasOutput = false;
 
         if (args.Length != EXPECTED_ARG_COUNT)
-            ProcessErrorCode(BAD_NUMBER_ARGUMENTS, args.Length.ToString());
+            ThrowError(BAD_NUMBER_ARGUMENTS, args.Length.ToString());
 
         for (int i = 0; i < args.Length; i += 2)
         {
@@ -56,7 +57,7 @@ class ArgContainer
 
                 default:
                 CATCH_INVALID_ARGUMENT:
-                    ProcessErrorCode(BAD_ARGUMENT, (i + 1).ToString());
+                    ThrowError(BAD_ARGUMENT, (i + 1).ToString());
                     break;
             }
         }
@@ -66,9 +67,9 @@ class ArgContainer
     {
         // Validate extension and existance
         if (!hasValidConfigFileExtension(configPath))
-            ProcessErrorCode(BAD_CONFIG_EXTENSION, configPath);
+            ThrowError(BAD_CONFIG_EXTENSION);
         if (!File.Exists(configPath))
-            ProcessErrorCode(CONFIG_NOT_FOUND, configPath);
+            ThrowError(CONFIG_NOT_FOUND);
     }
 
     private void validateSourceArg()
@@ -78,13 +79,13 @@ class ArgContainer
         else if (Directory.Exists(srcPath))
             validateDirSource();
         else
-            ProcessErrorCode(MOD_NOT_FOUND, srcPath);
+            ThrowError(MOD_NOT_FOUND);
     }
 
     private void validateZipSource()
     {
         if (!hasExtension(srcPath, ".zip"))
-            ProcessErrorCode(MOD_NOT_VALID, srcPath);
+            ThrowError(MOD_NOT_VALID);
 
         // Check if it's an actual, valid zipfile.
         try
@@ -95,12 +96,12 @@ class ArgContainer
         }
         catch (InvalidDataException) // Not a valid zip
         {
-            ProcessErrorCode(MOD_NOT_VALID, srcPath);
+            ThrowError(MOD_NOT_VALID);
         }
 
         FileInfo zipInfo = new FileInfo(srcPath);
         if (zipInfo.Length > MAX_INPUT_SIZE_BYTES)
-            ProcessErrorCode(MOD_TOO_BIG);
+            ThrowError(MOD_TOO_BIG);
 
         srcIsZip = true;
     }
@@ -125,7 +126,7 @@ class ArgContainer
         {
             size += checkInputDirSize(subDir);
             if(size > MAX_INPUT_SIZE_BYTES)
-                ProcessErrorCode(MOD_TOO_BIG);
+                ThrowError(MOD_TOO_BIG);
         }
         return size;
     }
@@ -133,11 +134,11 @@ class ArgContainer
     private void validateOutputArg()
     {
         if (File.Exists(outPath))
-            ProcessErrorCode(OUTPUT_PREEXISTING_FILE, outPath);
+            ThrowError(OUTPUT_PREEXISTING_FILE);
         else if (Directory.Exists(outPath))
         {
             if (Directory.EnumerateFileSystemEntries(outPath).Any())
-                ProcessErrorCode(OUTPUT_NONEMPTY_DIRECTORY, outPath);
+                ThrowError(OUTPUT_NONEMPTY_DIRECTORY);
         }
 
         if (!srcIsZip)
@@ -146,8 +147,105 @@ class ArgContainer
                    outAbs = Path.GetFullPath(outPath);
 
             if (outAbs.Contains(srcAbs, CCIC))
-                ProcessErrorCode(OUTPUT_INSIDE_SRC);
+                ThrowError(OUTPUT_INSIDE_SRC);
         }
         outToZip = hasExtension(outPath, ".zip");
+    }
+
+    public enum Error
+    {
+        BAD_NUMBER_ARGUMENTS,
+        BAD_ARGUMENT,
+        BAD_CONFIG_EXTENSION,
+        CONFIG_NOT_FOUND,
+        MOD_NOT_FOUND,
+        MOD_NOT_VALID,
+        MOD_TOO_BIG,
+        OUTPUT_PREEXISTING_FILE,
+        OUTPUT_NONEMPTY_DIRECTORY,
+        OUTPUT_INSIDE_SRC,
+    }
+
+    private void ThrowError(Error error, string arg0 = "")
+    {
+        switch(error)
+        {
+            case BAD_NUMBER_ARGUMENTS:
+            reportError(String.Format
+            (
+                "Bad number of arguments. (Expected {0}, received {1})\n\n{2}",
+                EXPECTED_ARG_COUNT,
+                arg0, // args.length
+                RULES_EXPECTED_USAGE
+            ));
+            break;
+            
+            case BAD_ARGUMENT:
+            reportError(String.Format(
+                "Command line argument #{0} is invalid.\n\n{1}",
+                arg0, // The invalid argument number
+                RULES_EXPECTED_USAGE
+            ));
+            break;
+
+            case BAD_CONFIG_EXTENSION:
+            reportError(String.Format(
+                "The configuration file '{0}' must be a {1} file.",
+                configPath,
+                DESC_CONFIG_EXTENSIONS
+            ));
+            break;
+
+            case CONFIG_NOT_FOUND:
+            reportError(String.Format(
+                "Failed to find the configuration file '{0}'",
+                configPath
+            ));
+            break;
+
+            case MOD_NOT_FOUND:
+            reportError(String.Format(
+                "The mod directory or .zip file '{0}' does not exist.",
+                srcPath
+            ));
+            break;
+
+            case MOD_NOT_VALID:
+            reportError(String.Format(
+                "The mod '{0}' is not a valid directory or .zip file.",
+                srcPath
+            ));
+            break;
+
+            case MOD_TOO_BIG:
+            reportError(String.Format(
+                "Your mod may not be larger than ~{0} gigabytes.",
+                MAX_INPUT_SIZE_BYTES / 1000000000.0
+            ));
+            break;
+
+            case OUTPUT_PREEXISTING_FILE:
+            reportError(String.Format(
+                "A file exists at the output path '{0}'\n\n{1}",
+                outPath,
+                RULES_OUTPUT_LOCATION
+            ));
+            break;
+
+            case OUTPUT_NONEMPTY_DIRECTORY:
+            reportError(String.Format(
+                "A non-empty folder exists at the output path '{0}'\n\n{1}",
+                outPath,
+                RULES_OUTPUT_LOCATION
+            ));
+            break;
+
+            case OUTPUT_INSIDE_SRC:
+            reportError(String.Format(
+                "Your output path cannot be inside your mod directory.\n\n{0}",
+                RULES_OUTPUT_LOCATION
+            ));
+            break;
+        }
     }
 }

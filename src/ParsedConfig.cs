@@ -1,11 +1,12 @@
 using Newtonsoft.Json.Linq;
+using static ParsedConfig.Error;
 class ParsedConfig
 {
     public bool hasPropagations;
     public List<Option> options { get; }
     public List<PropagateList> propagations {get;}
 
-    // Used to avoid constant constantly passing by value
+    // Used to avoid constantly passing by value
     private string configPath, name;
 
     private bool isObject;
@@ -66,35 +67,35 @@ class ParsedConfig
                 value = (string?)nonObjectOption.Value;
 
             if (value == null)
-                ProcessErrorCode(BAD_OPTION_TYPE, name);
+                ThrowError(BAD_OPTION_TYPE);
             else
                 options.Add(new Option(name, value));
         }
         // If the property is a json list or object
         catch (System.ArgumentException)
         {
-            ProcessErrorCode(BAD_OPTION_TYPE, name);
+            ThrowError(BAD_OPTION_TYPE);
         }
     }
 
     private void parsePropagate()
     {
         if (hasPropagations)
-            ProcessErrorCode(DUPLICATE_NAME, name);
+            ThrowError(DUPLICATE_NAME);
         hasPropagations = true;
         if(!isObject)
-            ProcessErrorCode(PROPAGATE_ISNT_OBJECT);
+            ThrowError(PROPAGATE_ISNT_OBJECT);
 
         foreach (JProperty resource in objectOption.Properties())
         {
             string copyTo = resource.Name;
             if (Path.IsPathRooted(copyTo))
-                ProcessErrorCode(ROOTED_PROP_DIRECTORY, copyTo);
+                ThrowError(ROOTED_PROP_DIRECTORY, copyTo);
 
             string[] paths = readStringList(resource, BAD_PROP_ARRAY);
             foreach (string p in paths)
                 if (Path.IsPathRooted(p))
-                    ProcessErrorCode(ROOTED_PROP_FILE, copyTo, p);
+                    ThrowError(ROOTED_PROP_FILE, copyTo, p);
 
             propagations.Add(new PropagateList(copyTo, paths));
         }
@@ -116,7 +117,7 @@ class ParsedConfig
         }
         catch (Newtonsoft.Json.JsonReaderException e)
         {
-            ProcessErrorCode(BAD_JSON_FILE, e.Message);
+            ThrowError(BAD_JSON_FILE, e.Message);
         }
 
         return rawJson;
@@ -125,7 +126,7 @@ class ParsedConfig
     private void validateName()
     {
         if(name.Length == 0)
-            ProcessErrorCode(BAD_NAME_FORMATTING, name);
+            ThrowError(BAD_NAME_FORMATTING);
         
         foreach(char c in name)
         {
@@ -133,16 +134,16 @@ class ParsedConfig
             if(!(c <= 'Z' && c >= 'A'))
             if(!(c <= '9' && c >= '0'))
             if(!NAME_SPECIAL_CHARACTERS.Contains(c))
-                ProcessErrorCode(BAD_NAME_FORMATTING, name);
+                ThrowError(BAD_NAME_FORMATTING);
         }
 
         foreach(Option o in options)
             if(o.name.Equals(name, CCIC))
-                ProcessErrorCode(DUPLICATE_NAME, name);
+                ThrowError(DUPLICATE_NAME);
     }
 
     // Reads a Json string list from a property assumed to exist
-    private string[] readStringList(JProperty property, ErrorCode onFail)
+    private string[] readStringList(JProperty property, Error onFail)
     {
         string[] list = new string[0];
         try
@@ -154,7 +155,7 @@ class ParsedConfig
             {
                 string? currentElement = (string?)rawData[i];
                 if (currentElement == null)
-                    ProcessErrorCode(onFail, property.Name);
+                    ThrowError(onFail, property.Name);
                 else
                     list[i] = currentElement;
             }
@@ -162,12 +163,12 @@ class ParsedConfig
         // The property is not defined as an array
         catch (System.InvalidCastException) 
         { 
-            ProcessErrorCode(onFail, property.Name); 
+            ThrowError(onFail, property.Name); 
         }
         // A list's element is a Json list or object
         catch (System.ArgumentException) 
         { 
-            ProcessErrorCode(onFail, property.Name); 
+            ThrowError(onFail, property.Name); 
         }
         return list;
     }
@@ -185,5 +186,95 @@ class ParsedConfig
             formattedString += resource.ToString();
         formattedString += "**********";
         return formattedString;
+    }
+
+    public enum Error
+    {
+        BAD_JSON_FILE,
+        BAD_NAME_FORMATTING,
+        DUPLICATE_NAME,
+        BAD_OPTION_TYPE,
+        PROPAGATE_ISNT_OBJECT,
+        BAD_PROP_ARRAY,
+        ROOTED_PROP_DIRECTORY,
+        ROOTED_PROP_FILE,   
+    }
+
+    private void ThrowError(Error error, string arg0 = "", string arg1 = "")
+    {
+        string msg = String.Format(
+            "Problem encountered with configuration file '{0}'\n",
+            configPath
+        );
+        switch(error)
+        {
+            case BAD_JSON_FILE:
+            msg += String.Format(
+                "There is a syntax error. Printing Exception message:\n\n{0}",
+                arg0 // The exception message
+            );
+            break;
+
+            case BAD_NAME_FORMATTING:
+            msg += String.Format(
+                "The Option '{0}' has an invalid name.\n\n{1}",
+                name,
+                RULES_OPTION_NAME_CHARACTERS
+            );
+            break;
+
+            case DUPLICATE_NAME:
+            msg += String.Format(
+                "The name '{0}' is used to define multiple Options.\n\n{1}",
+                name,
+                RULES_OPTION_NAME_CHARACTERS
+            );
+            break;
+
+            case BAD_OPTION_TYPE:
+            msg += String.Format(
+                "The Option '{0}' is not defined in a valid way.\n\n{1}",
+                name,
+                RULES_OPTION_TYPE
+            );
+            break;
+
+            case PROPAGATE_ISNT_OBJECT:
+            msg += String.Format(
+                "The '{0}' property is not defined as an object.\n\n{1}",
+                PROPERTY_PROPAGATE,
+                RULES_PROPAGATE_PROPERTY
+            );
+            break;
+
+            case BAD_PROP_ARRAY:
+            msg += String.Format(
+                "The '{0}' property has an invalid sub-property '{1}'\n\n{2}",
+                PROPERTY_PROPAGATE,
+                arg0, // Propagate list name
+                RULES_PROPAGATE_PROPERTY
+            );
+            break;
+
+            case ROOTED_PROP_DIRECTORY:
+            msg += String.Format(
+                "The '{0}' sub-property '{1}' has a non-relative name.\n\n{2}",
+                PROPERTY_PROPAGATE,
+                arg0, // Propagate list name
+                RULES_PROPAGATE_PROPERTY
+            );
+            break;
+
+            case ROOTED_PROP_FILE:
+            msg += String.Format(
+                "The '{0}' list '{1}' contains non-relative path '{2}'\n\n{3}",
+                PROPERTY_PROPAGATE,
+                arg0, // Propagate list name
+                arg1, // Propagate list element
+                RULES_PROPAGATE_PROPERTY
+            );
+            break;
+        }
+        reportError(msg);
     }
 }

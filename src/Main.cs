@@ -1,8 +1,7 @@
 ﻿global using static Constants;
-global using static ErrorCode;
 global using static ErrorReporter;
 global using static Util;
-class EternalModConfiguration
+class EternalModBuilder
 {
     static void Main(string[] args)
     {
@@ -12,7 +11,7 @@ class EternalModConfiguration
         }
         catch (Exception e) 
         {
-            ProcessErrorCode(UNKNOWN_ERROR, e.ToString());
+            reportUnknownError(e);
         }  
     }
 
