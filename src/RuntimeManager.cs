@@ -1,7 +1,7 @@
 ﻿global using static Constants;
 global using static ErrorReporter;
 global using static Util;
-class EternalModBuilder
+class RuntimeManager
 {
     static void Main(string[] args)
     {
