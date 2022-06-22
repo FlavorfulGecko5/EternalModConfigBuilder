@@ -41,7 +41,7 @@ class ModBuilder
         {
             DirectoryInfo copyFrom = new DirectoryInfo(io.srcPath);
             DirectoryInfo copyTo = new DirectoryInfo(activeDir);
-            CopyDir(copyFrom, copyTo);
+            ExtUtil.CopyDir(copyFrom, copyTo);
         }
     }
 
@@ -51,7 +51,7 @@ class ModBuilder
 
         string[] allFiles = Directory.GetFiles(".", "*.*", AllDirectories);
         foreach (string file in allFiles)
-            if (hasValidModFileExtension(file))
+            if (ExtUtil.hasValidModFileExtension(file))
                 parser.parseFile(file);
     }
 

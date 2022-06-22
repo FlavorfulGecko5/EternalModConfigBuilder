@@ -35,7 +35,7 @@ class PropagateList
             else if (Directory.Exists(copyFrom))
             {
                 Directory.CreateDirectory(copyTo);
-                CopyDir(new DirectoryInfo(copyFrom), new DirectoryInfo(copyTo));
+                ExtUtil.CopyDir(new DirectoryInfo(copyFrom), new DirectoryInfo(copyTo));
             }    
             else
                 ThrowError(PROPAGATE_PATH_NOT_FOUND, path);

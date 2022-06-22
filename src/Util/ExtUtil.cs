@@ -1,4 +1,4 @@
-class Util
+class ExtUtil
 {
     public static bool hasExtension(string path, string extension)
     {

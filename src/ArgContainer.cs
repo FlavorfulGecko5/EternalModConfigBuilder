@@ -66,7 +66,7 @@ class ArgContainer
     private void validateConfigArg()
     {
         // Validate extension and existance
-        if (!hasValidConfigFileExtension(configPath))
+        if (!ExtUtil.hasValidConfigFileExtension(configPath))
             ThrowError(BAD_CONFIG_EXTENSION);
         if (!File.Exists(configPath))
             ThrowError(CONFIG_NOT_FOUND);
@@ -84,7 +84,7 @@ class ArgContainer
 
     private void validateZipSource()
     {
-        if (!hasExtension(srcPath, ".zip"))
+        if (!ExtUtil.hasExtension(srcPath, ".zip"))
             ThrowError(MOD_NOT_VALID);
 
         // Check if it's an actual, valid zipfile.
@@ -149,7 +149,7 @@ class ArgContainer
             if (outAbs.Contains(srcAbs, CCIC))
                 ThrowError(OUTPUT_INSIDE_SRC);
         }
-        outToZip = hasExtension(outPath, ".zip");
+        outToZip = ExtUtil.hasExtension(outPath, ".zip");
     }
 
     public enum Error

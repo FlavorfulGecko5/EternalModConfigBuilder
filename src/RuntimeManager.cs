@@ -1,6 +1,5 @@
 ﻿global using static RuntimeManager;
 global using static Constants;
-global using static Util;
 class RuntimeManager
 {
     public static void Main(string[] args)
