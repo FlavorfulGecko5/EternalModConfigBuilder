@@ -24,18 +24,16 @@ class PropagateList
         {
             string  copyFrom = Path.Combine(DIRECTORY_PROPAGATE, path),
                     copyTo = Path.Combine(name, path);
-            // Null values should be impossible
-            string? directory = Path.GetDirectoryName(path);
-            if(File.Exists(copyFrom) && directory != null)
+
+            if(File.Exists(copyFrom))
             {
-                if(!directory.Equals(""))
-                    Directory.CreateDirectory(Path.Combine(name, directory));
+                DirUtil.createDirectoryInFilePath(copyTo);
                 File.Copy(copyFrom, copyTo, true);
             }
             else if (Directory.Exists(copyFrom))
             {
                 Directory.CreateDirectory(copyTo);
-                ExtUtil.CopyDir(new DirectoryInfo(copyFrom), new DirectoryInfo(copyTo));
+                DirUtil.copyDirectory(copyFrom, copyTo);
             }    
             else
                 ThrowError(PROPAGATE_PATH_NOT_FOUND, path);

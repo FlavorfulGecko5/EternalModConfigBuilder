@@ -24,13 +24,4 @@ class ExtUtil
                 return true;
         return false;
     }
-
-    // Copy a source directory's contents to the target directory
-    public static void CopyDir(DirectoryInfo source, DirectoryInfo target)
-    {
-        foreach (DirectoryInfo dir in source.GetDirectories())
-            CopyDir(dir, target.CreateSubdirectory(dir.Name));
-        foreach (FileInfo file in source.GetFiles())
-            file.CopyTo(Path.Combine(target.FullName, file.Name), true);
-    }
 }

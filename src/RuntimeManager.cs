@@ -19,12 +19,7 @@ class RuntimeManager
         if (Directory.Exists(DIRECTORY_TEMP))
             Directory.Delete(DIRECTORY_TEMP, true);
 
-        ArgContainer validArgs = new ArgContainer(args);
-        ParsedConfig config = new ParsedConfig(validArgs.configPath);
-
-        //System.Console.WriteLine(config.ToString());
-
-        ModBuilder builder = new ModBuilder(config, validArgs);
+        ModBuilder builder = new ModBuilder(args);
         builder.buildMod();
         
         System.Console.WriteLine(MESSAGE_SUCCESS);

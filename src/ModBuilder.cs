@@ -1,5 +1,3 @@
-using System.IO.Compression;
-using static System.IO.SearchOption;
 using static ModBuilder.Error;
 class ModBuilder
 {
@@ -7,12 +5,13 @@ class ModBuilder
     private ArgContainer io;
     private string startDir, activeDir;
 
-    public ModBuilder(ParsedConfig cfgParameter, ArgContainer ioParameter)
+    public ModBuilder(string[] args)
     {
-        cfg = cfgParameter;
-        io = ioParameter;
+        io = new ArgContainer(args);
+        cfg = new ParsedConfig(io.configPath);
         startDir = Directory.GetCurrentDirectory();
         activeDir = "";
+        //System.Console.WriteLine(cfg.ToString());
     }
 
     public void buildMod()
@@ -36,20 +35,16 @@ class ModBuilder
         // Clone the contents of src to the active output directory
         Directory.CreateDirectory(activeDir);
         if (io.srcIsZip)
-            ZipFile.ExtractToDirectory(io.srcPath, activeDir);
+            ZipUtil.unzip(io.srcPath, activeDir);
         else
-        {
-            DirectoryInfo copyFrom = new DirectoryInfo(io.srcPath);
-            DirectoryInfo copyTo = new DirectoryInfo(activeDir);
-            ExtUtil.CopyDir(copyFrom, copyTo);
-        }
+            DirUtil.copyDirectory(io.srcPath, activeDir);
     }
 
     private void parseFiles()
     {
         FileParser parser = new FileParser(cfg.options);
 
-        string[] allFiles = Directory.GetFiles(".", "*.*", AllDirectories);
+        string[] allFiles = DirUtil.getAllDirectoryFiles(".");
         foreach (string file in allFiles)
             if (ExtUtil.hasValidModFileExtension(file))
                 parser.parseFile(file);
@@ -73,12 +68,7 @@ class ModBuilder
 
     private void buildZip()
     {
-        // Allows zips to be output to another folder
-        // (The zip can only be created inside a pre-existing directory)
-        string? zipDir = Path.GetDirectoryName(io.outPath);
-        if(zipDir != null && !zipDir.Equals("")) // Null should be impossible
-            Directory.CreateDirectory(zipDir);
-        ZipFile.CreateFromDirectory(DIRECTORY_TEMP, io.outPath);
+        ZipUtil.makeZip(DIRECTORY_TEMP, io.outPath);
         Directory.Delete(DIRECTORY_TEMP, true);
     }
 

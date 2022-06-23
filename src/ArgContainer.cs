@@ -1,5 +1,3 @@
-using System.IO.Compression;
-using System.Collections.ObjectModel;
 using static ArgContainer.Error;
 class ArgContainer
 {
@@ -65,7 +63,6 @@ class ArgContainer
 
     private void validateConfigArg()
     {
-        // Validate extension and existance
         if (!ExtUtil.hasValidConfigFileExtension(configPath))
             ThrowError(BAD_CONFIG_EXTENSION);
         if (!File.Exists(configPath))
@@ -75,60 +72,22 @@ class ArgContainer
     private void validateSourceArg()
     {
         if(File.Exists(srcPath))
-            validateZipSource();
+        {
+            if (!ZipUtil.isFileValidZip(srcPath))
+                ThrowError(MOD_NOT_VALID);
+
+            if(FileUtil.isFileLarge(srcPath))
+                ThrowError(MOD_TOO_BIG);
+
+            srcIsZip = true;
+        }
         else if (Directory.Exists(srcPath))
-            validateDirSource();
-        else
-            ThrowError(MOD_NOT_FOUND);
-    }
-
-    private void validateZipSource()
-    {
-        if (!ExtUtil.hasExtension(srcPath, ".zip"))
-            ThrowError(MOD_NOT_VALID);
-
-        // Check if it's an actual, valid zipfile.
-        try
         {
-            ZipArchive zip = ZipFile.OpenRead(srcPath);
-            ReadOnlyCollection<ZipArchiveEntry> entries = zip.Entries;
-            zip.Dispose();
-        }
-        catch (InvalidDataException) // Not a valid zip
-        {
-            ThrowError(MOD_NOT_VALID);
-        }
-
-        FileInfo zipInfo = new FileInfo(srcPath);
-        if (zipInfo.Length > MAX_INPUT_SIZE_BYTES)
-            ThrowError(MOD_TOO_BIG);
-
-        srcIsZip = true;
-    }
-
-    private void validateDirSource()
-    {
-        checkInputDirSize(new DirectoryInfo(srcPath));
-    }
-
-    private long checkInputDirSize(DirectoryInfo directory)
-    {
-        long size = 0;
-        // Add file sizes.
-        FileInfo[] files = directory.GetFiles();
-        foreach (FileInfo f in files)
-        {
-            size += f.Length;
-        }
-        // Add subdirectory sizes.
-        DirectoryInfo[] subDirectories = directory.GetDirectories();
-        foreach (DirectoryInfo subDir in subDirectories)
-        {
-            size += checkInputDirSize(subDir);
-            if(size > MAX_INPUT_SIZE_BYTES)
+            if(DirUtil.isDirectoryLarge(srcPath))
                 ThrowError(MOD_TOO_BIG);
         }
-        return size;
+        else
+            ThrowError(MOD_NOT_FOUND);
     }
 
     private void validateOutputArg()
@@ -136,19 +95,13 @@ class ArgContainer
         if (File.Exists(outPath))
             ThrowError(OUTPUT_PREEXISTING_FILE);
         else if (Directory.Exists(outPath))
-        {
-            if (Directory.EnumerateFileSystemEntries(outPath).Any())
+            if(DirUtil.dirContainsData(outPath))
                 ThrowError(OUTPUT_NONEMPTY_DIRECTORY);
-        }
 
         if (!srcIsZip)
-        {
-            string srcAbs = Path.GetFullPath(srcPath),
-                   outAbs = Path.GetFullPath(outPath);
-
-            if (outAbs.Contains(srcAbs, CCIC))
+            if(DirUtil.isParentDir(srcPath, outPath))
                 ThrowError(OUTPUT_INSIDE_SRC);
-        }
+
         outToZip = ExtUtil.hasExtension(outPath, ".zip");
     }
 
