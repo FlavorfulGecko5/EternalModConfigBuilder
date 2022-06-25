@@ -3,8 +3,8 @@ using static ParsedConfig.Error;
 class ParsedConfig
 {
     public bool hasPropagations;
-    public List<Option> options { get; }
-    public List<PropagateList> propagations {get;}
+    public List<Option> options;
+    public List<PropagateList> propagations;
 
     // Used to avoid constantly passing by value
     private string configPath, name;
@@ -47,6 +47,27 @@ class ParsedConfig
         }
     }
 
+    private JObject readConfig()
+    {
+        JObject rawJson = new JObject();
+        JsonLoadSettings reportExactDuplicates = new JsonLoadSettings()
+        {
+            DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error
+        };
+
+        try
+        {
+            string text = FileUtil.readFileText(configPath);
+            rawJson = JObject.Parse(text, reportExactDuplicates);
+        }
+        catch (Newtonsoft.Json.JsonReaderException e)
+        {
+            ThrowError(BAD_JSON_FILE, e.Message);
+        }
+
+        return rawJson;
+    }
+
     private void parseOption()
     {
         validateName();
@@ -54,6 +75,23 @@ class ParsedConfig
             parsePropagate();
         else
             parseOptionValue();
+    }
+
+    private void validateName()
+    {
+        if(name.Length == 0)
+            ThrowError(BAD_NAME_FORMATTING);
+        
+        foreach(char c in name)
+            if(!(c <= 'z' && c >= 'a'))
+            if(!(c <= 'Z' && c >= 'A'))
+            if(!(c <= '9' && c >= '0'))
+            if(!NAME_SPECIAL_CHARACTERS.Contains(c))
+                ThrowError(BAD_NAME_FORMATTING);
+
+        foreach(Option o in options)
+            if(o.name.Equals(name, CCIC))
+                ThrowError(DUPLICATE_NAME);
     }
 
     private void parseOptionValue()
@@ -88,62 +126,25 @@ class ParsedConfig
 
         foreach (JProperty resource in objectOption.Properties())
         {
-            string copyTo = resource.Name;
-            if (Path.IsPathRooted(copyTo))
-                ThrowError(ROOTED_PROP_DIRECTORY, copyTo);
+            string listName = resource.Name;
+            if (Path.IsPathRooted(listName))
+                ThrowError(ROOTED_PROP_DIRECTORY, listName);
 
-            string[] paths = readStringList(resource, BAD_PROP_ARRAY);
-            foreach (string p in paths)
-                if (Path.IsPathRooted(p))
-                    ThrowError(ROOTED_PROP_FILE, copyTo, p);
+            string[]? paths = readPropagateList(resource);
+            if(paths == null)
+                ThrowError(BAD_PROP_ARRAY, listName);
+            else
+            {
+                foreach (string p in paths)
+                    if (Path.IsPathRooted(p))
+                        ThrowError(ROOTED_PROP_FILE, listName, p);
 
-            propagations.Add(new PropagateList(copyTo, paths));
+                propagations.Add(new PropagateList(listName, paths));
+            }
         }
     }
 
-    private JObject readConfig()
-    {
-        JObject rawJson = new JObject();
-        JsonLoadSettings reportExactDuplicates = new JsonLoadSettings()
-        {
-            DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error
-        };
-
-        try
-        {
-            StreamReader reader = new StreamReader(configPath);
-            rawJson = JObject.Parse(reader.ReadToEnd(), reportExactDuplicates);
-            reader.Close();
-        }
-        catch (Newtonsoft.Json.JsonReaderException e)
-        {
-            ThrowError(BAD_JSON_FILE, e.Message);
-        }
-
-        return rawJson;
-    }
-
-    private void validateName()
-    {
-        if(name.Length == 0)
-            ThrowError(BAD_NAME_FORMATTING);
-        
-        foreach(char c in name)
-        {
-            if(!(c <= 'z' && c >= 'a'))
-            if(!(c <= 'Z' && c >= 'A'))
-            if(!(c <= '9' && c >= '0'))
-            if(!NAME_SPECIAL_CHARACTERS.Contains(c))
-                ThrowError(BAD_NAME_FORMATTING);
-        }
-
-        foreach(Option o in options)
-            if(o.name.Equals(name, CCIC))
-                ThrowError(DUPLICATE_NAME);
-    }
-
-    // Reads a Json string list from a property assumed to exist
-    private string[] readStringList(JProperty property, Error onFail)
+    private string[]? readPropagateList(JProperty property)
     {
         string[] list = new string[0];
         try
@@ -155,20 +156,19 @@ class ParsedConfig
             {
                 string? currentElement = (string?)rawData[i];
                 if (currentElement == null)
-                    ThrowError(onFail, property.Name);
-                else
-                    list[i] = currentElement;
+                    return null;
+                list[i] = currentElement;
             }
         }
         // The property is not defined as an array
-        catch (System.InvalidCastException) 
-        { 
-            ThrowError(onFail, property.Name); 
+        catch (System.InvalidCastException)
+        {
+            return null;
         }
         // A list's element is a Json list or object
-        catch (System.ArgumentException) 
-        { 
-            ThrowError(onFail, property.Name); 
+        catch (System.ArgumentException)
+        {
+            return null;
         }
         return list;
     }

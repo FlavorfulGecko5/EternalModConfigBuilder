@@ -2,13 +2,13 @@ using static ModBuilder.Error;
 class ModBuilder
 {
     private ParsedConfig cfg;
-    private ArgContainer io;
+    private ArgContainer argData;
     private string startDir, activeDir;
 
     public ModBuilder(string[] args)
     {
-        io = new ArgContainer(args);
-        cfg = new ParsedConfig(io.configPath);
+        argData = new ArgContainer(args);
+        cfg = new ParsedConfig(argData.configPath);
         startDir = Directory.GetCurrentDirectory();
         activeDir = "";
         //System.Console.WriteLine(cfg.ToString());
@@ -23,21 +23,21 @@ class ModBuilder
         propagateAll();
 
         Directory.SetCurrentDirectory(startDir);
-        if(io.outToZip)
+        if(argData.outToZip)
             buildZip();
     }
 
     private void createActiveOutputDir()
     {
         // If zip, use temp. directory then zip to output after processing
-        activeDir = io.outToZip ? DIRECTORY_TEMP : io.outPath;
+        activeDir = argData.outToZip ? DIRECTORY_TEMP : argData.outPath;
 
         // Clone the contents of src to the active output directory
         Directory.CreateDirectory(activeDir);
-        if (io.srcIsZip)
-            ZipUtil.unzip(io.srcPath, activeDir);
+        if (argData.srcIsZip)
+            ZipUtil.unzip(argData.srcPath, activeDir);
         else
-            DirUtil.copyDirectory(io.srcPath, activeDir);
+            DirUtil.copyDirectory(argData.srcPath, activeDir);
     }
 
     private void parseFiles()
@@ -68,7 +68,7 @@ class ModBuilder
 
     private void buildZip()
     {
-        ZipUtil.makeZip(DIRECTORY_TEMP, io.outPath);
+        ZipUtil.makeZip(DIRECTORY_TEMP, argData.outPath);
         Directory.Delete(DIRECTORY_TEMP, true);
     }
 

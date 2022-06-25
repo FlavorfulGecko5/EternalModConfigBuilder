@@ -20,17 +20,14 @@ class FileParser
     public void parseFile(string pathParameter)
     {
         path = pathParameter;
-        StreamReader reader = new StreamReader(path);
-        text = reader.ReadToEnd();
-        reader.Close();
+        text = FileUtil.readFileText(path);
 
         // Labels are parsed sequentially by scanning the entire text file.
         start = text.IndexOf(LABEL_ANY, CCIC);
         while (start != -1)
             start = parseLabel();
 
-        using (StreamWriter fileWriter = new StreamWriter(path))
-            fileWriter.Write(text);
+        FileUtil.writeFile(path, text);
     }
 
     private int parseLabel()
