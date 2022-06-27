@@ -2,29 +2,20 @@ using Newtonsoft.Json.Linq;
 using static ParsedConfig.Error;
 class ParsedConfig
 {
-    public bool hasPropagations;
     public List<Option> options;
     public List<PropagateList> propagations;
 
     // Used to avoid constantly passing by value
     private string configPath, name;
-
-    private bool isObject;
-    private JObject objectOption;
-    private JProperty nonObjectOption;
+    private JToken option;
 
     public ParsedConfig(string configPathParameter)
     {
-        hasPropagations = false;
         options = new List<Option>();
         propagations = new List<PropagateList>();
         configPath = configPathParameter;
-
         name = "";
-        isObject = false;
-        objectOption = new JObject();
-        nonObjectOption = new JProperty("");
-
+        option = new JProperty("");
         parseConfig();
     }
 
@@ -33,17 +24,12 @@ class ParsedConfig
         foreach(JProperty property in readConfig().Properties())
         {
             name = property.Name;
-            try 
-            {   
-                objectOption = (JObject)property.Value;
-                isObject = true;
-            }
-            catch(System.InvalidCastException)
-            {
-                isObject = false;
-                nonObjectOption = property;
-            }
-            parseOption();
+            option = property.Value;
+            validateName();
+            if (name.Equals(PROPERTY_PROPAGATE, CCIC))
+                parsePropagate();
+            else
+                parseOptionValue();
         }
     }
 
@@ -68,15 +54,6 @@ class ParsedConfig
         return rawJson;
     }
 
-    private void parseOption()
-    {
-        validateName();
-        if(name.Equals(PROPERTY_PROPAGATE, CCIC))
-            parsePropagate();
-        else
-            parseOptionValue();
-    }
-
     private void validateName()
     {
         if(name.Length == 0)
@@ -96,81 +73,35 @@ class ParsedConfig
 
     private void parseOptionValue()
     {
-        string? value = null;
-        try
-        {
-            if(isObject)
-                value = (string?)objectOption[PROPERTY_VALUE];
-            else
-                value = (string?)nonObjectOption.Value;
-
-            if (value == null)
-                ThrowError(BAD_OPTION_TYPE);
-            else
-                options.Add(new Option(name, value));
-        }
-        // If the property is a json list or object
-        catch (System.ArgumentException)
-        {
+        string? value = JsonUtil.readTokenValue(option, true);
+        if(value == null)
             ThrowError(BAD_OPTION_TYPE);
-        }
+        else
+            options.Add(new Option(name, value));
     }
 
     private void parsePropagate()
     {
-        if (hasPropagations)
-            ThrowError(DUPLICATE_NAME);
-        hasPropagations = true;
-        if(!isObject)
+        if(option.Type != JTokenType.Object)
             ThrowError(PROPAGATE_ISNT_OBJECT);
 
-        foreach (JProperty resource in objectOption.Properties())
+        foreach (JProperty list in ((JObject)option).Properties())
         {
-            string listName = resource.Name;
-            if (Path.IsPathRooted(listName))
-                ThrowError(ROOTED_PROP_DIRECTORY, listName);
+            if (Path.IsPathRooted(list.Name))
+                ThrowError(ROOTED_PROP_DIRECTORY, list.Name);
 
-            string[]? paths = readPropagateList(resource);
-            if(paths == null)
-                ThrowError(BAD_PROP_ARRAY, listName);
+            string[]? filePaths = JsonUtil.readList(list.Value);
+            if(filePaths == null)
+                ThrowError(BAD_PROP_ARRAY, list.Name);
             else
             {
-                foreach (string p in paths)
-                    if (Path.IsPathRooted(p))
-                        ThrowError(ROOTED_PROP_FILE, listName, p);
+                foreach (string path in filePaths)
+                    if (Path.IsPathRooted(path))
+                        ThrowError(ROOTED_PROP_FILE, list.Name, path);
 
-                propagations.Add(new PropagateList(listName, paths));
+                propagations.Add(new PropagateList(list.Name, filePaths));
             }
         }
-    }
-
-    private string[]? readPropagateList(JProperty property)
-    {
-        string[] list = new string[0];
-        try
-        {
-            JArray rawData = (JArray)property.Value;
-            list = new string[rawData.Count];
-
-            for (int i = 0; i < rawData.Count; i++)
-            {
-                string? currentElement = (string?)rawData[i];
-                if (currentElement == null)
-                    return null;
-                list[i] = currentElement;
-            }
-        }
-        // The property is not defined as an array
-        catch (System.InvalidCastException)
-        {
-            return null;
-        }
-        // A list's element is a Json list or object
-        catch (System.ArgumentException)
-        {
-            return null;
-        }
-        return list;
     }
 
     public override string ToString()
