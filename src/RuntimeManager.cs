@@ -16,6 +16,7 @@ class RuntimeManager
 
     private static void run(string[] args)
     {
+        System.Console.WriteLine(MSG_WELCOME);
         if (Directory.Exists(DIR_TEMP))
             Directory.Delete(DIR_TEMP, true);
 

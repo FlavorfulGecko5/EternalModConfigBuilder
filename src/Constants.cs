@@ -1,8 +1,9 @@
 using static System.StringComparison;
 interface Constants
 {
-    // Constants pertaining to the names of published files
+    // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
+    const string EXE_VERSION = "Beta 1.2.0";
 
     // Abbreviated form of CurrentCultureIgnoreCase
     const StringComparison CCIC = CurrentCultureIgnoreCase;
@@ -42,6 +43,7 @@ interface Constants
     const string LABEL_END_TOG    = LABEL_ANY_TOG + "END_" + LABEL_CHAR_BORDER;
 
     // Constants pertaining to program termination and error messages
+    const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
     const string MSG_ERROR   = EXE_NAME + " ERROR: ";
     const string MSG_WARNING = EXE_NAME + " WARNING: ";
 
