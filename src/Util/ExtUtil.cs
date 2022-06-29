@@ -10,7 +10,7 @@ class ExtUtil
 
     public static bool hasValidConfigFileExtension(string filePath)
     {
-        foreach (string extension in CONFIG_EXTENSIONS)
+        foreach (string extension in CFG_EXTENSIONS)
             if (hasExtension(filePath, extension))
                 return true;
         return false;
@@ -19,7 +19,7 @@ class ExtUtil
     // Returns true if a mod file has a valid extension for containing labels
     public static bool hasValidModFileExtension(string filePath)
     {
-        foreach(string extension in LABEL_FILETYPES)
+        foreach(string extension in LABEL_FILES)
             if(hasExtension(filePath, extension))
                 return true;
         return false;

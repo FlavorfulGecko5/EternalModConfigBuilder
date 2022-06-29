@@ -150,7 +150,7 @@ class ParsedConfig
             msg += String.Format(
                 "The Option '{0}' has an invalid name.\n\n{1}",
                 name,
-                RULES_OPTION_NAME_CHARACTERS
+                RULES_OPTION_NAME
             );
             break;
 
@@ -158,7 +158,7 @@ class ParsedConfig
             msg += String.Format(
                 "The name '{0}' is used to define multiple Options.\n\n{1}",
                 name,
-                RULES_OPTION_NAME_CHARACTERS
+                RULES_OPTION_NAME
             );
             break;
 
@@ -174,7 +174,7 @@ class ParsedConfig
             msg += String.Format(
                 "The '{0}' property is not defined as an object.\n\n{1}",
                 PROPERTY_PROPAGATE,
-                RULES_PROPAGATE_PROPERTY
+                RULES_PROPAGATE
             );
             break;
 
@@ -183,7 +183,7 @@ class ParsedConfig
                 "The '{0}' property has an invalid sub-property '{1}'\n\n{2}",
                 PROPERTY_PROPAGATE,
                 arg0, // Propagate list name
-                RULES_PROPAGATE_PROPERTY
+                RULES_PROPAGATE
             );
             break;
 
@@ -192,7 +192,7 @@ class ParsedConfig
                 "The '{0}' sub-property '{1}' has a non-relative name.\n\n{2}",
                 PROPERTY_PROPAGATE,
                 arg0, // Propagate list name
-                RULES_PROPAGATE_PROPERTY
+                RULES_PROPAGATE
             );
             break;
 
@@ -202,7 +202,7 @@ class ParsedConfig
                 PROPERTY_PROPAGATE,
                 arg0, // Propagate list name
                 arg1, // Propagate list element
-                RULES_PROPAGATE_PROPERTY
+                RULES_PROPAGATE
             );
             break;
         }

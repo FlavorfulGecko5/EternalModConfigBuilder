@@ -30,7 +30,7 @@ class ModBuilder
     private void createActiveOutputDir()
     {
         // If zip, use temp. directory then zip to output after processing
-        activeDir = argData.outToZip ? DIRECTORY_TEMP : argData.outPath;
+        activeDir = argData.outToZip ? DIR_TEMP : argData.outPath;
 
         // Clone the contents of src to the active output directory
         Directory.CreateDirectory(activeDir);
@@ -52,7 +52,7 @@ class ModBuilder
 
     private void propagateAll()
     {
-        if (Directory.Exists(DIRECTORY_PROPAGATE))
+        if (Directory.Exists(DIR_PROPAGATE))
         {
             if (cfg.propagations.Count == 0)
                 ThrowError(PROPAGATE_DIR_NO_LISTS);
@@ -60,7 +60,7 @@ class ModBuilder
             foreach (PropagateList resource in cfg.propagations)
                 resource.propagate();
 
-            Directory.Delete(DIRECTORY_PROPAGATE, true);
+            Directory.Delete(DIR_PROPAGATE, true);
         }
         else if (cfg.propagations.Count > 0)
             ThrowError(PROPAGATE_LISTS_NO_DIR);
@@ -68,8 +68,8 @@ class ModBuilder
 
     private void buildZip()
     {
-        ZipUtil.makeZip(DIRECTORY_TEMP, argData.outPath);
-        Directory.Delete(DIRECTORY_TEMP, true);
+        ZipUtil.makeZip(DIR_TEMP, argData.outPath);
+        Directory.Delete(DIR_TEMP, true);
     }
 
     public enum Error
@@ -86,7 +86,7 @@ class ModBuilder
             reportWarning(String.Format(
                "The '{0}' directory exists in your mod, but no propagation "
                + "lists are defined. Propagation will not occur.", 
-               DIRECTORY_PROPAGATE
+               DIR_PROPAGATE
             ));
             break;
 
@@ -94,7 +94,7 @@ class ModBuilder
             reportWarning(String.Format(
                 "You have propagation lists, but no '{0}' directory in "
                 + "your mod. Propagation will not occur.",
-                DIRECTORY_PROPAGATE
+                DIR_PROPAGATE
             ));
             break;
         }

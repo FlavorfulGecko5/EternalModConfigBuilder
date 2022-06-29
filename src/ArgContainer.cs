@@ -129,7 +129,7 @@ class ArgContainer
                 "Bad number of arguments. (Expected {0}, received {1})\n\n{2}",
                 EXPECTED_ARG_COUNT,
                 arg0, // args.length
-                RULES_EXPECTED_USAGE
+                RULES_USAGE
             ));
             break;
             
@@ -137,7 +137,7 @@ class ArgContainer
             reportError(String.Format(
                 "Command line argument #{0} is invalid.\n\n{1}",
                 arg0, // The invalid argument number
-                RULES_EXPECTED_USAGE
+                RULES_USAGE
             ));
             break;
 
@@ -145,7 +145,7 @@ class ArgContainer
             reportError(String.Format(
                 "The configuration file '{0}' must be a {1} file.",
                 configPath,
-                DESC_CONFIG_EXTENSIONS
+                DESC_CFG_EXTENSIONS
             ));
             break;
 
@@ -181,7 +181,7 @@ class ArgContainer
             reportError(String.Format(
                 "A file exists at the output path '{0}'\n\n{1}",
                 outPath,
-                RULES_OUTPUT_LOCATION
+                RULES_OUTPUT
             ));
             break;
 
@@ -189,14 +189,14 @@ class ArgContainer
             reportError(String.Format(
                 "A non-empty folder exists at the output path '{0}'\n\n{1}",
                 outPath,
-                RULES_OUTPUT_LOCATION
+                RULES_OUTPUT
             ));
             break;
 
             case OUTPUT_INSIDE_SRC:
             reportError(String.Format(
                 "Your output path cannot be inside your mod directory.\n\n{0}",
-                RULES_OUTPUT_LOCATION
+                RULES_OUTPUT
             ));
             break;
         }

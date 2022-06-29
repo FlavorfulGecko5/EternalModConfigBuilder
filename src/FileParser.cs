@@ -158,7 +158,7 @@ class FileParser
 
     private int findLabelEndIndex(int startIndex)
     {
-        int index = text.IndexOf(LABEL_BORDER_VALUE, startIndex + 1);
+        int index = text.IndexOf(LABEL_CHAR_BORDER, startIndex + 1);
         if (index == -1)
             ThrowError(INCOMPLETE_LABEL);
         return index;
@@ -171,7 +171,7 @@ class FileParser
 
     private int findExpressionSeparatorIndex()
     {
-        int separator = label.IndexOf(LABEL_NAME_EXP_SEPARATOR);
+        int separator = label.IndexOf(LABEL_CHAR_SEPARATOR);
         if (separator == -1)
         {
             // A toggle-end label with no preceding toggle-start label
@@ -207,8 +207,8 @@ class FileParser
             case INCOMPLETE_LABEL:
             msg += String.Format(
                 "A label is missing a '{0}' on it's right side.\n\n{1}",
-                LABEL_BORDER_VALUE,
-                RULES_LABEL_FORMATTING
+                LABEL_CHAR_BORDER,
+                RULES_LABEL_FORMAT
             );
             break;
 
@@ -216,8 +216,8 @@ class FileParser
             msg += String.Format(
                 "The label '{0}' has no '{1}' written after it's type.\n\n{2}",
                 label,
-                LABEL_NAME_EXP_SEPARATOR,
-                RULES_LABEL_FORMATTING
+                LABEL_CHAR_SEPARATOR,
+                RULES_LABEL_FORMAT
             );
             break;
 
@@ -225,7 +225,7 @@ class FileParser
             msg += String.Format(
                 "The label '{0}' has an unrecognized type.\n\n{1}",
                 label,
-                RULES_LABEL_FORMATTING
+                RULES_LABEL_FORMAT
             );
             break;
 
@@ -279,7 +279,7 @@ class FileParser
                 + "\nExpression Result: '{1}'\n\n{2}",
                 label,
                 exp,
-                RULES_TOGGLE_EXP_RESULT
+                RULES_TOGGLE_EXP
             );
             break;
         }

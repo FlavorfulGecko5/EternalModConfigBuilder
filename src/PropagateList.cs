@@ -22,7 +22,7 @@ class PropagateList
     {
         foreach(string path in filePaths)
         {
-            string  copyFrom = Path.Combine(DIRECTORY_PROPAGATE, path),
+            string  copyFrom = Path.Combine(DIR_PROPAGATE, path),
                     copyTo = Path.Combine(name, path);
 
             if(File.Exists(copyFrom))
@@ -55,7 +55,7 @@ class PropagateList
                 + " '{2}'. This path will be ignored.",
                 arg0, // The filepath
                 name,
-                DIRECTORY_PROPAGATE
+                DIR_PROPAGATE
             ));
             break;
         }

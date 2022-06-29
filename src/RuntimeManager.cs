@@ -16,19 +16,19 @@ class RuntimeManager
 
     private static void run(string[] args)
     {
-        if (Directory.Exists(DIRECTORY_TEMP))
-            Directory.Delete(DIRECTORY_TEMP, true);
+        if (Directory.Exists(DIR_TEMP))
+            Directory.Delete(DIR_TEMP, true);
 
         ModBuilder builder = new ModBuilder(args);
         builder.buildMod();
         
-        System.Console.WriteLine(MESSAGE_SUCCESS);
+        System.Console.WriteLine(MSG_SUCCESS);
     }
 
     public static void reportError(string msg)
     {
-        System.Console.WriteLine(MESSAGE_ERROR + msg);
-        System.Console.WriteLine("\n" + MESSAGE_FAILURE);
+        System.Console.WriteLine(MSG_ERROR + msg);
+        System.Console.WriteLine("\n" + MSG_FAILURE);
         Environment.Exit(1);
     }
 
@@ -42,6 +42,6 @@ class RuntimeManager
 
     public static void reportWarning(string msg)
     {
-        System.Console.WriteLine(MESSAGE_WARNING + msg);
+        System.Console.WriteLine(MSG_WARNING + msg);
     }
 }
