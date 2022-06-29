@@ -1,0 +1,23 @@
+{
+	edit = {
+		modifiersEquipment = {
+			num = 1;
+			item[0] = {
+				type = "EQUIP_HAMMER_SUPERMETER";
+				hammerSupermeterInfo = {
+					superMeterMax = 120;
+					fillPerGlorykill = 60;
+					fillPerChainsawkill = 0;
+					fillPerWeakpoint = 60;
+					fillPerBloodpunchKill = 0;
+					countBloodPunchSplashKills = false;
+					fillPerBurnKill = 0;
+					fillPerFrozenKill = 0;
+					fillPerHeadshotKill = 0;
+					superMeterFullSound = "play_sfx_hammer_ready";
+					dryFireSound = "play_sfx_hammer_negative_use";
+				}
+			}
+		}
+	}
+}

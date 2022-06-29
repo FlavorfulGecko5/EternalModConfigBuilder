@@ -1,0 +1,12 @@
+{
+	edit = {
+		sound_use = "play_sfx_hammer_ammo_pickup";
+		sound_pickup = "play_sfx_hammer_ammo_pickup";
+		sound_pickupUltraNightmare = "play_sfx_hammer_ammo_pickup";
+		sound_unableToPickup = "play_empty_error";
+		componentTypeInfo = "idUseableItemComponent";
+		controllerShake_highMagnitude = 0.25;
+		notification = "hud/generic_callout";
+		hammerSupermeterCharge = $_injector_variable_#({hammerPickupCharge}*60)$;
+	}
+}

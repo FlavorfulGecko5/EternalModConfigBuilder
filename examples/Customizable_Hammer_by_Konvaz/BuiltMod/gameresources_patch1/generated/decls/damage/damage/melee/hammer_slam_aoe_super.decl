@@ -1,0 +1,27 @@
+{
+	inherit = "damage/melee/hammer_slam_aoe";
+	edit = {
+		damageParms = {
+			radius = 15;
+			radiusInner = 15;
+			lootDropRestrictionsOnDamage = {
+				item[0] = {
+					lootDropContext = "LOOT_DROPCONTEXT_HAMMER_SUPERCHARGED";
+				}
+				item[1] = {
+					lootDropContext = "LOOT_DROPCONTEXT_HAMMER_SUPERCHARGED";
+				}
+				item[2] = {
+					lootDropContext = "LOOT_DROPCONTEXT_HAMMER_SUPERCHARGED";
+				}
+			}
+			defaultLootDropContextFlags = "LOOT_DROPCONTEXT_HAMMER_SUPERCHARGED";
+		}
+		maxDamage = {
+			defaultValue = 800;
+		}
+		minDamage = {
+			defaultValue = 800;
+		}
+	}
+}

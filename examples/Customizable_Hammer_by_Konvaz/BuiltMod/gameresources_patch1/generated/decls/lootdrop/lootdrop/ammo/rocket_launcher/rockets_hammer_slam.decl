@@ -1,0 +1,17 @@
+{
+	inherit = "lootdrop/ammo/generic_chainsaw_ammo";
+	edit = {
+		dropRestriction = "LOOT_DROP_RESTRICTION_HAMMER_SLAM_DAMAGE";
+		entityDef = "prop/lootdrops/ammo/hammer_slam_rockets";
+		item_amt_calc = "LOOT_ITEM_AMT_CALC_EXPLICIT";
+		item_maxDrop = {
+			defaultValue = 1;
+		}
+		item_removalTimeMS = 3000;
+		decl = "propitem/ammo/hammer_slam_rockets";
+		item_percentage = 25;
+		ammoItemMaxCount = 15;
+		mustNotHavePerk = "perk/player/weapons/hammer/ammo_drops_upgraded";
+		spawnOffsetFromJointOrView = false;
+	}
+}

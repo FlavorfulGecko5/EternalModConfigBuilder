@@ -1,0 +1,10 @@
+{
+	inherit = "lootdrop/ammo/plasma_rifle/cells_hammer_slam";
+	edit = {
+		item_maxDrop = {
+			defaultValue = $_injector_variable_#{hammerCellsMultiplierUpgraded}$;;
+		}
+		mustHavePerk = "perk/player/weapons/hammer/ammo_drops_upgraded";
+		mustNotHavePerk = NULL;
+	}
+}

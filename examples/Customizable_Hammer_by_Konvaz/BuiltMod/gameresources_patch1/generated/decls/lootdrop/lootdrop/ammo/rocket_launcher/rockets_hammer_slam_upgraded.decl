@@ -1,0 +1,10 @@
+{
+	inherit = "lootdrop/ammo/rocket_launcher/rockets_hammer_slam";
+	edit = {
+		item_maxDrop = {
+			defaultValue = 2;
+		}
+		mustHavePerk = "perk/player/weapons/hammer/ammo_drops_upgraded";
+		mustNotHavePerk = NULL;
+	}
+}

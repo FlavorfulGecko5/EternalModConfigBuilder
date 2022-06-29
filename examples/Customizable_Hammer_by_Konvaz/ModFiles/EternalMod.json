@@ -1,0 +1,8 @@
+{
+	"name":"Customizable Hammer",
+	"author":"Konvaz & FlavorfulGecko5",
+	"description":"This mod allows you to customize the Sentinel Hammer using FlavorfulGecko5's EternalModBuilder tool.",
+	"version":"1.0",
+	"loadPriority":0,
+	"requiredVersion":20
+}

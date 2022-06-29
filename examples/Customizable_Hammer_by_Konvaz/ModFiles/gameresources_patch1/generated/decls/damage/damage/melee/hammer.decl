@@ -1,0 +1,72 @@
+{
+	edit = {
+		damageParms = {
+			damageName = "hammer";
+			damageSource = "DAMAGESRC_HAMMER";
+			hitClientAuthoritative = true;
+			minDamage = $_injector_variable_#{hammerDamage}$;
+			maxDamage = $_injector_variable_#{hammerDamage}$;
+			playerDamageScale = 0;
+			damageStat = "STAT_DAMAGE_DEALT_TO_DEMONS";
+			ignoreDeadTargets = true;
+			noDeath = true;
+			isMelee = true;
+			stuns = true;
+			ignoreDirectionalDamageMitigation = true;
+			aiDamageMitigation = {
+				num = 1;
+				item[0] = {
+					monsterType = "AI_MONSTER_ZOMBIE_TIER_1 AI_MONSTER_ZOMBIE_TIER_3 AI_MONSTER_ZOMBIE_MAYKR AI_MONSTER_IMP AI_MONSTER_STONE_IMP AI_MONSTER_GARGOYLE AI_MONSTER_HELL_SOLDIER AI_MONSTER_SHOTGUN_SOLDIER";
+					maxDamage = -1;
+					damageScalar = $_injector_variable_#{hammerFodderMultiplier}$;
+				}
+			}
+			kickTime = 0;
+			kickAmplitude = 0;
+			kickDir = {
+				y = 0;
+			}
+			ragdollImpulseMag = 12;
+			friendlyFire = false;
+			selfDamage = false;
+			ammoUseOnDamage = {
+				num = 6;
+				item[0] = {
+					aiType = "AI_MONSTER_MARAUDER_WOLF AI_MONSTER_CUEBALL AI_MONSTER_BUFF_POD AI_MONSTER_TENTACLE AI_MONSTER_SPIRIT AI_MONSTER_TURRET";
+					count = 1;
+				}
+				item[1] = {
+					aiType = "AI_MONSTER_ZOMBIE_TIER_1 AI_MONSTER_ZOMBIE_TIER_3 AI_MONSTER_ZOMBIE_MAYKR AI_MONSTER_IMP AI_MONSTER_STONE_IMP AI_MONSTER_GARGOYLE AI_MONSTER_HELL_SOLDIER AI_MONSTER_SHOTGUN_SOLDIER";
+					count = 1;
+				}
+				item[2] = {
+					aiType = "AI_MONSTER_PROWLER AI_MONSTER_CURSED_PROWLER AI_MONSTER_CARCASS AI_MONSTER_HELLKNIGHT AI_MONSTER_DREADKNIGHT AI_MONSTER_PINKY AI_MONSTER_SPECTRE AI_MONSTER_CACODEMON AI_MONSTER_PAIN_ELEMENTAL AI_MONSTER_MANCUBUS AI_MONSTER_CYBER_MANCUBUS AI_MONSTER_ARACHNOTRON AI_MONSTER_REVENANT";
+					count = 1;
+				}
+				item[3] = {
+					aiType = "AI_MONSTER_DOOM_HUNTER AI_MONSTER_MARAUDER AI_MONSTER_BARON AI_MONSTER_TYRANT AI_MONSTER_ARCHVILE";
+					count = 1;
+				}
+				item[4] = {
+					aiType = "AI_MONSTER_PLAYER_MANCUBUS AI_MONSTER_PLAYER_REVENANT AI_MONSTER_PLAYER_PAIN_ELEMENTAL AI_MONSTER_PLAYER_MARAUDER AI_MONSTER_PLAYER_ARCHVILE";
+					count = 1;
+				}
+				item[5] = {
+					aiType = "AI_MONSTER_GLADIATOR AI_MONSTER_ICON_OF_SIN AI_MONSTER_MAYKR_ANGEL";
+					count = 1;
+				}
+			}
+			declGoreBehavior = "gorebehavior/hammer";
+			applySecondaryDamageWithPrimaryDamage = true;
+			secondaryDamageDecl = "damage/melee/hammer_dot";
+			skillshotHighlightInfo = {
+				fadeTime = 300;
+				color = {
+					r = 1;
+					a = 1;
+				}
+			}
+			aiMemoryKey = "hammer_dizzy";
+		}
+	}
+}

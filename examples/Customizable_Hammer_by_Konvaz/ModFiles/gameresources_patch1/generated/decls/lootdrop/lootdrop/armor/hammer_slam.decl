@@ -1,0 +1,20 @@
+{
+	inherit = "lootdrop/lootdefault";
+	edit = {
+		dropMode = "LOOT_DROPMODE_ALWAYS";
+		dropRestriction = "LOOT_DROP_RESTRICTION_HAMMER_SLAM_DAMAGE_ON_FIRE";
+		ignoreChallengeRestriction = true;
+		itemType = "LOOT_ARMOR";
+		entityDef = "prop/lootdrops/armor/armor_drop_small_hammer_slam";
+		item_amt_calc = "LOOT_ITEM_AMT_CALC_EXPLICIT";
+		item_maxDrop = {
+			defaultValue = $_injector_variable_#{hammerArmorMultiplier}$;
+		}
+		item_dropChanceMin = 100;
+		item_dropChanceMax = 100;
+		item_removalTimeMS = 5000;
+		decl = "armor/sp_armor_hammer_slam";
+		mustNotHavePerk = "perk/player/weapons/hammer/armor_and_health_drops_upgraded";
+		spawnOffsetFromJointOrView = false;
+	}
+}

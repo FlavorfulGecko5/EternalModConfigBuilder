@@ -1,0 +1,153 @@
+{
+    "hammerMax": {
+        "Purpose": "How many charges do you want to recharge the Hammer?",
+		"Value": 2
+    },
+	"hammerHordeMax": {
+        "Purpose": "How many charges do you want to recharge Horde Mode's Hammer?",
+		"Value": 4
+    },
+	"hammerPickupCharge": {
+        "Purpose": "How much does a Hammer Pickup charge?",
+		"Value": 2
+    },
+	"hammerHordePickupCharge": {
+        "Purpose": "How much does Horde Mode's Hammer Pickup charge?",
+		"Value": 4
+    },
+	"hammerGKCharge": {
+        "Purpose": "How much do Glory Kills charge?",
+		"Value": 1
+    },
+	"hammerWPCharge": {
+        "Purpose": "How much do Weak Point breaks charge?",
+		"Value": 1
+    },
+	"hammerHSCharge": {
+        "Purpose": "How much do Head Shots charge?",
+		"Value": 0
+    },
+	"hammerCSCharge": {
+        "Purpose": "How much do Chainsaw kills charge?",
+		"Value": 0
+    },
+	"hammerBNCharge": {
+        "Purpose": "How much does Demons killed while burned charge?",
+		"Value": 0
+    },
+	"hammerFZCharge": {
+        "Purpose": "How much does Demons killed while frozen charge?",
+		"Value": 0
+    },
+	"hammerBPCharge": {
+        "Purpose": "How much do Blood Punch kills charge?",
+		"Value": 0
+    },
+	"hammerBPSplash": {
+        "Purpose": "Do splash kills from the Blood Punch also count?",
+		"Value": false
+    },
+	"hammerDamage": {
+        "Purpose": "How much damage does the Hammer Slam deal?",
+		"Note": "For reference: Prowlers have 1000 health and stagger from a 800 damage Hammer Slam.",
+		"Value": 800
+    },
+	"hammerFodderMultiplier": {
+        "Purpose": "How much of the Hammer damage is multiplied for Fodder Demons?",
+		"Note1": "The default value multiplies 100 times the normal damage, dealing absurd damage to Fodder Demons so they are guaranteed to die to the Hammer.",
+		"Note2": "Several Fodder Demons do not have the dizzy animation when dazed by the Hammer.",
+		"Note3": "Stone Imps are also affected by this multiplier.",
+		"Value": 100
+    },
+	"hammerRadius": {
+        "Purpose": "How big is the radius of the Hammer Slam?",
+		"Note": "The visual slam's size does not change with this value.",
+		"Value": 15
+    },
+	"hammerStunScale": {
+        "Purpose": "How long are Demons dazed by the Hammer BEFORE it has been upgraded?",
+		"Note1": "The value is multiplied based on its default value.",
+		"Note2": "Some Demons vary in daze time.",
+		"Example": "1 is no change. 0.5 is two times slower. 2 is twice as fast. 0 removes the daze entirely.",
+		"Value": 1
+    },
+	"hammerStunScaleUpgraded": {
+        "Purpose": "How long are Demons dazed by the Hammer AFTER it has been upgraded?",
+		"Note1": "The value is multiplied based on its default value.",
+		"Note2": "Some Demons vary in daze time.",
+		"Example": "1 is no change. 0.5 is two times slower. 2 is twice as fast. 0 removes the daze entirely.",
+		"Value": 1
+    },
+	"hammerBulletsMultiplier": {
+        "Purpose": "How many Bullet drops are multiplied per Demon BEFORE it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "1 is default drops. 2 is twice the drops. 0 is no drops.",
+		"Value": 1
+    },
+	"hammerCellsMultiplier": {
+        "Purpose": "How many Cell drops (Plasma Ammo) are multiplied per Demon BEFORE it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "1 is default drops. 2 is twice the drops. 0 is no drops.",
+		"Value": 1
+    },
+	"hammerRocketsMultiplier": {
+        "Purpose": "How many Rocket drops are multiplied per Demon BEFORE it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "1 is default drops. 2 is twice the drops. 0 is no drops.",
+		"Value": 1
+    },
+	"hammerShellsMultiplier": {
+        "Purpose": "How many Shell drops (Shotgun Ammo) are multiplied per Demon BEFORE it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "1 is default drops. 2 is twice the drops. 0 is no drops.",
+		"Value": 1
+    },
+	"hammerBulletsMultiplierUpgraded": {
+        "Purpose": "How many Bullet drops are multiplied per Demon AFTER it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "2 is default drops. 4 is twice the drops. 0 is no drops.",
+		"Value": 2
+    },
+	"hammerCellsMultiplierUpgraded": {
+        "Purpose": "How many Cell drops (Plasma Ammo) are multiplied per Demon AFTER it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "2 is default drops. 4 is twice the drops. 0 is no drops.",
+		"Value": 2
+    },
+	"hammerRocketsMultiplierUpgraded": {
+        "Purpose": "How many Rocket drops are multiplied per Demon AFTER it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "2 is default drops. 4 is twice the drops. 0 is no drops.",
+		"Value": 2
+    },
+	"hammerShellsMultiplierUpgraded": {
+        "Purpose": "How many Shell drops (Shotgun Ammo) are multiplied per Demon AFTER it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "2 is default drops. 4 is twice the drops. 0 is no drops.",
+		"Value": 2
+    },
+	"hammerHealthMultiplier": {
+        "Purpose": "How many bonus Ice Bomb Health drops are multiplied per Demon BEFORE it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "4 is default drops. 8 is twice the drops. 0 is no bonus drops.",
+		"Value": 4
+    },
+	"hammerArmorMultiplier": {
+        "Purpose": "How many bonus Flame Belch Armor drops are multiplied per Demon BEFORE it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "6 is default drops. 12 is twice the drops. 0 is no bonus drops.",
+		"Value": 6
+    },
+	"hammerHealthMultiplierUpgraded": {
+        "Purpose": "How many bonus Ice Bomb Health drops are multiplied per Demon AFTER it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "8 is default drops. 16 is twice the drops. 0 is no bonus drops.",
+		"Value": 8
+    },
+	"hammerArmorMultiplierUpgraded": {
+        "Purpose": "How many bonus Flame Belch Armor drops are multiplied per Demon AFTER it has been upgraded?",
+		"Note": "Decimal values are NOT allowed.",
+		"Example": "12 is default drops. 24 is twice the drops. 0 is no bonus drops.",
+		"Value": 12
+    }
+}

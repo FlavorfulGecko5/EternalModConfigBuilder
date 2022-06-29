@@ -1,0 +1,10 @@
+{
+	inherit = "lootdrop/armor/hammer_slam";
+	edit = {
+		item_maxDrop = {
+			defaultValue = 12;
+		}
+		mustHavePerk = "perk/player/weapons/hammer/armor_and_health_drops_upgraded";
+		mustNotHavePerk = NULL;
+	}
+}

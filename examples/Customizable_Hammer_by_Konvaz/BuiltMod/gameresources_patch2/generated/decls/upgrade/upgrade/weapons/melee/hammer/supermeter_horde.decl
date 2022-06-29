@@ -1,0 +1,12 @@
+{
+	inherit = "upgrade/weapons/melee/hammer/supermeter";
+	edit = {
+		modifiersEquipment = {
+			item[0] = {
+				hammerSupermeterInfo = {
+					superMeterMax = 240;
+				}
+			}
+		}
+	}
+}

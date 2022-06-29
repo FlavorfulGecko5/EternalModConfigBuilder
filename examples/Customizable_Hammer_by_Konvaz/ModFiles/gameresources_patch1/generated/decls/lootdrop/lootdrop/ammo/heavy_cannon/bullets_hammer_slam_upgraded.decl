@@ -1,0 +1,10 @@
+{
+	inherit = "lootdrop/ammo/heavy_cannon/bullets_hammer_slam";
+	edit = {
+		item_maxDrop = {
+			defaultValue = $_injector_variable_#{hammerBulletsMultiplierUpgraded}$;
+		}
+		mustHavePerk = "perk/player/weapons/hammer/ammo_drops_upgraded";
+		mustNotHavePerk = NULL;
+	}
+}

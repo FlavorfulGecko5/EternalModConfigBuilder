@@ -1,0 +1,6 @@
+{
+	inherit = "propitem/ammo/hammer";
+	edit = {
+		hammerSupermeterCharge = $_injector_variable_#({hammerHordePickupCharge}*60)$;
+	}
+}

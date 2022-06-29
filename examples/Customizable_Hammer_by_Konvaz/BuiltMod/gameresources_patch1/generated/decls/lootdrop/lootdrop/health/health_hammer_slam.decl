@@ -1,0 +1,20 @@
+{
+	inherit = "lootdrop/lootdefault";
+	edit = {
+		dropMode = "LOOT_DROPMODE_ALWAYS";
+		dropRestriction = "LOOT_DROP_RESTRICTION_HAMMER_SLAM_DAMAGE_ON_ICE";
+		value_MaxConditional = 101;
+		itemType = "LOOT_HEALTH";
+		entityDef = "prop/lootdrops/health/health_hammer_slam";
+		item_amt_calc = "LOOT_ITEM_AMT_CALC_EXPLICIT";
+		item_maxDrop = {
+			defaultValue = 4;
+		}
+		item_dropChanceMin = 100;
+		item_dropChanceMax = 100;
+		item_removalTimeMS = 5000;
+		decl = "health/sp_health_hammer_slam";
+		mustNotHavePerk = "perk/player/weapons/hammer/armor_and_health_drops_upgraded";
+		spawnOffsetFromJointOrView = false;
+	}
+}

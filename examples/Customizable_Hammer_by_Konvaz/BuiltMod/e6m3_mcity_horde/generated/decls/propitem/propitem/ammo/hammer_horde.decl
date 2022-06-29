@@ -1,0 +1,6 @@
+{
+	inherit = "propitem/ammo/hammer";
+	edit = {
+		hammerSupermeterCharge = 240;
+	}
+}
