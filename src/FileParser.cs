@@ -94,7 +94,7 @@ class FileParser
         // Decl files use lowercase true/false
         // Variations in capitalization cause game crashes
         if(result.Equals("true", CCIC) || result.Equals("false", CCIC))
-            result = result.ToLower(); // 
+            result = result.ToLower(); 
 
         return result;
     }

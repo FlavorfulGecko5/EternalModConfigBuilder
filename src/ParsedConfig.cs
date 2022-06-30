@@ -173,7 +173,7 @@ class ParsedConfig
             case PROPAGATE_ISNT_OBJECT:
             msg += String.Format(
                 "The '{0}' property is not defined as an object.\n\n{1}",
-                PROPERTY_PROPAGATE,
+                name,
                 RULES_PROPAGATE
             );
             break;
@@ -181,7 +181,7 @@ class ParsedConfig
             case BAD_PROP_ARRAY:
             msg += String.Format(
                 "The '{0}' property has an invalid sub-property '{1}'\n\n{2}",
-                PROPERTY_PROPAGATE,
+                name,
                 arg0, // Propagate list name
                 RULES_PROPAGATE
             );
@@ -190,7 +190,7 @@ class ParsedConfig
             case ROOTED_PROP_DIRECTORY:
             msg += String.Format(
                 "The '{0}' sub-property '{1}' has a non-relative name.\n\n{2}",
-                PROPERTY_PROPAGATE,
+                name,
                 arg0, // Propagate list name
                 RULES_PROPAGATE
             );
@@ -199,7 +199,7 @@ class ParsedConfig
             case ROOTED_PROP_FILE:
             msg += String.Format(
                 "The '{0}' list '{1}' contains non-relative path '{2}'\n\n{3}",
-                PROPERTY_PROPAGATE,
+                name,
                 arg0, // Propagate list name
                 arg1, // Propagate list element
                 RULES_PROPAGATE

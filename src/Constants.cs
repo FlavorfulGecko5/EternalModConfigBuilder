@@ -44,12 +44,12 @@ interface Constants
 
     // Constants pertaining to program termination and error messages
     const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
-    const string MSG_ERROR   = EXE_NAME + " ERROR: ";
-    const string MSG_WARNING = EXE_NAME + " WARNING: ";
+    const string MSG_ERROR   = "ERROR: ";
+    const string MSG_WARNING = "WARNING: ";
 
     const string MSG_SUCCESS = "Your mod was successfully built.\n\n"
     + "Please Note:\n"
-    + "- Only " + DESC_LABEL_FILES + " files are checked for labels."
+    + "- Only " + DESC_LABEL_FILES + " files are checked for labels.\n"
     + "- This program can't detect every conceivable typo you might make.\n"
     + "If your game crashes, double-check your mod files for errors.\n";       
     
@@ -82,7 +82,7 @@ interface Constants
     + "- Each sub-property's name should be a relative directory.\n"
     + "- Each sub-property must be defined as a list of strings.\n" 
     + "- These strings must be relative paths to files or directories inside your mod's '" + DIR_PROPAGATE + "' folder.\n"
-    + "When your mod is built, listed files/directories will be copied to the directory specified by it's list's name.";
+    + "When your mod is built, listed files/directories will be copied to the directory specified by the list's name.";
 
     const string RULES_LABEL_FORMAT = "Labels must have the form " + LABEL_ANY 
     + "[TYPE]" + LABEL_CHAR_SEPARATOR + "[EXPRESSION]" + LABEL_CHAR_BORDER + " where:\n"
