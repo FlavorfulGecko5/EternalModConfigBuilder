@@ -2,21 +2,20 @@ using Newtonsoft.Json.Linq;
 using static ParsedConfig.Error;
 class ParsedConfig
 {
-    public List<Option> options;
-    public List<PropagateList> propagations;
+    public List<Option> options = new List<Option>();
+    public List<PropagateList> propagations = new List<PropagateList>();
 
     // Used to avoid constantly passing by value
-    private string configPath, name;
-    private JToken option;
+    private string configPath = "", name = "";
+    private JToken option = new JProperty("");
 
-    public ParsedConfig(string configPathParameter)
+    public ParsedConfig(List<string> configPathList)
     {
-        options = new List<Option>();
-        propagations = new List<PropagateList>();
-        configPath = configPathParameter;
-        name = "";
-        option = new JProperty("");
-        parseConfig();
+        foreach(string path in configPathList)
+        {
+            configPath = path;
+            parseConfig();
+        }
     }
 
     private void parseConfig()

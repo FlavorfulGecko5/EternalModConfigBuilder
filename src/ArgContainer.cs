@@ -1,7 +1,8 @@
 using static ArgContainer.Error;
 class ArgContainer
 {
-    public string configPath = "", srcPath = "", outPath = "";
+    public List<string> configPaths = new List<string>();
+    public string srcPath = "", outPath = "";
     public bool srcIsZip = false, outToZip = false;
 
     public ArgContainer(string[] args)
@@ -16,21 +17,16 @@ class ArgContainer
     {
         bool hasConfig = false, hasSource = false, hasOutput = false;
 
-        if (args.Length != EXPECTED_ARG_COUNT)
-            ThrowError(BAD_NUMBER_ARGUMENTS, args.Length.ToString());
+        if (args.Length % 2 != 0)
+            ThrowError(BAD_NUMBER_ARGUMENTS);
 
         for (int i = 0; i < args.Length; i += 2)
         {
             switch (args[i].ToLower())
             {
                 case "-c":
-                    if (!hasConfig)
-                    {
-                        configPath = args[i + 1];
-                        hasConfig = true;
-                    }
-                    else
-                        goto CATCH_INVALID_ARGUMENT;
+                    configPaths.Add(args[i + 1]);
+                    hasConfig = true;
                     break;
 
                 case "-s":
@@ -55,18 +51,25 @@ class ArgContainer
 
                 default:
                 CATCH_INVALID_ARGUMENT:
-                    ThrowError(BAD_ARGUMENT, (i + 1).ToString());
+                    ThrowError(BAD_ARGUMENT, i + 1);
                     break;
             }
         }
+
+        if(!hasConfig || !hasSource || !hasOutput)
+            ThrowError(MISSING_ARGS);
     }
 
     private void validateConfigArg()
     {
-        if (!ExtUtil.hasValidConfigFileExtension(configPath))
-            ThrowError(BAD_CONFIG_EXTENSION);
-        if (!File.Exists(configPath))
-            ThrowError(CONFIG_NOT_FOUND);
+        for(int i = 0; i < configPaths.Count; i++)
+        {
+            if (!ExtUtil.hasValidConfigFileExtension(configPaths[i]))
+                ThrowError(BAD_CONFIG_EXTENSION, i);
+            if (!File.Exists(configPaths[i]))
+                ThrowError(CONFIG_NOT_FOUND, i);
+        }
+
     }
 
     private void validateSourceArg()
@@ -109,6 +112,7 @@ class ArgContainer
     {
         BAD_NUMBER_ARGUMENTS,
         BAD_ARGUMENT,
+        MISSING_ARGS,
         BAD_CONFIG_EXTENSION,
         CONFIG_NOT_FOUND,
         MOD_NOT_FOUND,
@@ -119,16 +123,14 @@ class ArgContainer
         OUTPUT_INSIDE_SRC,
     }
 
-    private void ThrowError(Error error, string arg0 = "")
+    private void ThrowError(Error error, int arg0 = -1)
     {
         switch(error)
         {
             case BAD_NUMBER_ARGUMENTS:
             reportError(String.Format
             (
-                "Bad number of arguments. (Expected {0}, received {1})\n\n{2}",
-                EXPECTED_ARG_COUNT,
-                arg0, // args.length
+                "Bad number of arguments. (Expected an even number)\n\n{0}",
                 RULES_USAGE
             ));
             break;
@@ -141,10 +143,17 @@ class ArgContainer
             ));
             break;
 
+            case MISSING_ARGS:
+            reportError(String.Format(
+                "Not enough data was entered as command line arguments.\n\n{0}",
+                RULES_USAGE
+            ));
+            break;
+
             case BAD_CONFIG_EXTENSION:
             reportError(String.Format(
                 "The configuration file '{0}' must be a {1} file.",
-                configPath,
+                configPaths[arg0],
                 DESC_CFG_EXTENSIONS
             ));
             break;
@@ -152,7 +161,7 @@ class ArgContainer
             case CONFIG_NOT_FOUND:
             reportError(String.Format(
                 "Failed to find the configuration file '{0}'",
-                configPath
+                configPaths[arg0]
             ));
             break;
 

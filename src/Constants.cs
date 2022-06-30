@@ -9,7 +9,6 @@ interface Constants
     const StringComparison CCIC = CurrentCultureIgnoreCase;
 
     // Constants pertaining to command-line arguments
-    const int EXPECTED_ARG_COUNT = 6;
     const long MAX_INPUT_SIZE_BYTES = 2000000000; // ~2 gigabytes
     
     // Constants pertaining to file extensions.
@@ -57,7 +56,8 @@ interface Constants
 
     // Rules
     const string RULES_USAGE = "Usage: ./" + EXE_NAME + ".exe -c [config "
-    + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]";
+    + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]\n"
+    + "You may enter multiple configuration files (use '-c' once per file).";
 
     const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
     + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"
@@ -89,7 +89,7 @@ interface Constants
     + "- [TYPE] is a pre-defined string - see examples that show all types.\n"
     + "- Case-insensitivity of [TYPE] and it's preface is allowed.\n"
     + "- [EXPRESSION] is a valid arithmetic or logical expression - see examples.\n"
-    + "- To insert an option from your config. file into an expression, use the notation {NAME}";
+    + "- To insert an option from your config. files into an expression, use the notation {NAME}";
 
     const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '" + LABEL_END_TOG + "' label placed after it.\n"
     + "These two labels define the toggle-block controlled by the expression.";

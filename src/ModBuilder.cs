@@ -8,7 +8,7 @@ class ModBuilder
     public ModBuilder(string[] args)
     {
         argData = new ArgContainer(args);
-        cfg = new ParsedConfig(argData.configPath);
+        cfg = new ParsedConfig(argData.configPaths);
         startDir = Directory.GetCurrentDirectory();
         activeDir = "";
         //System.Console.WriteLine(cfg.ToString());
