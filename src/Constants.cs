@@ -3,7 +3,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "Beta 1.2.0";
+    const string EXE_VERSION = "Beta 1.3.0";
 
     // Abbreviated form of CurrentCultureIgnoreCase
     const StringComparison CCIC = CurrentCultureIgnoreCase;
