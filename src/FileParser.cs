@@ -242,7 +242,7 @@ class FileParser
             msg += String.Format(
                 "The expression in '{0}' failed to evaluate."
                 + "\nExpression form at evaluation: '{1}'"
-                + "\nPrinting Error Message:\n{2}",
+                + "\n\nPrinting Error Message:\n{2}",
                 label,
                 exp,
                 arg0 // Exception message
@@ -269,7 +269,8 @@ class FileParser
             case BAD_TOGGLE_TYPE:
             msg += String.Format(
                 "There is an invalid toggle label '{0}'\n\n{1}",
-                arg0 // The label
+                arg0, // The label
+                RULES_LABEL_FORMAT
             );
             break;
 
