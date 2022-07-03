@@ -83,11 +83,12 @@ class ParsedConfig
     {
         if(option.Type != JTokenType.Object)
             ThrowError(PROPAGATE_ISNT_OBJECT);
-
+        
+        string workingDir = Directory.GetCurrentDirectory();
         foreach (JProperty list in ((JObject)option).Properties())
         {
-            if (Path.IsPathRooted(list.Name))
-                ThrowError(ROOTED_PROP_DIRECTORY, list.Name);
+            if (!DirUtil.isPathLocalRelative(list.Name, workingDir))
+                ThrowError(NOT_LOCALREL_PROP_NAME, list.Name);
 
             string[]? filePaths = JsonUtil.readList(list.Value);
             if(filePaths == null)
@@ -95,9 +96,8 @@ class ParsedConfig
             else
             {
                 foreach (string path in filePaths)
-                    if (Path.IsPathRooted(path))
-                        ThrowError(ROOTED_PROP_FILE, list.Name, path);
-
+                    if (!DirUtil.isPathLocalRelative(path, workingDir))
+                        ThrowError(NOT_LOCALREL_PROP_PATH, list.Name, path);
                 propagations.Add(new PropagateList(list.Name, filePaths));
             }
         }
@@ -126,8 +126,8 @@ class ParsedConfig
         BAD_OPTION_TYPE,
         PROPAGATE_ISNT_OBJECT,
         BAD_PROP_ARRAY,
-        ROOTED_PROP_DIRECTORY,
-        ROOTED_PROP_FILE,   
+        NOT_LOCALREL_PROP_NAME,
+        NOT_LOCALREL_PROP_PATH,   
     }
 
     private void ThrowError(Error error, string arg0 = "", string arg1 = "")
@@ -186,18 +186,20 @@ class ParsedConfig
             );
             break;
 
-            case ROOTED_PROP_DIRECTORY:
+            case NOT_LOCALREL_PROP_NAME:
             msg += String.Format(
-                "The '{0}' sub-property '{1}' has a non-relative name.\n\n{2}",
+                "The '{0}' sub-property '{1}' has a non-relative" 
+                + " or backtracking name.\n\n{2}",
                 name,
                 arg0, // Propagate list name
                 RULES_PROPAGATE
             );
             break;
 
-            case ROOTED_PROP_FILE:
+            case NOT_LOCALREL_PROP_PATH:
             msg += String.Format(
-                "The '{0}' list '{1}' contains non-relative path '{2}'\n\n{3}",
+                "The '{0}' list '{1}' contains non-relative" 
+                + " or backtracking path '{2}'\n\n{3}",
                 name,
                 arg0, // Propagate list name
                 arg1, // Propagate list element

@@ -79,7 +79,7 @@ interface Constants
     
     const string RULES_PROPAGATE = "Configuration files may have '" + PROPERTY_PROPAGATE + "' properties that must obey these rules:\n"
     + "- These properties must be defined as objects.\n"
-    + "- Each sub-property's name should be a relative directory.\n"
+    + "- Each sub-property's name should be a relative, non-backtracking directory.\n"
     + "- Each sub-property must be defined as a list of strings.\n" 
     + "- These strings must be relative paths to files or directories inside your mod's '" + DIR_PROPAGATE + "' folder.\n"
     + "When your mod is built, listed files/directories will be copied to the directory specified by the list's name.";

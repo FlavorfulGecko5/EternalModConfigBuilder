@@ -46,6 +46,17 @@ class DirUtil
         return childAbs.Contains(parentAbs, CCIC);
     }
 
+    public static bool isPathLocalRelative(string path, string currentDirAbs)
+    {
+        if(path.Equals(""))
+            return false;
+        if(Path.IsPathRooted(path))
+            return false;
+        
+        string pathAbs = Path.GetFullPath(path);
+        return pathAbs.Contains(currentDirAbs, CCIC);
+    }
+
     public static void copyDirectory(string srcDir, string outputDir)
     {
         CopyDir(new DirectoryInfo(srcDir), new DirectoryInfo(outputDir));
