@@ -2,8 +2,8 @@
 	inherit = "damage/melee/hammer_slam_aoe";
 	edit = {
 		damageParms = {
-			radius = $_injector_variable_#{hammerRadius}$;
-			radiusInner = $_injector_variable_#{hammerRadius}$;
+			radius = $emb_var#{hammerRadius}$;
+			radiusInner = $emb_var#{hammerRadius}$;
 			lootDropRestrictionsOnDamage = {
 				item[0] = {
 					lootDropContext = "LOOT_DROPCONTEXT_HAMMER_SUPERCHARGED";
@@ -18,10 +18,10 @@
 			defaultLootDropContextFlags = "LOOT_DROPCONTEXT_HAMMER_SUPERCHARGED";
 		}
 		maxDamage = {
-			defaultValue = $_injector_variable_#{hammerDamage}$;
+			defaultValue = $emb_var#{hammerDamage}$;
 		}
 		minDamage = {
-			defaultValue = $_injector_variable_#{hammerDamage}$;
+			defaultValue = $emb_var#{hammerDamage}$;
 		}
 	}
 }

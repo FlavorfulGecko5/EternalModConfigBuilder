@@ -1,6 +1,6 @@
 {
 	inherit = "propitem/ammo/hammer";
 	edit = {
-		hammerSupermeterCharge = $_injector_variable_#({hammerHordePickupCharge}*60)$;
+		hammerSupermeterCharge = $emb_var#({hammerHordePickupCharge}*60)$;
 	}
 }

@@ -4,35 +4,35 @@
 			num = 1;
 			item[0] = {
 				type = "ABILITY_MOD_HAMMER_PAIN_FALTER_TIME";
-				painFalterAnimScale = $_injector_variable_#({hammerStunScale}*0.319999993)$;
+				painFalterAnimScale = $emb_var#({hammerStunScale}*0.319999993)$;
 				aiPainFalterAnimScaleAdjustList = {
 					num = 7;
 					item[0] = {
 						monsterType = "AI_MONSTER_CARCASS";
-						falterAnimScale = $_injector_variable_#({hammerStunScale}*0.5)$;
+						falterAnimScale = $emb_var#({hammerStunScale}*0.5)$;
 					}
 					item[1] = {
 						monsterType = "AI_MONSTER_DREADKNIGHT";
-						falterAnimScale = $_injector_variable_#({hammerStunScale}*0.180000007)$;
+						falterAnimScale = $emb_var#({hammerStunScale}*0.180000007)$;
 					}
 					item[2] = {
 						monsterType = "AI_MONSTER_REVENANT";
-						falterAnimScale = $_injector_variable_#({hammerStunScale}*0.360000014)$;
+						falterAnimScale = $emb_var#({hammerStunScale}*0.360000014)$;
 					}
 					item[3] = {
 						monsterType = "AI_MONSTER_PINKY";
-						falterAnimScale = $_injector_variable_#({hammerStunScale}*0.419999987)$;
+						falterAnimScale = $emb_var#({hammerStunScale}*0.419999987)$;
 					}
 					item[4] = {
 						monsterType = "AI_MONSTER_DARKLORD_BOSS";
 					}
 					item[5] = {
 						monsterType = "AI_MONSTER_MARAUDER";
-						falterAnimScale = $_injector_variable_#({hammerStunScale}*0.150000006)$;
+						falterAnimScale = $emb_var#({hammerStunScale}*0.150000006)$;
 					}
 					item[6] = {
 						monsterType = "AI_MONSTER_ARMORED_BARON";
-						falterAnimScale = $_injector_variable_#({hammerStunScale}*0.200000003)$;
+						falterAnimScale = $emb_var#({hammerStunScale}*0.200000003)$;
 					}
 				}
 			}

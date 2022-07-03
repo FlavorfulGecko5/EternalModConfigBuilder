@@ -2,7 +2,7 @@
 	inherit = "lootdrop/ammo/rocket_launcher/rockets_hammer_slam";
 	edit = {
 		item_maxDrop = {
-			defaultValue = $_injector_variable_#{hammerRocketsMultiplierUpgraded}$;
+			defaultValue = $emb_var#{hammerRocketsMultiplierUpgraded}$;
 		}
 		mustHavePerk = "perk/player/weapons/hammer/ammo_drops_upgraded";
 		mustNotHavePerk = NULL;

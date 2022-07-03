@@ -8,7 +8,7 @@
 		entityDef = "prop/lootdrops/health/health_hammer_slam";
 		item_amt_calc = "LOOT_ITEM_AMT_CALC_EXPLICIT";
 		item_maxDrop = {
-			defaultValue = $_injector_variable_#{hammerHealthMultiplier}$;
+			defaultValue = $emb_var#{hammerHealthMultiplier}$;
 		}
 		item_dropChanceMin = 100;
 		item_dropChanceMax = 100;

@@ -5,7 +5,7 @@
 		entityDef = "prop/lootdrops/ammo/hammer_slam_shells";
 		item_amt_calc = "LOOT_ITEM_AMT_CALC_EXPLICIT";
 		item_maxDrop = {
-			defaultValue = $_injector_variable_#{hammerShellsMultiplier}$;
+			defaultValue = $emb_var#{hammerShellsMultiplier}$;
 		}
 		item_removalTimeMS = 3000;
 		decl = "propitem/ammo/hammer_slam_shells";

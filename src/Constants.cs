@@ -3,7 +3,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "Beta 1.3.0";
+    const string EXE_VERSION = "INDEV-Beta 1.4.0";
 
     // Abbreviated form of CurrentCultureIgnoreCase
     const StringComparison CCIC = CurrentCultureIgnoreCase;
@@ -35,11 +35,11 @@ interface Constants
     // Constants pertaining to labels
     const string LABEL_CHAR_BORDER    = "$";
     const string LABEL_CHAR_SEPARATOR = "#";
-    const string LABEL_ANY            = LABEL_CHAR_BORDER + "_INJECTOR_";
-    const string LABEL_ANY_VARIABLE   = LABEL_ANY + "VARIABLE_";
-    const string LABEL_ANY_TOG    = LABEL_ANY + "TOGGLE_";
+    const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
+    const string LABEL_ANY_VARIABLE   = LABEL_ANY + "VAR";
+    const string LABEL_ANY_TOG    = LABEL_ANY + "TOGGLE";
     const string LABEL_START_TOG  = LABEL_ANY_TOG + LABEL_CHAR_SEPARATOR;
-    const string LABEL_END_TOG    = LABEL_ANY_TOG + "END_" + LABEL_CHAR_BORDER;
+    const string LABEL_END_TOG    = LABEL_ANY_TOG + "_END" + LABEL_CHAR_BORDER;
 
     // Constants pertaining to program termination and error messages
     const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";

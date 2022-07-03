@@ -5,47 +5,47 @@
 			item[0] = {
 				priority = 1;
 				type = "ABILITY_MOD_HAMMER_PAIN_FALTER_TIME";
-				painFalterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.200000003)$;
+				painFalterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.200000003)$;
 				aiPainFalterAnimScaleAdjustList = {
 					num = 10;
 					item[0] = {
 						monsterType = "AI_MONSTER_CARCASS";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.3125)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.3125)$;
 					}
 					item[1] = {
 						monsterType = "AI_MONSTER_DREADKNIGHT";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.112499997)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.112499997)$;
 					}
 					item[2] = {
 						monsterType = "AI_MONSTER_REVENANT";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.224999994)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.224999994)$;
 					}
 					item[3] = {
 						monsterType = "AI_MONSTER_PINKY";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.262499988)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.262499988)$;
 					}
 					item[4] = {
 						monsterType = "AI_MONSTER_WHIPLASH";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.25)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.25)$;
 					}
 					item[5] = {
 						monsterType = "AI_MONSTER_ARCHVILE";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.25)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.25)$;
 					}
 					item[6] = {
 						monsterType = "AI_MONSTER_DOOM_HUNTER";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.25)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.25)$;
 					}
 					item[7] = {
 						monsterType = "AI_MONSTER_TYRANT";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.25)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.25)$;
 					}
 					item[8] = {
 						monsterType = "AI_MONSTER_DARKLORD_BOSS";
 					}
 					item[9] = {
 						monsterType = "AI_MONSTER_MARAUDER";
-						falterAnimScale = $_injector_variable_#({hammerStunScaleUpgraded}*0.129999995)$;
+						falterAnimScale = $emb_var#({hammerStunScaleUpgraded}*0.129999995)$;
 					}
 				}
 			}
