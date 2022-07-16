@@ -55,11 +55,11 @@ section of a file, based on what it's expression evaluates to. Toggle label expr
 MUST evaluate to a Boolean (true/false), or a numerical value.
 $emb_toggle#true$
 I will still be visible when this file is parsed.
-$emb_toggle_end$
+$emb_toggle_end#$
 
 $emb_toggle#{x} = 0$
 I will not be visible when this file is parsed.
-$emb_toggle_end$
+$emb_toggle_end#$
 
 Toggle labels can be nested inside of each other
 $emb_toggle#1$
@@ -67,9 +67,9 @@ I will be visible when this file is parsed.
 
 $emb_toggle#0.85$
 However, I will not be visible! (Any number < 1 is considered false for a toggle label)
-$emb_toggle_end$
+$emb_toggle_end#$
 
-$emb_toggle_end$
+$emb_toggle_end#$
 
 
 There are many other features you can include in these expressions. To get a better idea of what

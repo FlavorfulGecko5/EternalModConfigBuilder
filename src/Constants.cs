@@ -3,7 +3,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "Beta 1.4.0";
+    const string EXE_VERSION = "INDEV Beta 1.5.0";
 
     // Abbreviated form of CurrentCultureIgnoreCase
     const StringComparison CCIC = CurrentCultureIgnoreCase;
@@ -38,8 +38,7 @@ interface Constants
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
     const string LABEL_ANY_VARIABLE   = LABEL_ANY + "VAR";
     const string LABEL_ANY_TOG    = LABEL_ANY + "TOGGLE";
-    const string LABEL_START_TOG  = LABEL_ANY_TOG + LABEL_CHAR_SEPARATOR;
-    const string LABEL_END_TOG    = LABEL_ANY_TOG + "_END" + LABEL_CHAR_BORDER;
+    const string LABEL_END_TOG    = LABEL_ANY_TOG + "_END";
 
     // Constants pertaining to program termination and error messages
     const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
@@ -91,7 +90,8 @@ interface Constants
     + "- To insert an option from your config. files into an expression, use the notation {NAME}\n"
     + "- Case-insensitivity of all label elements is allowed.";
 
-    const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '" + LABEL_END_TOG + "' label placed after it.\n"
+    const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '" 
+    + LABEL_END_TOG + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER + "' label placed after it.\n"
     + "These two labels define the toggle-block controlled by the expression.";
 
     const string RULES_TOGGLE_EXP = "Expressions in toggle labels must yield one of the following types of results:\n"
