@@ -47,7 +47,7 @@ class ParsedConfig
         }
         catch (Newtonsoft.Json.JsonReaderException e)
         {
-            ThrowError(BAD_JSON_FILE, e.Message);
+            throw EMBError(BAD_JSON_FILE, e.Message);
         }
 
         return rawJson;
@@ -56,50 +56,47 @@ class ParsedConfig
     private void validateName()
     {
         if(name.Length == 0)
-            ThrowError(BAD_NAME_FORMATTING);
+            throw EMBError(BAD_NAME_FORMATTING);
         
         foreach(char c in name)
             if(!(c <= 'z' && c >= 'a'))
             if(!(c <= 'Z' && c >= 'A'))
             if(!(c <= '9' && c >= '0'))
             if(!NAME_SPECIAL_CHARACTERS.Contains(c))
-                ThrowError(BAD_NAME_FORMATTING);
+                throw EMBError(BAD_NAME_FORMATTING);
 
         foreach(Option o in options)
             if(o.name.Equals(name, CCIC))
-                ThrowError(DUPLICATE_NAME);
+                throw EMBError(DUPLICATE_NAME);
     }
 
     private void parseOptionValue()
     {
         string? value = JsonUtil.readTokenValue(option, true);
         if(value == null)
-            ThrowError(BAD_OPTION_TYPE);
-        else
-            options.Add(new Option(name, value));
+            throw EMBError(BAD_OPTION_TYPE);
+        options.Add(new Option(name, value));
     }
 
     private void parsePropagate()
     {
         if(option.Type != JTokenType.Object)
-            ThrowError(PROPAGATE_ISNT_OBJECT);
+            throw EMBError(PROPAGATE_ISNT_OBJECT);
         
         string workingDir = Directory.GetCurrentDirectory();
         foreach (JProperty list in ((JObject)option).Properties())
         {
             if (!DirUtil.isPathLocalRelative(list.Name, workingDir))
-                ThrowError(NOT_LOCALREL_PROP_NAME, list.Name);
+                throw EMBError(NOT_LOCALREL_PROP_NAME, list.Name);
 
             string[]? filePaths = JsonUtil.readList(list.Value);
             if(filePaths == null)
-                ThrowError(BAD_PROP_ARRAY, list.Name);
-            else
-            {
-                foreach (string path in filePaths)
-                    if (!DirUtil.isPathLocalRelative(path, workingDir))
-                        ThrowError(NOT_LOCALREL_PROP_PATH, list.Name, path);
-                propagations.Add(new PropagateList(list.Name, filePaths));
-            }
+                throw EMBError(BAD_PROP_ARRAY, list.Name);
+
+            foreach (string path in filePaths)
+                if (!DirUtil.isPathLocalRelative(path, workingDir))
+                    throw EMBError(NOT_LOCALREL_PROP_PATH, list.Name, path);
+            propagations.Add(new PropagateList(list.Name, filePaths));
         }
     }
 
@@ -130,83 +127,69 @@ class ParsedConfig
         NOT_LOCALREL_PROP_PATH,   
     }
 
-    private void ThrowError(Error error, string arg0 = "", string arg1 = "")
+    private EMBException EMBError(Error e, string arg0 = "", string arg1 = "")
     {
-        string msg = String.Format(
+        string preamble = String.Format(
             "Problem encountered with configuration file '{0}'\n",
             configPath
         );
-        switch(error)
+        string msg = "";
+        string[] args = {"", "", "", ""};
+        switch(e)
         {
             case BAD_JSON_FILE:
-            msg += String.Format(
-                "There is a syntax error. Printing Exception message:\n\n{0}",
-                arg0 // The exception message
-            );
+            msg = "There is a syntax error. Printing Exception message:\n\n{0}";
+            args[0] = arg0; // The Exception message
             break;
 
             case BAD_NAME_FORMATTING:
-            msg += String.Format(
-                "The Option '{0}' has an invalid name.\n\n{1}",
-                name,
-                RULES_OPTION_NAME
-            );
+            msg = "The Option '{0}' has an invalid name.\n\n{1}";
+            args[0] = name;
+            args[1] = RULES_OPTION_NAME;
             break;
 
             case DUPLICATE_NAME:
-            msg += String.Format(
-                "The name '{0}' is used to define multiple Options.\n\n{1}",
-                name,
-                RULES_OPTION_NAME
-            );
+            msg = "The name '{0}' is used to define multiple Options.\n\n{1}";
+            args[0] = name;
+            args[1] = RULES_OPTION_NAME;
             break;
 
             case BAD_OPTION_TYPE:
-            msg += String.Format(
-                "The Option '{0}' is not defined in a valid way.\n\n{1}",
-                name,
-                RULES_OPTION_TYPE
-            );
+            msg = "The Option '{0}' is not defined in a valid way.\n\n{1}";
+            args[0] = name;
+            args[1] = RULES_OPTION_TYPE;
             break;
 
             case PROPAGATE_ISNT_OBJECT:
-            msg += String.Format(
-                "The '{0}' property is not defined as an object.\n\n{1}",
-                name,
-                RULES_PROPAGATE
-            );
+            msg = "The '{0}' property is not defined as an object.\n\n{1}";
+            args[0] = name;
+            args[1] = RULES_PROPAGATE;
             break;
 
             case BAD_PROP_ARRAY:
-            msg += String.Format(
-                "The '{0}' property has an invalid sub-property '{1}'\n\n{2}",
-                name,
-                arg0, // Propagate list name
-                RULES_PROPAGATE
-            );
+            msg = "The '{0}' property has an invalid sub-property '{1}'\n\n{2}";
+            args[0] = name;
+            args[1] = arg0; // Propagate list name
+            args[2] = RULES_PROPAGATE;
             break;
 
             case NOT_LOCALREL_PROP_NAME:
-            msg += String.Format(
-                "The '{0}' sub-property '{1}' has a non-relative" 
-                + " or backtracking name.\n\n{2}",
-                name,
-                arg0, // Propagate list name
-                RULES_PROPAGATE
-            );
+            msg = "The '{0}' sub-property '{1}' has a non-relative"
+                    + " or backtracking name.\n\n{2}";
+            args[0] = name;
+            args[1] = arg0; // Propagate list name
+            args[2] = RULES_PROPAGATE;
             break;
 
             case NOT_LOCALREL_PROP_PATH:
-            msg += String.Format(
-                "The '{0}' list '{1}' contains non-relative" 
-                + " or backtracking path '{2}'\n\n{3}",
-                name,
-                arg0, // Propagate list name
-                arg1, // Propagate list element
-                RULES_PROPAGATE
-            );
+            msg = "The '{0}' list '{1}' contains non-relative"
+                    + " or backtracking path '{2}'\n\n{3}";
+            args[0] = name;
+            args[1] = arg0; // Propagate list name
+            args[2] = arg1; // Propagate list element
+            args[3] = RULES_PROPAGATE;
             break;
         }
-        reportError(msg);
+        return EMBException.buildException(preamble + msg, args);
     }
 }

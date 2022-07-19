@@ -1,7 +1,7 @@
 using static FileParser.Error;
 class FileParser
 {
-    private static readonly Label emptyLabel = new Label(-1, -1, "");
+    private static readonly Label emptyLabel = new Label(-1, -1, "", "");
     private string path, text;
 
     public FileParser(List<Option> options)
@@ -31,14 +31,12 @@ class FileParser
     {
         int end = text.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
-            ThrowError(INCOMPLETE_LABEL, emptyLabel);
+            throw EMBError(INCOMPLETE_LABEL);
  
         string rawLabel = text.Substring(start, end - start + 1);
-        Label label = new Label(start, end, rawLabel);
-        
-        bool successfullySplitLabel = label.splitLabel();
-        if (!successfullySplitLabel)
-            ThrowError(MISSING_EXP_SEPARATOR, label);
+        Label label = new Label(start, end, rawLabel, path);
+
+        label.splitLabel();
            
         return label;
     }
@@ -48,39 +46,18 @@ class FileParser
         switch(label.type)
         {
             case LabelType.VAR:
-            parseExpression(label);
+            label.computeResult();
             parseVariable(label);
             break;
 
             case LabelType.TOGGLE_START:
-            parseExpression(label);
+            label.computeResult();
             parseToggle(label);
             break;
 
             case LabelType.TOGGLE_END:
-            ThrowError(EXTRA_END_TOGGLE, emptyLabel);
-            break;
-
-            case LabelType.INVALID:
-            ThrowError(BAD_TYPE, label);
-            break;
+            throw EMBError(EXTRA_END_TOGGLE);
         }
-    }
-
-    private void parseExpression(Label label)
-    {
-        bool expressionLoopedInfinitely = false;
-        try
-        {
-            expressionLoopedInfinitely = label.computeResult();
-        }
-        catch(Exception e)
-        {
-            ThrowError(CANT_EVAL_EXP, label, e.Message);
-        }
-
-        if(expressionLoopedInfinitely)
-            ThrowError(EXP_LOOPS_INFINITELY, label);
     }
 
     private void parseVariable(Label label)
@@ -91,41 +68,24 @@ class FileParser
 
     private void parseToggle(Label start)
     {
-        // Allows nested toggles
-        int numEndLabelsNeeded = 1;
-
+        int numEndLabelsNeeded = 1; // Allows nested toggles
         int endStart = start.start;
         Label end = emptyLabel;
         while (numEndLabelsNeeded > 0)
         {
             endStart = text.IndexOf(LABEL_ANY_TOG, endStart + 1, CCIC);
             if (endStart == -1)
-                ThrowError(MISSING_END_TOGGLE, start);
+                throw EMBError(MISSING_END_TOGGLE, start.raw);
             end = buildLabel(endStart);
-            switch(end.type)
-            {
-                case LabelType.TOGGLE_START:
-                numEndLabelsNeeded++;
-                break;
 
-                case LabelType.TOGGLE_END:
+            // Non-toggle types get filtered out by the search string
+            if(end.type == LabelType.TOGGLE_END)
                 numEndLabelsNeeded--;
-                break;
-
-                default:
-                ThrowError(BAD_TOGGLE_TYPE, end);
-                break;
-            }
+            else if (end.type == LabelType.TOGGLE_START)
+                numEndLabelsNeeded++;
         }
 
-        // TODO - Fix this up with exception system improvements
-        bool resultBool = false;
-        bool? tempResultBool = start.resultToBool();
-        if(tempResultBool == null)
-            ThrowError(BAD_TOGGLE_EXP_RESULT, start);
-        else
-            resultBool = (bool)tempResultBool;
-
+        bool resultBool = start.resultToToggleBool();
         if (resultBool) // Keep what's in-between, remove the labels
             text = text.Substring(0, start.start)
                 + text.Substring(start.end + 1, endStart - start.end - 1)
@@ -138,104 +98,39 @@ class FileParser
     public enum Error
     {
         INCOMPLETE_LABEL,
-        MISSING_EXP_SEPARATOR,
-        BAD_TYPE,
-        EXP_LOOPS_INFINITELY,
-        CANT_EVAL_EXP,
         EXTRA_END_TOGGLE,
         MISSING_END_TOGGLE,
-        BAD_TOGGLE_TYPE,
-        BAD_TOGGLE_EXP_RESULT
     }
 
-    private void ThrowError(Error error, Label label, string arg0 = "")
+    private EMBException EMBError(Error e, string arg0 = "")
     {
-        string msg = String.Format(
-            "Problem encountered when parsing mod file '{0}'\n",
+        string preamble = String.Format(
+            "Problem encountered in mod file '{0}'\n",
             path
         );
-        switch(error)
+        string msg = "";
+        string[] args = {"", "", ""};
+        switch(e)
         {
             case INCOMPLETE_LABEL:
-            msg += String.Format(
-                "A label is missing a '{0}' on it's right side.\n\n{1}",
-                LABEL_CHAR_BORDER,
-                RULES_LABEL_FORMAT
-            );
-            break;
-
-            case MISSING_EXP_SEPARATOR:
-            msg += String.Format(
-                "The label '{0}' has no '{1}' written after it's type.\n\n{2}",
-                label.raw,
-                LABEL_CHAR_SEPARATOR,
-                RULES_LABEL_FORMAT
-            );
-            break;
-
-            case BAD_TYPE:
-            msg += String.Format(
-                "The label '{0}' has an unrecognized type.\n\n{1}",
-                label.raw,
-                RULES_LABEL_FORMAT
-            );
-            break;
-
-            case EXP_LOOPS_INFINITELY:
-            msg += String.Format(
-                "The expression in '{0}' loops infinitely when inserting Option"
-                + " values.\nLast edited form of the expression: '{1}'",
-                label.raw,
-                label.exp
-            );
-            break;
-
-            case CANT_EVAL_EXP:
-            msg += String.Format(
-                "The expression in '{0}' failed to evaluate."
-                + "\nExpression form at evaluation: '{1}'"
-                + "\n\nPrinting Error Message:\n{2}",
-                label.raw,
-                label.exp,
-                arg0 // Exception message
-            );
+            msg = "A label is missing a '{0}' on it's right side.\n\n{1}";
+            args[0] = LABEL_CHAR_BORDER;
+            args[1] = RULES_LABEL_FORMAT;
             break;
 
             case EXTRA_END_TOGGLE:
-            msg += String.Format(
-                "There is a '{0}' label with no preceding start label.\n\n{1}",
-                LABEL_END_TOG + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER,
-                RULES_TOGGLE_BLOCK
-            );
+            msg = "There is a '{0}' label with no preceding start label.\n\n{1}";
+            args[0] = LABEL_END_TOG + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
+            args[1] = RULES_TOGGLE_BLOCK;
             break;
 
             case MISSING_END_TOGGLE:
-            msg += String.Format(
-                "The label '{0}' has no '{1}' label following it.\n\n{2}",
-                label.raw,
-                LABEL_END_TOG + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER,
-                RULES_TOGGLE_BLOCK
-            );
-            break;
-
-            case BAD_TOGGLE_TYPE:
-            msg += String.Format(
-                "There is an invalid toggle label '{0}'\n\n{1}",
-                label.raw, // The label
-                RULES_LABEL_FORMAT
-            );
-            break;
-
-            case BAD_TOGGLE_EXP_RESULT:
-            msg += String.Format(
-                "The expression in '{0}' cannot be evaluated into a Boolean."
-                + "\nExpression Result: '{1}'\n\n{2}",
-                label.raw,
-                label.exp,
-                RULES_TOGGLE_EXP
-            );
+            msg = "The label '{0}' has no '{1}' label following it.\n\n{2}";
+            args[0] = arg0; // Label raw text
+            args[1] = LABEL_END_TOG + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
+            args[2] = RULES_TOGGLE_BLOCK;
             break;
         }
-        reportError(msg);
+        return EMBException.buildException(preamble + msg, args);
     }
 }

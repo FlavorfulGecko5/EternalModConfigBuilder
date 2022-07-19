@@ -55,7 +55,7 @@ class ModBuilder
         if (Directory.Exists(DIR_PROPAGATE))
         {
             if (cfg.propagations.Count == 0)
-                ThrowError(PROPAGATE_DIR_NO_LISTS);
+                EMBWarning(PROPAGATE_DIR_NO_LISTS);
 
             foreach (PropagateList resource in cfg.propagations)
                 resource.propagate();
@@ -63,7 +63,7 @@ class ModBuilder
             Directory.Delete(DIR_PROPAGATE, true);
         }
         else if (cfg.propagations.Count > 0)
-            ThrowError(PROPAGATE_LISTS_NO_DIR);
+            EMBWarning(PROPAGATE_LISTS_NO_DIR);
     }
 
     private void buildZip()
@@ -78,25 +78,24 @@ class ModBuilder
         PROPAGATE_LISTS_NO_DIR,
     }
 
-    private void ThrowError(Error error)
+    private void EMBWarning(Error e)
     {
-        switch(error)
+        string msg = "";
+        string[] args = {""};
+        switch(e)
         {
             case PROPAGATE_DIR_NO_LISTS:
-            reportWarning(String.Format(
-               "The '{0}' directory exists in your mod, but no propagation "
-               + "lists are defined. Propagation will not occur.", 
-               DIR_PROPAGATE
-            ));
+            msg = "The '{0}' directory exists in your mod, but no propagation "
+                    + "lists are defined. Propagation will not occur.";
+            args[0] = DIR_PROPAGATE;
             break;
 
             case PROPAGATE_LISTS_NO_DIR:
-            reportWarning(String.Format(
-                "You have propagation lists, but no '{0}' directory in "
-                + "your mod. Propagation will not occur.",
-                DIR_PROPAGATE
-            ));
+            msg = "You have propagation lists, but no '{0}' directory in "
+                    + "your mod. Propagation will not occur.";
+            args[0] = DIR_PROPAGATE;
             break;
         }
+        RuntimeManager.reportWarning(msg, args);
     }
 }

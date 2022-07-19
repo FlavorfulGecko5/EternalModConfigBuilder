@@ -90,6 +90,11 @@ interface Constants
     + "- To insert an option from your config. files into an expression, use the notation {NAME}\n"
     + "- Case-insensitivity of all label elements is allowed.";
 
+    const string RULES_LABEL_TYPES = "The current valid types for labels are:\n"
+    + "- 'EMB_VAR'\n"
+    + "- 'EMB_TOGGLE'\n"
+    + "- 'EMB_TOGGLE_END'";
+
     const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '" 
     + LABEL_END_TOG + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER + "' label placed after it.\n"
     + "These two labels define the toggle-block controlled by the expression.";

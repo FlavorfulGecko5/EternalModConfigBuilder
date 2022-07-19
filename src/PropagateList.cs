@@ -36,7 +36,7 @@ class PropagateList
                 DirUtil.copyDirectory(copyFrom, copyTo);
             }    
             else
-                ThrowError(PROPAGATE_PATH_NOT_FOUND, path);
+                EMBWarning(PROPAGATE_PATH_NOT_FOUND, path);
         }
     }
 
@@ -45,20 +45,20 @@ class PropagateList
         PROPAGATE_PATH_NOT_FOUND
     }
 
-    private void ThrowError(Error error, string arg0 = "")
+    private void EMBWarning(Error e, string arg0 = "")
     {
-        switch(error)
+        string msg = "";
+        string[] args = {"", "", ""};
+        switch(e)
         {
             case PROPAGATE_PATH_NOT_FOUND:
-            reportWarning(String.Format(
-                "The path '{0}' in propagation list '{1}' does not exist in"
-                + " '{2}'. This path will be ignored.",
-                arg0, // The filepath
-                name,
-                DIR_PROPAGATE
-            ));
+            msg = "The path '{0}' in propagation list '{1}' does not exist in"
+                    + " '{2}'. This path will be ignored.";
+            args[0] = arg0; // The filepath
+            args[1] = name;
+            args[2] = DIR_PROPAGATE;
             break;
         }
-
+        RuntimeManager.reportWarning(msg, args);
     }
 }

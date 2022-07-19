@@ -1,5 +1,4 @@
-﻿global using static RuntimeManager;
-global using static Constants;
+﻿global using static Constants;
 class RuntimeManager
 {
     public static void Main(string[] args)
@@ -7,6 +6,10 @@ class RuntimeManager
         try
         {
             run(args);
+        }
+        catch (EMBException e)
+        {
+            reportError(e.Message);
         }
         catch (Exception e) 
         {
@@ -26,14 +29,14 @@ class RuntimeManager
         System.Console.WriteLine(MSG_SUCCESS);
     }
 
-    public static void reportError(string msg)
+    private static void reportError(string msg)
     {
         System.Console.WriteLine(MSG_ERROR + msg);
         System.Console.WriteLine("\n" + MSG_FAILURE);
         Environment.Exit(1);
     }
 
-    public static void reportUnknownError(Exception e)
+    private static void reportUnknownError(Exception e)
     {
         reportError(String.Format(
             "An unknown error occurred, printing Exception:\n\n{0}",
@@ -41,8 +44,8 @@ class RuntimeManager
         ));
     }
 
-    public static void reportWarning(string msg)
+    public static void reportWarning(string msg, string[] args)
     {
-        System.Console.WriteLine(MSG_WARNING + msg);
+        System.Console.WriteLine(MSG_WARNING + msg, args);
     }
 }

@@ -1,4 +1,5 @@
 using System.Data;
+using static Label.Error;
 class Label
 {
     private static DataTable computer = new DataTable();
@@ -9,24 +10,26 @@ class Label
         options = optionsParameter;
     }
 
+    private readonly string path;
     public LabelType type;
     public string raw, exp, result;
     public int start, end;
 
-    public Label(int startParam, int endParam, string fullLabelParam)
+    public Label(int startParm, int endParm, string labelParm, string pathParm)
     {
-        start = startParam;
-        end = endParam;
-        raw = fullLabelParam;
+        start = startParm;
+        end = endParm;
+        raw = labelParm;
+        path = pathParm;
         exp = result = "";
-        type = LabelType.INVALID;
+        type = LabelType.VAR;
     }
 
-    public bool splitLabel()
+    public void splitLabel()
     {
         int separator = raw.IndexOf(LABEL_CHAR_SEPARATOR);
         if(separator == -1)
-            return false;
+            throw EMBError(MISSING_EXP_SEPARATOR);
         
         // Excludes separator index. Capitalize for switch comparisons
         string typeString = raw.Substring(0, separator).ToUpper();
@@ -45,23 +48,20 @@ class Label
             break;
 
             default:
-            type = LabelType.INVALID;
-            break;
+            throw EMBError(BAD_TYPE);
         }
 
         exp = raw.Substring(separator + 1, raw.Length - separator - 2);
-
-        return true;
     }
 
-    public bool computeResult()
+    public void computeResult()
     {
         int numIterations = 0;         // Prevents infinite loops
         bool replacedThisCycle = true; // Allows nested variables
         while (replacedThisCycle)
         {
             if (numIterations++ == INFINITE_LOOP_THRESHOLD)
-                return true;
+                throw EMBError(EXP_LOOPS_INFINITELY);
             replacedThisCycle = false;
 
             foreach (Option option in options)
@@ -75,7 +75,17 @@ class Label
             }
         }
 
-        string? rawResult = computer.Compute(exp, "").ToString();
+        string? rawResult = null;
+
+        try
+        {
+            computer.Compute(exp, "").ToString();
+        }
+        catch(Exception e)
+        {
+            throw EMBError(CANT_EVAL_EXP, e.Message);
+        }
+        
 
         if (rawResult == null)
             rawResult = NULL_EXP_RESULT;
@@ -85,11 +95,9 @@ class Label
         if (rawResult.Equals("true", CCIC) || rawResult.Equals("false", CCIC))
             rawResult = rawResult.ToLower();
         result = rawResult;
-
-        return false;
     }
     
-    public bool? resultToBool()
+    public bool resultToToggleBool()
     {
         bool resultBool = false;
         try
@@ -104,16 +112,72 @@ class Label
             }
             catch(Exception)
             {
-                return null;
+                throw EMBError(CANT_EVAL_TOGGLE_BOOL);
             }
         }
         return resultBool;
+    }
+
+    public enum Error
+    {
+        MISSING_EXP_SEPARATOR,
+        BAD_TYPE,
+        EXP_LOOPS_INFINITELY,
+        CANT_EVAL_EXP,
+        CANT_EVAL_TOGGLE_BOOL
+    }
+
+    private EMBException EMBError(Error e, string arg0 = "")
+    {
+        string preamble = String.Format(
+            "Problem encountered with label '{0}' in mod file '{1}'\n",
+            raw,
+            path
+        );
+        string msg = "";
+        string[] args = {"", ""};
+
+        switch(e)
+        {
+            case MISSING_EXP_SEPARATOR:
+            msg = "There is no '{0}' written after the type.\n\n{1}";
+            args[0] = LABEL_CHAR_SEPARATOR;
+            args[1] = RULES_LABEL_FORMAT;
+            break;
+
+            case BAD_TYPE:
+            msg = "The type is unrecognized.\n\n{0}";
+            args[0] = RULES_LABEL_TYPES;
+            break;
+
+            case EXP_LOOPS_INFINITELY:
+            msg = "The expression loops infinitely when inserting Option"
+                    + " values.\nLast edited form of the expression: '{0}'";
+            args[0] = exp;
+            break;
+
+            case CANT_EVAL_EXP:
+            msg = "Expression failed to evaluate"
+                    + "\nExpression form at evaluation: '{0}'"
+                    + "\n\nPrinting Error Message:\n{1}";
+            args[0] = exp;
+            args[1] = arg0; // Exception message
+            break;
+
+            case CANT_EVAL_TOGGLE_BOOL:
+            msg = "The expression does not evaluate to a Boolean."
+                    + "\nExpression Result: '{0}'\n\n{1}";
+            args[0] = result;
+            args[1] = RULES_TOGGLE_EXP;
+            break;
+        }
+
+        return EMBException.buildException(preamble + msg, args);
     }
 }
 
 enum LabelType
 {
-    INVALID,
     VAR,
     TOGGLE_START,
     TOGGLE_END
