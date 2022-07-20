@@ -1,8 +1,8 @@
 using static FileParser.Error;
 class FileParser
 {
-    private static readonly Label emptyLabel = new Label(-1, -1, "", "");
     private string path, text;
+    private int numBuildLabelCalls;
 
     public FileParser(List<Option> options)
     {
@@ -14,42 +14,53 @@ class FileParser
     {
         path = pathParameter;
         text = FileUtil.readFileText(path);
+        numBuildLabelCalls = 0;
 
         // Labels are parsed sequentially by scanning the entire text file.
-        int nextStartIndex = text.IndexOf(LABEL_ANY, CCIC);
+        int nextStartIndex = findNextLabelIndex(0);
         while (nextStartIndex != -1)
         {
-            Label label = buildLabel(nextStartIndex);
-            parseLabel(label);
-            nextStartIndex = text.IndexOf(LABEL_ANY, nextStartIndex, CCIC);
+            parseLabel(nextStartIndex);
+            nextStartIndex = findNextLabelIndex(nextStartIndex);
         }
 
         FileUtil.writeFile(path, text);
     }
 
+    private int findNextLabelIndex(int searchStartIndex)
+    {
+        return text.IndexOf(LABEL_ANY, searchStartIndex, CCIC);
+    }
+
+    private void parseLabel(int startIndex)
+    {
+        Label label = buildLabel(startIndex);
+        label.split();
+        label.computeResult();
+        switch (label.type)
+        {
+            case LabelType.VAR:
+                parseVariable(label);
+                break;
+        }
+    }
+
     private Label buildLabel(int start)
     {
+        if(numBuildLabelCalls++ == PARSER_INFINITE_LOOP_THRESHOLD)
+            throw EMBError(PARSER_LOOPS_INFINITELY);
+
         int end = text.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
             throw EMBError(INCOMPLETE_LABEL);
+        
+        while(end == findNextLabelIndex(start + 1))
+            parseLabel(end);
  
         string rawLabel = text.Substring(start, end - start + 1);
         Label label = new Label(start, end, rawLabel, path);
-
-        label.splitLabel();
-           
+        
         return label;
-    }
-
-    private void parseLabel(Label label)
-    {
-        switch(label.type)
-        {
-            case LabelType.VAR:
-            label.computeResult();
-            parseVariable(label);
-            break;
-        }
     }
 
     private void parseVariable(Label label)
@@ -60,23 +71,28 @@ class FileParser
 
     public enum Error
     {
-        INCOMPLETE_LABEL
+        INCOMPLETE_LABEL,
+        PARSER_LOOPS_INFINITELY,
     }
 
-    private EMBException EMBError(Error e, string arg0 = "")
+    private EMBException EMBError(Error e)
     {
         string preamble = String.Format(
             "Problem encountered in mod file '{0}'\n",
             path
         );
         string msg = "";
-        string[] args = {"", "", ""};
+        string[] args = {"", ""};
         switch(e)
         {
             case INCOMPLETE_LABEL:
             msg = "A label is missing a '{0}' on it's right side.\n\n{1}";
             args[0] = LABEL_CHAR_BORDER;
             args[1] = RULES_LABEL_FORMAT;
+            break;
+
+            case PARSER_LOOPS_INFINITELY:
+            msg = "Parsing this file's labels creates an infinite loop.";
             break;
         }
         return EMBException.buildException(preamble + msg, args);

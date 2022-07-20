@@ -28,8 +28,9 @@ interface Constants
     const string PROPERTY_VALUE = "Value";
     const string PROPERTY_PROPAGATE = "Propagate";
 
-    // Constants pertaining to expressions
-    const int INFINITE_LOOP_THRESHOLD = 500;
+    // Constants pertaining to Label and expression parsing
+    const int PARSER_INFINITE_LOOP_THRESHOLD = 1000;
+    const int EXP_INFINITE_LOOP_THRESHOLD = 500;
     const string NULL_EXP_RESULT = "NULL";
 
     // Constants pertaining to labels

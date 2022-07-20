@@ -25,7 +25,7 @@ class Label
         type = LabelType.VAR;
     }
 
-    public void splitLabel()
+    public void split()
     {
         int separator = raw.IndexOf(LABEL_CHAR_SEPARATOR);
         if(separator == -1)
@@ -52,7 +52,7 @@ class Label
         bool replacedThisCycle = true; // Allows nested variables
         while (replacedThisCycle)
         {
-            if (numIterations++ == INFINITE_LOOP_THRESHOLD)
+            if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
                 throw EMBError(EXP_LOOPS_INFINITELY);
             replacedThisCycle = false;
 
