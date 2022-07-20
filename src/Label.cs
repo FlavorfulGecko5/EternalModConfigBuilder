@@ -39,14 +39,6 @@ class Label
             type = LabelType.VAR;
             break;
 
-            case LABEL_ANY_TOG:
-            type = LabelType.TOGGLE_START;
-            break;
-
-            case LABEL_END_TOG:
-            type = LabelType.TOGGLE_END;
-            break;
-
             default:
             throw EMBError(BAD_TYPE);
         }
@@ -79,7 +71,7 @@ class Label
 
         try
         {
-            computer.Compute(exp, "").ToString();
+            rawResult = computer.Compute(exp, "").ToString();
         }
         catch(Exception e)
         {
@@ -96,35 +88,13 @@ class Label
             rawResult = rawResult.ToLower();
         result = rawResult;
     }
-    
-    public bool resultToToggleBool()
-    {
-        bool resultBool = false;
-        try
-        {
-            resultBool = Convert.ToBoolean(result);
-        }
-        catch(System.FormatException)
-        {
-            try
-            {
-                resultBool = Convert.ToDouble(result) >= 1 ? true : false;
-            }
-            catch(Exception)
-            {
-                throw EMBError(CANT_EVAL_TOGGLE_BOOL);
-            }
-        }
-        return resultBool;
-    }
 
     public enum Error
     {
         MISSING_EXP_SEPARATOR,
         BAD_TYPE,
         EXP_LOOPS_INFINITELY,
-        CANT_EVAL_EXP,
-        CANT_EVAL_TOGGLE_BOOL
+        CANT_EVAL_EXP
     }
 
     private EMBException EMBError(Error e, string arg0 = "")
@@ -163,13 +133,6 @@ class Label
             args[0] = exp;
             args[1] = arg0; // Exception message
             break;
-
-            case CANT_EVAL_TOGGLE_BOOL:
-            msg = "The expression does not evaluate to a Boolean."
-                    + "\nExpression Result: '{0}'\n\n{1}";
-            args[0] = result;
-            args[1] = RULES_TOGGLE_EXP;
-            break;
         }
 
         return EMBException.buildException(preamble + msg, args);
@@ -178,7 +141,5 @@ class Label
 
 enum LabelType
 {
-    VAR,
-    TOGGLE_START,
-    TOGGLE_END
+    VAR
 }

@@ -37,8 +37,6 @@ interface Constants
     const string LABEL_CHAR_SEPARATOR = "#";
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
     const string LABEL_ANY_VARIABLE   = LABEL_ANY + "VAR";
-    const string LABEL_ANY_TOG    = LABEL_ANY + "TOGGLE";
-    const string LABEL_END_TOG    = LABEL_ANY_TOG + "_END";
 
     // Constants pertaining to program termination and error messages
     const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
@@ -91,15 +89,5 @@ interface Constants
     + "- Case-insensitivity of all label elements is allowed.";
 
     const string RULES_LABEL_TYPES = "The current valid types for labels are:\n"
-    + "- 'EMB_VAR'\n"
-    + "- 'EMB_TOGGLE'\n"
-    + "- 'EMB_TOGGLE_END'";
-
-    const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '" 
-    + LABEL_END_TOG + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER + "' label placed after it.\n"
-    + "These two labels define the toggle-block controlled by the expression.";
-
-    const string RULES_TOGGLE_EXP = "Expressions in toggle labels must yield one of the following types of results:\n"
-    + "- A Boolean (true/false) value, from evaluating a logical expression or translating a string to one of these values.\n"
-    + "- A numerical value. A number less than one is interpeted as false, and one or higher is interpreted as true.";
+    + "- 'EMB_VAR'\n";
 }
