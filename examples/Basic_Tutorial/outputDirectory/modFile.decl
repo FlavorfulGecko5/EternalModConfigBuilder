@@ -45,6 +45,10 @@ Variables can be used to represent other variables. The following label will
 be replaced with the value of "y":
 -30
 
+
+Labels can also be nested inside the expressions of other labels. The inner-most labels will be processed first.
+3
+
 There are many other features you can include in these expressions. To get a better idea of what
 operators and functions are available, consult the following documentation:
 https://docs.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression?redirectedfrom=MSDN&view=net-6.0#System_Data_DataColumn_Expression

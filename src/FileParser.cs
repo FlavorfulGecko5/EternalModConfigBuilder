@@ -49,13 +49,16 @@ class FileParser
     {
         if(numBuildLabelCalls++ == PARSER_INFINITE_LOOP_THRESHOLD)
             throw EMBError(PARSER_LOOPS_INFINITELY);
-
+        
+        NESTED_LABEL_LOOP:
         int end = text.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
-            throw EMBError(INCOMPLETE_LABEL);
-        
-        while(end == findNextLabelIndex(start + 1))
+            throw EMBError(INCOMPLETE_LABEL);   
+        if(end == findNextLabelIndex(start + 1))
+        {
             parseLabel(end);
+            goto NESTED_LABEL_LOOP;
+        }
  
         string rawLabel = text.Substring(start, end - start + 1);
         Label label = new Label(start, end, rawLabel, path);

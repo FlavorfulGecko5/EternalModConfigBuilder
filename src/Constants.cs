@@ -90,5 +90,5 @@ interface Constants
     + "- Case-insensitivity of all label elements is allowed.";
 
     const string RULES_LABEL_TYPES = "The current valid types for labels are:\n"
-    + "- 'EMB_VAR'\n";
+    + "- 'EMB_VAR'";
 }

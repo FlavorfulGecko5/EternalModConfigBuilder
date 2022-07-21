@@ -134,8 +134,11 @@ class Label
             args[1] = arg0; // Exception message
             break;
         }
-
-        return EMBException.buildException(preamble + msg, args);
+        // Prevents System.Format exception from label syntax
+        // (Technically still possible in other EMBError functions, but
+        // should not realistically happen)
+        string formattedMsg = String.Format(msg, args);
+        return new EMBException(preamble + formattedMsg);
     }
 }
 
