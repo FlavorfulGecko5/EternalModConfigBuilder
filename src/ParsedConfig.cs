@@ -72,10 +72,18 @@ class ParsedConfig
 
     private void parseOptionValue()
     {
-        string? value = JsonUtil.readTokenValue(option, true);
-        if(value == null)
+        string[]? values = JsonUtil.readAnyTokenValue(option);
+        if(values == null)
             throw EMBError(BAD_OPTION_TYPE);
-        options.Add(new Option(name, value));
+        
+        if(JsonUtil.isOptionList(option))
+        {
+            options.Add(new Option(name, values.Length.ToString()));
+            for (int i = 0; i < values.Length; i++)
+                options.Add(new Option(name + '[' + i + ']', values[i]));
+        }
+        else
+            options.Add(new Option(name, values[0]));
     }
 
     private void parsePropagate()
@@ -89,7 +97,7 @@ class ParsedConfig
             if (!DirUtil.isPathLocalRelative(list.Name, workingDir))
                 throw EMBError(NOT_LOCALREL_PROP_NAME, list.Name);
 
-            string[]? filePaths = JsonUtil.readList(list.Value);
+            string[]? filePaths = JsonUtil.readListTokenValue(list.Value);
             if(filePaths == null)
                 throw EMBError(BAD_PROP_ARRAY, list.Name);
 

@@ -49,6 +49,20 @@ $emb_var#{z}$
 Labels can also be nested inside the expressions of other labels. The inner-most labels will be processed first.
 $emb_var# $emb_var#1$ + $emb_var#2$ $
 
+
+
+Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
+The elements of a list are accessed by their index, starting at index 0
+The first element in 'listA' is $emb_var#{listA[0]}$
+
+The name of the list, without any index notation, represents the number of elements inside the list:
+$emb_var#'listA contains {listA} elements'$
+
+To access the last element in the list, using the number of elements, you could do something like:
+The last element in 'listA' is $emb_var#{listA[$emb_var#{listA} - 1$]}$
+
+
+
 There are many other features you can include in these expressions. To get a better idea of what
 operators and functions are available, consult the following documentation:
 https://docs.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression?redirectedfrom=MSDN&view=net-6.0#System_Data_DataColumn_Expression

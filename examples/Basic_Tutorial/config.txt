@@ -5,8 +5,8 @@
             "100", "true", "any integer between 0 and 1, inclusive"],
         "Value": "REQUIRED - Any string, numerical, or boolean value"
     },
-	
-	"SimpleStandards": "Or, you can define simple variables like this",
+
+    "SimpleStandards": "Or, you can define simple variables like this",
 
     "x":{
         "Value": 123
@@ -23,9 +23,15 @@
     },
 
     "binary": true,
-	
-	"propagate":{
-		"gameresources/generated/decls": ["modFileCopyOne.decl"],
-		"gameresources_patch1": ["directory/"]
-	}
+
+    "listA": [1, "hello there", 3.45, true],
+
+    "listB": {
+        "Value": ["Lists in the object are allowed too"]
+    },
+
+    "propagate":{
+        "gameresources/generated/decls": ["modFileCopyOne.decl"],
+        "gameresources_patch1": ["directory/"]
+    }
 }

@@ -67,7 +67,8 @@ interface Constants
     + "- String: Any text encased in double-quotes.\n"
     + "- Number: An integer or floating-point value.\n"
     + "- Boolean: Either 'true' or 'false' (case sensitive).\n"
-    + "- Object: This must have a '" + PROPERTY_VALUE + "' (case-sensitive) property defined as a string, number or Boolean.";
+    + "- List: A list of values containing only strings, numbers and Booleans.\n"
+    + "- Object: This must have a '" + PROPERTY_VALUE + "' (case-sensitive) sub-property defined in one of the above ways.";
 
     const string RULES_OPTION_NAME = "Option names cannot be empty, and may only contain these characters:\n"
     + "- Letters (a-z, A-Z)\n"

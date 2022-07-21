@@ -49,6 +49,20 @@ be replaced with the value of "y":
 Labels can also be nested inside the expressions of other labels. The inner-most labels will be processed first.
 3
 
+
+
+Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
+The elements of a list are accessed by their index, starting at index 0
+The first element in 'listA' is 1
+
+The name of the list, without any index notation, represents the number of elements inside the list:
+listA contains 4 elements
+
+To access the last element in the list, using the number of elements, you could do something like:
+The last element in 'listA' is true
+
+
+
 There are many other features you can include in these expressions. To get a better idea of what
 operators and functions are available, consult the following documentation:
 https://docs.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression?redirectedfrom=MSDN&view=net-6.0#System_Data_DataColumn_Expression
