@@ -2,12 +2,12 @@ using static ModBuilder.Error;
 class ModBuilder
 {
     private ParsedConfig cfg;
-    private ArgContainer argData;
+    private RuntimeConfiguration argData;
     private string startDir, activeDir;
 
     public ModBuilder(string[] args)
     {
-        argData = new ArgContainer(args);
+        argData = new RuntimeConfiguration(args);
         cfg = new ParsedConfig(argData.configPaths);
         startDir = Directory.GetCurrentDirectory();
         activeDir = "";

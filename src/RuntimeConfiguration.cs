@@ -1,11 +1,11 @@
-using static ArgContainer.Error;
-class ArgContainer
+using static RuntimeConfiguration.Error;
+class RuntimeConfiguration
 {
     public List<string> configPaths = new List<string>();
     public string srcPath = "", outPath = "";
     public bool srcIsZip = false, outToZip = false;
 
-    public ArgContainer(string[] args)
+    public RuntimeConfiguration(string[] args)
     {
         readToVariables(args);
         validateConfigArg();
