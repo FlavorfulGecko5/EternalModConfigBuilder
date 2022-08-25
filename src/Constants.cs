@@ -3,7 +3,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "Beta 1.5.0";
+    const string EXE_VERSION = "INDEV-Beta 1.6.0";
 
     // Abbreviated form of CurrentCultureIgnoreCase
     const StringComparison CCIC = CurrentCultureIgnoreCase;
@@ -55,7 +55,20 @@ interface Constants
     // Rules
     const string RULES_USAGE = "Usage: ./" + EXE_NAME + ".exe -c [config "
     + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]\n"
-    + "You may enter multiple configuration files (use '-c' once per file).";
+    + "You may enter multiple configuration files (use '-c' once per file).\n\n"
+    + "Optional Parameter - Execution Mode\n"
+    + "-x [ complete | readonly | parse | propagate ] (Choose One)\n"
+    + "complete  - Reads config. files and performs all build operations (default)\n"
+    + "readonly  - Reads config. files but performs no build operations.\n"
+    + "parse     - Reads config. files and parses labels.\n"
+    + "propagate - Reads config. files and propagates files.\n\n"
+    + "Optional Parameter - Log Level\n"
+    + "-l [ minimal | configs | parsing | propagations | all ] (Choose One)\n"
+    + "minimal      - Only outputs errors and warnings (default)\n"
+    + "configs      - Outputs parsed command-line argument and configuration file data.\n"
+    + "parsing      - Outputs what each label's expression resolved to.\n"
+    + "propagations - Outputs each successful propagation.\n"
+    + "all          - Outputs everything";
 
     const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
     + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"

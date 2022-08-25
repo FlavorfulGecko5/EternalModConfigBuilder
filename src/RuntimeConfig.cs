@@ -1,21 +1,51 @@
-using static RuntimeConfiguration.Error;
-class RuntimeConfiguration
+using static RuntimeConfig.ExecutionMode;
+using static RuntimeConfig.LogLevel;
+using static RuntimeConfig.Error;
+class RuntimeConfig
 {
-    public List<string> configPaths = new List<string>();
-    public string srcPath = "", outPath = "";
-    public bool srcIsZip = false, outToZip = false;
+    public static bool initialized {get; private set;} = false;
 
-    public RuntimeConfiguration(string[] args)
+    public static List<string> configPaths {get; private set;} = new List<string>();
+    public static string srcPath  {get; private set;} = "";
+    public static string outPath  {get; private set;} = "";
+    public static bool   srcIsZip {get; private set;} = false;
+    public static bool   outToZip {get; private set;} = false;
+
+    public static ExecutionMode exeMode {get; private set;} = COMPLETE;
+    public static LogLevel logLevel {get; private set;} = MINIMAL;
+
+    public enum ExecutionMode
     {
+        COMPLETE,
+        READONLY,
+        PARSE,
+        PROPAGATE
+    }
+
+    public enum LogLevel
+    {
+        MINIMAL,
+        VERBOSE
+    }
+
+    public static void initialize(string[] args)
+    {
+        if(initialized) // Ensures this is only set once, at runtime
+            throw EMBError(ALREADY_INITIALIZED);
+        initialized = true;
         readToVariables(args);
         validateConfigArg();
         validateSourceArg();
         validateOutputArg();
     }
 
-    private void readToVariables(string[] args)
+    private static void readToVariables(string[] args)
     {
+        // Must-have
         bool hasConfig = false, hasSource = false, hasOutput = false;
+
+        // Optional
+        bool hasExecutionMode = false, hasLogLevel = false;
 
         if (args.Length % 2 != 0)
             throw EMBError(BAD_NUMBER_ARGUMENTS);
@@ -48,6 +78,33 @@ class RuntimeConfiguration
                     else
                         goto CATCH_INVALID_ARGUMENT;
                     break;
+                
+                case "-x":
+                    if(!hasExecutionMode)
+                    {
+                        switch(args[i + 1].ToLower())
+                        {
+                            case "complete":
+                                exeMode = COMPLETE;
+                            break;
+                            case "readonly":
+                                exeMode = READONLY;
+                            break;
+                            case "parse":
+                                exeMode = PARSE;
+                            break;
+                            case "propagate":
+                                exeMode = PROPAGATE;
+                            break;
+
+                            default:
+                                goto CATCH_INVALID_ARGUMENT;
+                        }
+                        hasExecutionMode = true;
+                    }
+                    else
+                        goto CATCH_INVALID_ARGUMENT;
+                    break;
 
                 default:
                 CATCH_INVALID_ARGUMENT:
@@ -59,7 +116,7 @@ class RuntimeConfiguration
             throw EMBError(MISSING_ARGS);
     }
 
-    private void validateConfigArg()
+    private static void validateConfigArg()
     {
         for(int i = 0; i < configPaths.Count; i++)
         {
@@ -71,7 +128,7 @@ class RuntimeConfiguration
 
     }
 
-    private void validateSourceArg()
+    private static void validateSourceArg()
     {
         if(File.Exists(srcPath))
         {
@@ -92,7 +149,7 @@ class RuntimeConfiguration
             throw EMBError(MOD_NOT_FOUND);
     }
 
-    private void validateOutputArg()
+    private static void validateOutputArg()
     {
         if (File.Exists(outPath))
             throw EMBError(OUTPUT_PREEXISTING_FILE);
@@ -109,6 +166,7 @@ class RuntimeConfiguration
 
     public enum Error
     {
+        ALREADY_INITIALIZED,
         BAD_NUMBER_ARGUMENTS,
         BAD_ARGUMENT,
         MISSING_ARGS,
@@ -122,13 +180,17 @@ class RuntimeConfiguration
         OUTPUT_INSIDE_SRC,
     }
 
-    private EMBException EMBError(Error e, int arg0 = -1)
+    private static EMBException EMBError(Error e, int arg0 = -1)
     {
         string preamble = "Failed to parse command-line arguments:\n",
                msg = "";
         string[] args = {"", ""};
         switch(e)
         {
+            case ALREADY_INITIALIZED:
+            msg = "The RuntimeConfig has already been initialized!";
+            break;
+
             case BAD_NUMBER_ARGUMENTS:
             msg = "Bad number of arguments. (Expected an even number)\n\n{0}";
             args[0] = RULES_USAGE;

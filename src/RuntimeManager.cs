@@ -22,8 +22,9 @@ class RuntimeManager
         System.Console.WriteLine(MSG_WELCOME);
         if (Directory.Exists(DIR_TEMP))
             Directory.Delete(DIR_TEMP, true);
-
-        ModBuilder builder = new ModBuilder(args);
+        
+        RuntimeConfig.initialize(args);
+        ModBuilder builder = new ModBuilder();
         builder.buildMod();
         
         System.Console.WriteLine(MSG_SUCCESS);

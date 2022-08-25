@@ -1,43 +1,57 @@
 using static ModBuilder.Error;
+using static RuntimeConfig.ExecutionMode;
 class ModBuilder
 {
     private ParsedConfig cfg;
-    private RuntimeConfiguration argData;
     private string startDir, activeDir;
 
-    public ModBuilder(string[] args)
+    public ModBuilder()
     {
-        argData = new RuntimeConfiguration(args);
-        cfg = new ParsedConfig(argData.configPaths);
+        cfg = new ParsedConfig(RuntimeConfig.configPaths);
         startDir = Directory.GetCurrentDirectory();
         activeDir = "";
-        //System.Console.WriteLine(cfg.ToString());
     }
 
     public void buildMod()
     {
-        createActiveOutputDir();
-        Directory.SetCurrentDirectory(activeDir);
+        switch(RuntimeConfig.exeMode)
+        {
+            case COMPLETE:
+            createAndSetActiveOutputDir();
+            parseFiles();
+            propagateAll();
+            finishBuilding();
+            break;
 
-        parseFiles();
-        propagateAll();
+            case READONLY:
+            break;
 
-        Directory.SetCurrentDirectory(startDir);
-        if(argData.outToZip)
-            buildZip();
+            case PARSE:
+            createAndSetActiveOutputDir();
+            parseFiles();
+            finishBuilding();
+            break;
+
+            case PROPAGATE:
+            createAndSetActiveOutputDir();
+            propagateAll();
+            finishBuilding();
+            break;
+        }
     }
 
-    private void createActiveOutputDir()
+    private void createAndSetActiveOutputDir()
     {
         // If zip, use temp. directory then zip to output after processing
-        activeDir = argData.outToZip ? DIR_TEMP : argData.outPath;
+        activeDir = RuntimeConfig.outToZip ? DIR_TEMP : RuntimeConfig.outPath;
 
         // Clone the contents of src to the active output directory
         Directory.CreateDirectory(activeDir);
-        if (argData.srcIsZip)
-            ZipUtil.unzip(argData.srcPath, activeDir);
+        if (RuntimeConfig.srcIsZip)
+            ZipUtil.unzip(RuntimeConfig.srcPath, activeDir);
         else
-            DirUtil.copyDirectory(argData.srcPath, activeDir);
+            DirUtil.copyDirectory(RuntimeConfig.srcPath, activeDir);
+        Directory.SetCurrentDirectory(activeDir);
     }
 
     private void parseFiles()
@@ -66,10 +80,14 @@ class ModBuilder
             EMBWarning(PROPAGATE_LISTS_NO_DIR);
     }
 
-    private void buildZip()
+    private void finishBuilding()
     {
-        ZipUtil.makeZip(DIR_TEMP, argData.outPath);
-        Directory.Delete(DIR_TEMP, true);
+        Directory.SetCurrentDirectory(startDir);
+        if(RuntimeConfig.outToZip)
+        {
+            ZipUtil.makeZip(DIR_TEMP, RuntimeConfig.outPath);
+            Directory.Delete(DIR_TEMP, true);
+        }
     }
 
     public enum Error
