@@ -1,12 +1,16 @@
 using static FileParser.Error;
+using static RuntimeConfig.LogLevel;
+using System.Text;
 class FileParser
 {
     private string path, text;
     private int numBuildLabelCalls;
+    private StringBuilder log;
 
     public FileParser(List<Option> options)
     {
         path = text = "";
+        log = new StringBuilder();
         Label.setOptionList(options);
     }
 
@@ -15,6 +19,12 @@ class FileParser
         path = pathParameter;
         text = FileUtil.readFileText(path);
         numBuildLabelCalls = 0;
+        
+        if(RuntimeConfig.logMode == PARSINGS || RuntimeConfig.logMode == VERBOSE)
+        {
+            log.Clear();
+            log.Append("Parsing File '" + path + "'");
+        }
 
         // Labels are parsed sequentially by scanning the entire text file.
         int nextStartIndex = findNextLabelIndex(0);
@@ -25,6 +35,9 @@ class FileParser
         }
 
         FileUtil.writeFile(path, text);
+        
+        if(RuntimeConfig.logMode == PARSINGS || RuntimeConfig.logMode == VERBOSE)
+            RuntimeManager.log(log.ToString());
     }
 
     private int findNextLabelIndex(int searchStartIndex)
@@ -37,6 +50,10 @@ class FileParser
         Label label = buildLabel(startIndex);
         label.split();
         label.computeResult();
+        
+        if (RuntimeConfig.logMode == PARSINGS || RuntimeConfig.logMode == VERBOSE)
+            log.Append("\n   - Label '" + label.raw + "' resolved to '" + label.result + "'");
+
         switch (label.type)
         {
             case LabelType.VAR:

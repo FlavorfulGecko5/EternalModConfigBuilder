@@ -1,5 +1,6 @@
 using Newtonsoft.Json.Linq;
 using static ParsedConfig.Error;
+using static RuntimeConfig.LogLevel;
 class ParsedConfig
 {
     public List<Option> options = new List<Option>();
@@ -16,6 +17,23 @@ class ParsedConfig
             configPath = path;
             parseConfig();
         }
+        if(RuntimeConfig.logMode == CONFIGS || RuntimeConfig.logMode == VERBOSE)
+            logConfig();
+    }
+
+    public void logConfig()
+    {
+        string optionList = "";
+        foreach(Option o in options)
+            optionList += "   - " + o.ToString() + '\n';
+
+        string propagationList = "";
+        foreach(PropagateList list in propagations)
+            propagationList += list.ToString();
+        
+        string msg = "Parsed Configuration File Data:\n"
+            + optionList + propagationList;
+        RuntimeManager.log(msg);
     }
 
     private void parseConfig()
@@ -106,21 +124,6 @@ class ParsedConfig
                     throw EMBError(NOT_LOCALREL_PROP_PATH, list.Name, path);
             propagations.Add(new PropagateList(list.Name, filePaths));
         }
-    }
-
-    public override string ToString()
-    {
-        string formattedString = "**********\nParsedConfig Object Data:"
-        + "\n==========\nOptions:\n";
-
-        foreach(Option option in options)
-            formattedString += option.ToString() + '\n';
-        
-        formattedString += "==========\nPropagation Lists\n";
-        foreach(PropagateList resource in propagations)
-            formattedString += resource.ToString();
-        formattedString += "**********";
-        return formattedString;
     }
 
     public enum Error

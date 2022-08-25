@@ -39,12 +39,13 @@ interface Constants
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
     const string LABEL_ANY_VARIABLE   = LABEL_ANY + "VAR";
 
-    // Constants pertaining to program termination and error messages
+    // Constants pertaining to log messages
     const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
     const string MSG_ERROR   = "ERROR: ";
     const string MSG_WARNING = "WARNING: ";
+    const string MSG_LOG     = "LOG: ";
 
-    const string MSG_SUCCESS = "Your mod was successfully built.\n\n"
+    const string MSG_SUCCESS = "\nYour mod was successfully built.\n\n"
     + "Please Note:\n"
     + "- Only " + DESC_LABEL_FILES + " files are checked for labels.\n"
     + "- This program can't detect every conceivable typo you might make.\n"
@@ -66,9 +67,9 @@ interface Constants
     + "-l [ minimal | configs | parsing | propagations | all ] (Choose One)\n"
     + "minimal      - Only outputs errors and warnings (default)\n"
     + "configs      - Outputs parsed command-line argument and configuration file data.\n"
-    + "parsing      - Outputs what each label's expression resolved to.\n"
+    + "parsings      - Outputs what each label's expression resolved to.\n"
     + "propagations - Outputs each successful propagation.\n"
-    + "all          - Outputs everything";
+    + "verbose      - Outputs everything";
 
     const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
     + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"

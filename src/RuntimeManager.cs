@@ -49,4 +49,9 @@ class RuntimeManager
     {
         System.Console.WriteLine(MSG_WARNING + msg, args);
     }
+
+    public static void log(string msg)
+    {
+        System.Console.WriteLine(MSG_LOG + msg);
+    }
 }

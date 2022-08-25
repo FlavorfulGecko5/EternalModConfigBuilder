@@ -12,7 +12,7 @@ class RuntimeConfig
     public static bool   outToZip {get; private set;} = false;
 
     public static ExecutionMode exeMode {get; private set;} = COMPLETE;
-    public static LogLevel logLevel {get; private set;} = MINIMAL;
+    public static LogLevel logMode {get; private set;} = MINIMAL;
 
     public enum ExecutionMode
     {
@@ -25,6 +25,9 @@ class RuntimeConfig
     public enum LogLevel
     {
         MINIMAL,
+        CONFIGS,
+        PARSINGS,
+        PROPAGATIONS,
         VERBOSE
     }
 
@@ -37,6 +40,28 @@ class RuntimeConfig
         validateConfigArg();
         validateSourceArg();
         validateOutputArg();
+
+        if(logMode == CONFIGS || logMode == VERBOSE)
+            logConfig();
+    }
+
+    public static void logConfig()
+    {
+        string configList = "";
+        foreach(string config in configPaths)
+            configList += "      --" + config + "\n";
+        string sourceType = srcIsZip ? "Zip File" : "Folder";
+        string outputType = outToZip ? "Zip File" : "Folder"; 
+
+        string msg = "Parsed Command-Line Argument Data:"
+            + "\n   - Configuration Files:\n" + configList
+            + "   - Source Path: " + srcPath
+            + "\n   - Source Type: " + sourceType
+            + "\n   - Output Path: " + outPath
+            + "\n   - Output Type: " + outputType
+            + "\n   - Execution Mode: " + exeMode.ToString()
+            + "\n   - Log Level: " + logMode.ToString();
+        RuntimeManager.log(msg);
     }
 
     private static void readToVariables(string[] args)
@@ -101,6 +126,36 @@ class RuntimeConfig
                                 goto CATCH_INVALID_ARGUMENT;
                         }
                         hasExecutionMode = true;
+                    }
+                    else
+                        goto CATCH_INVALID_ARGUMENT;
+                    break;
+                
+                case "-l":
+                    if(!hasLogLevel)
+                    {
+                        switch(args[i + 1].ToLower())
+                        {
+                            case "minimal":
+                                logMode = MINIMAL;
+                            break;
+                            case "configs":
+                                logMode = CONFIGS;
+                            break;
+                            case "parsings":
+                                logMode = PARSINGS;
+                            break;
+                            case "propagations":
+                                logMode = PROPAGATIONS;
+                            break;
+                            case "verbose":
+                                logMode = VERBOSE;
+                            break;
+
+                            default:
+                                goto CATCH_INVALID_ARGUMENT;
+                        }
+                        hasLogLevel = true;
                     }
                     else
                         goto CATCH_INVALID_ARGUMENT;
