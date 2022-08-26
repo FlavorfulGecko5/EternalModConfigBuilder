@@ -2,7 +2,7 @@ class ExtUtil
 {
     public static bool hasExtension(string path, string extension)
     {
-        int extIndex = path.LastIndexOf(extension, CCIC);
+        int extIndex = path.embLastIndexOf(extension);
         if (extIndex > -1 && extIndex == path.Length - extension.Length)
             return true;
         return false;

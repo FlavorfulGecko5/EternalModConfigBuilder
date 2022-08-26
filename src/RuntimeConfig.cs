@@ -1,5 +1,3 @@
-using static RuntimeConfig.ExecutionMode;
-using static RuntimeConfig.LogLevel;
 using static RuntimeConfig.Error;
 class RuntimeConfig
 {
@@ -11,25 +9,8 @@ class RuntimeConfig
     public static bool   srcIsZip {get; private set;} = false;
     public static bool   outToZip {get; private set;} = false;
 
-    public static ExecutionMode exeMode {get; private set;} = COMPLETE;
-    public static LogLevel logMode {get; private set;} = MINIMAL;
-
-    public enum ExecutionMode
-    {
-        COMPLETE,
-        READONLY,
-        PARSE,
-        PROPAGATE
-    }
-
-    public enum LogLevel
-    {
-        MINIMAL,
-        CONFIGS,
-        PARSINGS,
-        PROPAGATIONS,
-        VERBOSE
-    }
+    public static ExecutionMode exeMode {get; private set;} = ExecutionMode.COMPLETE;
+    public static LogLevel logMode {get; private set;} = LogLevel.MINIMAL;
 
     public static void initialize(string[] args)
     {
@@ -41,7 +22,7 @@ class RuntimeConfig
         validateSourceArg();
         validateOutputArg();
 
-        if(logMode == CONFIGS || logMode == VERBOSE)
+        if(logMode == LogLevel.CONFIGS || logMode == LogLevel.VERBOSE)
             logConfig();
     }
 
@@ -107,24 +88,11 @@ class RuntimeConfig
                 case "-x":
                     if(!hasExecutionMode)
                     {
-                        switch(args[i + 1].ToLower())
-                        {
-                            case "complete":
-                                exeMode = COMPLETE;
-                            break;
-                            case "readonly":
-                                exeMode = READONLY;
-                            break;
-                            case "parse":
-                                exeMode = PARSE;
-                            break;
-                            case "propagate":
-                                exeMode = PROPAGATE;
-                            break;
-
-                            default:
-                                goto CATCH_INVALID_ARGUMENT;
-                        }
+                        int index = args[i + 1].toEnumIndex<ExecutionMode>();
+                        if(index != -1)
+                            exeMode = (ExecutionMode)index;
+                        else
+                            goto CATCH_INVALID_ARGUMENT;
                         hasExecutionMode = true;
                     }
                     else
@@ -134,27 +102,11 @@ class RuntimeConfig
                 case "-l":
                     if(!hasLogLevel)
                     {
-                        switch(args[i + 1].ToLower())
-                        {
-                            case "minimal":
-                                logMode = MINIMAL;
-                            break;
-                            case "configs":
-                                logMode = CONFIGS;
-                            break;
-                            case "parsings":
-                                logMode = PARSINGS;
-                            break;
-                            case "propagations":
-                                logMode = PROPAGATIONS;
-                            break;
-                            case "verbose":
-                                logMode = VERBOSE;
-                            break;
-
-                            default:
-                                goto CATCH_INVALID_ARGUMENT;
-                        }
+                        int index = args[i + 1].toEnumIndex<LogLevel>();
+                        if(index != -1)
+                            logMode = (LogLevel)index;
+                        else
+                            goto CATCH_INVALID_ARGUMENT;
                         hasLogLevel = true;
                     }
                     else

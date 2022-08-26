@@ -1,6 +1,5 @@
 using Newtonsoft.Json.Linq;
 using static ParsedConfig.Error;
-using static RuntimeConfig.LogLevel;
 class ParsedConfig
 {
     public List<Option> options = new List<Option>();
@@ -17,7 +16,7 @@ class ParsedConfig
             configPath = path;
             parseConfig();
         }
-        if(RuntimeConfig.logMode == CONFIGS || RuntimeConfig.logMode == VERBOSE)
+        if(RuntimeConfig.logMode == LogLevel.CONFIGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
             logConfig();
     }
 
@@ -43,7 +42,7 @@ class ParsedConfig
             name = property.Name;
             option = property.Value;
             validateName();
-            if (name.Equals(PROPERTY_PROPAGATE, CCIC))
+            if (name.embEquals(PROPERTY_PROPAGATE))
                 parsePropagate();
             else
                 parseOptionValue();
@@ -84,7 +83,7 @@ class ParsedConfig
                 throw EMBError(BAD_NAME_FORMATTING);
 
         foreach(Option o in options)
-            if(o.name.Equals(name, CCIC))
+            if(o.name.embEquals(name))
                 throw EMBError(DUPLICATE_NAME);
     }
 

@@ -1,5 +1,4 @@
 using static PropagateList.Error;
-using static RuntimeConfig.LogLevel;
 using System.Text;
 class PropagateList
 {
@@ -12,7 +11,7 @@ class PropagateList
         name = nameParameter;
         filePaths = filePathsParameter;
         log = new StringBuilder();
-        if(RuntimeConfig.logMode == PROPAGATIONS || RuntimeConfig.logMode == VERBOSE)
+        if(RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
             log.Append("Propagating to '" + name + "'");    
     }
 
@@ -35,21 +34,21 @@ class PropagateList
             {
                 DirUtil.createDirectoryInFilePath(copyTo);
                 File.Copy(copyFrom, copyTo, true);
-                if (RuntimeConfig.logMode == PROPAGATIONS || RuntimeConfig.logMode == VERBOSE)
+                if (RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
                     log.Append("\n   - Created file '" + copyTo + "'");
             }
             else if (Directory.Exists(copyFrom))
             {
                 Directory.CreateDirectory(copyTo);
                 DirUtil.copyDirectory(copyFrom, copyTo);
-                if (RuntimeConfig.logMode == PROPAGATIONS || RuntimeConfig.logMode == VERBOSE)
+                if (RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
                     log.Append("\n   - Created folder '" + copyTo + "'");
             }    
             else
                 EMBWarning(PROPAGATE_PATH_NOT_FOUND, path);
         }
 
-        if (RuntimeConfig.logMode == PROPAGATIONS || RuntimeConfig.logMode == VERBOSE)
+        if (RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
             RuntimeManager.log(log.ToString());
     }
 

@@ -1,5 +1,4 @@
 using static FileParser.Error;
-using static RuntimeConfig.LogLevel;
 using System.Text;
 class FileParser
 {
@@ -20,7 +19,7 @@ class FileParser
         text = FileUtil.readFileText(path);
         numBuildLabelCalls = 0;
         
-        if(RuntimeConfig.logMode == PARSINGS || RuntimeConfig.logMode == VERBOSE)
+        if(RuntimeConfig.logMode == LogLevel.PARSINGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
         {
             log.Clear();
             log.Append("Parsing File '" + path + "'");
@@ -36,13 +35,13 @@ class FileParser
 
         FileUtil.writeFile(path, text);
         
-        if(RuntimeConfig.logMode == PARSINGS || RuntimeConfig.logMode == VERBOSE)
+        if(RuntimeConfig.logMode == LogLevel.PARSINGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
             RuntimeManager.log(log.ToString());
     }
 
     private int findNextLabelIndex(int searchStartIndex)
     {
-        return text.IndexOf(LABEL_ANY, searchStartIndex, CCIC);
+        return text.embIndexOf(LABEL_ANY, searchStartIndex);
     }
 
     private void parseLabel(int startIndex)
@@ -51,7 +50,7 @@ class FileParser
         label.split();
         label.computeResult();
         
-        if (RuntimeConfig.logMode == PARSINGS || RuntimeConfig.logMode == VERBOSE)
+        if (RuntimeConfig.logMode == LogLevel.PARSINGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
             log.Append("\n   - Label '" + label.raw + "' resolved to '" + label.result + "'");
 
         switch (label.type)

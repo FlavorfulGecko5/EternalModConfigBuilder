@@ -1,5 +1,4 @@
 using static ModBuilder.Error;
-using static RuntimeConfig.ExecutionMode;
 class ModBuilder
 {
     private ParsedConfig cfg;
@@ -16,23 +15,23 @@ class ModBuilder
     {
         switch(RuntimeConfig.exeMode)
         {
-            case COMPLETE:
+            case ExecutionMode.COMPLETE:
             createAndSetActiveOutputDir();
             parseFiles();
             propagateAll();
             finishBuilding();
             break;
 
-            case READONLY:
+            case ExecutionMode.READONLY:
             break;
 
-            case PARSE:
+            case ExecutionMode.PARSE:
             createAndSetActiveOutputDir();
             parseFiles();
             finishBuilding();
             break;
 
-            case PROPAGATE:
+            case ExecutionMode.PROPAGATE:
             createAndSetActiveOutputDir();
             propagateAll();
             finishBuilding();

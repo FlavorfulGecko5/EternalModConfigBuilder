@@ -1,12 +1,25 @@
-using static System.StringComparison;
 interface Constants
 {
+    public enum ExecutionMode
+    {
+        COMPLETE,
+        READONLY,
+        PARSE,
+        PROPAGATE
+    }
+
+    public enum LogLevel
+    {
+        MINIMAL,
+        CONFIGS,
+        PARSINGS,
+        PROPAGATIONS,
+        VERBOSE
+    }
+
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
     const string EXE_VERSION = "INDEV-Beta 1.6.0";
-
-    // Abbreviated form of CurrentCultureIgnoreCase
-    const StringComparison CCIC = CurrentCultureIgnoreCase;
 
     // Constants pertaining to command-line arguments
     const long MAX_INPUT_SIZE_BYTES = 2000000000; // ~2 gigabytes

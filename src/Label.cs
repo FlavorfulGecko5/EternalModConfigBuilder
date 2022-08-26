@@ -59,10 +59,10 @@ class Label
             foreach (Option option in options)
             {
                 string search = '{' + option.name + '}';
-                if (exp.IndexOf(search, CCIC) != -1)
+                if (exp.embIndexOf(search) != -1)
                 {
                     replacedThisCycle = true;
-                    exp = exp.Replace(search, option.value, CCIC);
+                    exp = exp.embReplace(search, option.value);
                 }
             }
         }
@@ -84,7 +84,7 @@ class Label
 
         // Decl files use lowercase true/false
         // Variations in capitalization cause game crashes
-        if (rawResult.Equals("true", CCIC) || rawResult.Equals("false", CCIC))
+        if (rawResult.embEquals("true") || rawResult.embEquals("false"))
             rawResult = rawResult.ToLower();
         result = rawResult;
     }
