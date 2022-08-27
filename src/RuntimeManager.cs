@@ -45,13 +45,13 @@ class RuntimeManager
         ));
     }
 
-    public static void reportWarning(string msg, string[] args)
+    public static void reportWarning(string msg)
     {
-        System.Console.WriteLine(MSG_WARNING + msg, args);
+        Console.WriteLine(MSG_WARNING + msg);
     }
 
     public static void log(string msg)
     {
-        System.Console.WriteLine(MSG_LOG + msg);
+        Console.WriteLine(MSG_LOG + msg);
     }
 }

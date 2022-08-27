@@ -16,11 +16,15 @@ class ParsedConfig
             configPath = path;
             parseConfig();
         }
-        if(RuntimeConfig.logMode == LogLevel.CONFIGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-            logConfig();
+        LogMaker logger = new LogMaker(LogLevel.CONFIGS);
+        if(logger.mustLog)
+        {
+            logger.appendString(ToString());
+            logger.log();
+        }
     }
 
-    public void logConfig()
+    public override string ToString()
     {
         string optionList = "";
         foreach(Option o in options)
@@ -32,7 +36,8 @@ class ParsedConfig
         
         string msg = "Parsed Configuration File Data:\n"
             + optionList + propagationList;
-        RuntimeManager.log(msg);
+        
+        return msg;
     }
 
     private void parseConfig()

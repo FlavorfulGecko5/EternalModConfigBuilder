@@ -1,8 +1,6 @@
 using static RuntimeConfig.Error;
 class RuntimeConfig
 {
-    public static bool initialized {get; private set;} = false;
-
     public static List<string> configPaths {get; private set;} = new List<string>();
     public static string srcPath  {get; private set;} = "";
     public static string outPath  {get; private set;} = "";
@@ -14,19 +12,20 @@ class RuntimeConfig
 
     public static void initialize(string[] args)
     {
-        if(initialized) // Ensures this is only set once, at runtime
-            throw EMBError(ALREADY_INITIALIZED);
-        initialized = true;
         readToVariables(args);
         validateConfigArg();
         validateSourceArg();
         validateOutputArg();
 
-        if(logMode == LogLevel.CONFIGS || logMode == LogLevel.VERBOSE)
-            logConfig();
+        LogMaker logger = new LogMaker(LogLevel.CONFIGS);
+        if(logger.mustLog)
+        {
+            logger.appendString(logToString());
+            logger.log();
+        }
     }
 
-    public static void logConfig()
+    public static string logToString()
     {
         string configList = "";
         foreach(string config in configPaths)
@@ -42,7 +41,8 @@ class RuntimeConfig
             + "\n   - Output Type: " + outputType
             + "\n   - Execution Mode: " + exeMode.ToString()
             + "\n   - Log Level: " + logMode.ToString();
-        RuntimeManager.log(msg);
+        
+        return msg;
     }
 
     private static void readToVariables(string[] args)
@@ -173,7 +173,6 @@ class RuntimeConfig
 
     public enum Error
     {
-        ALREADY_INITIALIZED,
         BAD_NUMBER_ARGUMENTS,
         BAD_ARGUMENT,
         MISSING_ARGS,
@@ -194,10 +193,6 @@ class RuntimeConfig
         string[] args = {"", ""};
         switch(e)
         {
-            case ALREADY_INITIALIZED:
-            msg = "The RuntimeConfig has already been initialized!";
-            break;
-
             case BAD_NUMBER_ARGUMENTS:
             msg = "Bad number of arguments. (Expected an even number)\n\n{0}";
             args[0] = RULES_USAGE;

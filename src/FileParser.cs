@@ -4,12 +4,12 @@ class FileParser
 {
     private string path, text;
     private int numBuildLabelCalls;
-    private StringBuilder log;
+    private ParserLogMaker logger;
 
     public FileParser(List<Option> options)
     {
         path = text = "";
-        log = new StringBuilder();
+        logger = new ParserLogMaker();
         Label.setOptionList(options);
     }
 
@@ -18,12 +18,9 @@ class FileParser
         path = pathParameter;
         text = FileUtil.readFileText(path);
         numBuildLabelCalls = 0;
-        
-        if(RuntimeConfig.logMode == LogLevel.PARSINGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-        {
-            log.Clear();
-            log.Append("Parsing File '" + path + "'");
-        }
+
+        if(logger.mustLog)
+            logger.startNewFileLog(path);
 
         // Labels are parsed sequentially by scanning the entire text file.
         int nextStartIndex = findNextLabelIndex(0);
@@ -35,8 +32,8 @@ class FileParser
 
         FileUtil.writeFile(path, text);
         
-        if(RuntimeConfig.logMode == LogLevel.PARSINGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-            RuntimeManager.log(log.ToString());
+        if(logger.mustLog)
+            logger.log();
     }
 
     private int findNextLabelIndex(int searchStartIndex)
@@ -50,8 +47,8 @@ class FileParser
         label.split();
         label.computeResult();
         
-        if (RuntimeConfig.logMode == LogLevel.PARSINGS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-            log.Append("\n   - Label '" + label.raw + "' resolved to '" + label.result + "'");
+        if(logger.mustLog)
+            logger.appendLabelResult(label);
 
         switch (label.type)
         {

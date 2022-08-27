@@ -1,8 +1,5 @@
-using static PropagateList.Error;
-using System.Text;
 class PropagateList
 {
-    private StringBuilder log;
     public string name {get;}
     public string[] filePaths {get;}
 
@@ -10,9 +7,6 @@ class PropagateList
     {
         name = nameParameter;
         filePaths = filePathsParameter;
-        log = new StringBuilder();
-        if(RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-            log.Append("Propagating to '" + name + "'");    
     }
 
     public override string ToString()
@@ -25,6 +19,9 @@ class PropagateList
 
     public void propagate()
     {
+        PropagationLogMaker logger = new PropagationLogMaker();
+        if(logger.mustLog)
+            logger.startNewPropagationLog(name);
         foreach(string path in filePaths)
         {
             string  copyFrom = Path.Combine(DIR_PROPAGATE, path),
@@ -34,43 +31,20 @@ class PropagateList
             {
                 DirUtil.createDirectoryInFilePath(copyTo);
                 File.Copy(copyFrom, copyTo, true);
-                if (RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-                    log.Append("\n   - Created file '" + copyTo + "'");
+                if(logger.mustLog)
+                    logger.appendFileCopyResult(copyTo);
             }
             else if (Directory.Exists(copyFrom))
             {
                 Directory.CreateDirectory(copyTo);
                 DirUtil.copyDirectory(copyFrom, copyTo);
-                if (RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-                    log.Append("\n   - Created folder '" + copyTo + "'");
+                if(logger.mustLog)
+                    logger.appendFolderCopyResult(copyTo);
             }    
             else
-                EMBWarning(PROPAGATE_PATH_NOT_FOUND, path);
+                logger.logWarningMissingFile(path, name);
         }
-
-        if (RuntimeConfig.logMode == LogLevel.PROPAGATIONS || RuntimeConfig.logMode == LogLevel.VERBOSE)
-            RuntimeManager.log(log.ToString());
-    }
-
-    public enum Error
-    {
-        PROPAGATE_PATH_NOT_FOUND
-    }
-
-    private void EMBWarning(Error e, string arg0 = "")
-    {
-        string msg = "";
-        string[] args = {"", "", ""};
-        switch(e)
-        {
-            case PROPAGATE_PATH_NOT_FOUND:
-            msg = "The path '{0}' in propagation list '{1}' does not exist in"
-                    + " '{2}'. This path will be ignored.";
-            args[0] = arg0; // The filepath
-            args[1] = name;
-            args[2] = DIR_PROPAGATE;
-            break;
-        }
-        RuntimeManager.reportWarning(msg, args);
+        if(logger.mustLog)
+            logger.log();
     }
 }
