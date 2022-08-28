@@ -17,7 +17,12 @@ class LogMaker
 
     public void log()
     {
-        RuntimeManager.log(msg.ToString());
+        Console.WriteLine(MSG_LOG + msg.ToString());
+    }
+
+    public void reportWarning(string message)
+    {
+        Console.WriteLine(MSG_WARNING + msg);
     }
 }
 
@@ -58,14 +63,14 @@ class PropagationLogMaker : LogMaker
 
     public void logWarningMissingFile(string path, string listName)
     {
-        string msg = String.Format(
+        string warning = String.Format(
             "The path '{0}' in propagation list '{1}' does not exist in"
                 + " '{2}'. This path will be ignored.",
             path,
             listName,
             DIR_PROPAGATE
         );
-        RuntimeManager.reportWarning(msg);
+        reportWarning(warning);
     }
 }
 
@@ -75,7 +80,7 @@ class ModBuilderLogMaker : LogMaker
 
     public void logWarningNoPropLists()
     {
-        RuntimeManager.reportWarning(
+        reportWarning(
             "The '" + DIR_PROPAGATE + "' directory exists in your mod, but no"
             + " propagation list are defined. Propagation will not occur."
         );
@@ -83,7 +88,7 @@ class ModBuilderLogMaker : LogMaker
 
     public void logWarningNoPropFolder()
     {
-        RuntimeManager.reportWarning(
+        reportWarning(
             "You have propagation lists, but no '" + DIR_PROPAGATE
                 + "' directory in your mod. Propagation will not occur."
         );
