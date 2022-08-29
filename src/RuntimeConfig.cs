@@ -1,6 +1,5 @@
 global using static Constants;
-using static ArgEMBExceptionFactory.Error;
-using static ArgEMBExceptionFactory;
+using static RuntimeConfig.ArgumentError;
 class RuntimeConfig
 {
     public static List<string> configPaths {get; private set;} = new List<string>();
@@ -16,15 +15,21 @@ class RuntimeConfig
     {
         try
         {
-            run(args);
+            if(args.Length == 0)
+                Console.WriteLine(RULES_USAGE_VERBOSE);
+            else 
+                run(args);
+            Environment.Exit(0);
         }
         catch (EMBException e)
         {
             reportError(e.Message);
+            Environment.Exit(1);
         }
         catch (Exception e)
         {
             reportUnknownError(e);
+            Environment.Exit(2);
         }
     }
 
@@ -41,19 +46,17 @@ class RuntimeConfig
         Console.WriteLine(MSG_SUCCESS);
     }
 
-    private static void reportError(string msg)
-    {
-        Console.WriteLine(MSG_ERROR + msg);
-        Console.WriteLine("\n" + MSG_FAILURE);
-        Environment.Exit(1);
-    }
-
     private static void reportUnknownError(Exception e)
     {
         reportError(String.Format(
             "An unknown error occurred, printing Exception:\n\n{0}",
             e.ToString()
         ));
+    }
+    
+    private static void reportError(string msg)
+    {
+        Console.WriteLine(MSG_ERROR + msg + MSG_FAILURE);
     }
 
     public static void initialize(string[] args)
@@ -215,5 +218,85 @@ class RuntimeConfig
                 throw ArgError(OUTPUT_INSIDE_SRC);
 
         outToZip = ExtUtil.hasExtension(outPath, ".zip");
+    }
+
+    public enum ArgumentError
+    {
+        BAD_NUMBER_ARGUMENTS,
+        BAD_ARGUMENT,
+        MISSING_ARGS,
+        BAD_CONFIG_EXTENSION,
+        CONFIG_NOT_FOUND,
+        MOD_NOT_FOUND,
+        MOD_NOT_VALID,
+        MOD_TOO_BIG,
+        OUTPUT_PREEXISTING_FILE,
+        OUTPUT_NONEMPTY_DIRECTORY,
+        OUTPUT_INSIDE_SRC,
+    }
+
+    private static EMBException ArgError(ArgumentError e, string cfg = "", int argIndex = -1)
+    {
+        string preamble = "Failed to parse command-line arguments:\n",
+               msg = "";
+        string[] args = {"", ""};
+        switch(e)
+        {
+            case BAD_NUMBER_ARGUMENTS:
+            msg = "Please enter an even number of arguments.\n\n{0}";
+            args[0] = RULES_USAGE_MINIMAL;
+            break;
+            
+            case BAD_ARGUMENT:
+            msg = "Command line argument #{0} is invalid.\n\n{1}";
+            args[0] = (argIndex + 1).ToString();
+            args[1] = RULES_USAGE_MINIMAL;
+            break;
+
+            case MISSING_ARGS:
+            msg = "Missing required command line argument(s).\n\n{0}";
+            args[0] = RULES_USAGE_MINIMAL;
+            break;
+
+            case BAD_CONFIG_EXTENSION:
+            msg = "The configuration file '{0}' must be a {1} file.";
+            args[0] = cfg;
+            args[1] = DESC_CFG_EXTENSIONS;
+            break;
+
+            case CONFIG_NOT_FOUND:
+            msg = "Failed to find the configuration file '{0}'";
+            args[0] = cfg;
+            break;
+
+            case MOD_NOT_FOUND:
+            msg = "The mod directory or .zip file does not exist.";
+            break;
+
+            case MOD_NOT_VALID:
+            msg = "The mod file is not a valid directory or .zip file.";
+            break;
+
+            case MOD_TOO_BIG:
+            msg = "Your mod may not be larger than ~{0} gigabytes.";
+            args[0] = (MAX_INPUT_SIZE_BYTES / 1000000000.0).ToString();
+            break;
+
+            case OUTPUT_PREEXISTING_FILE:
+            msg = "A file already exists at the output path.\n\n{0}";
+            args[0] = RULES_OUTPUT;
+            break;
+
+            case OUTPUT_NONEMPTY_DIRECTORY:
+            msg = "A non-empty folder exists at the output path.\n\n{0}";
+            args[0] = RULES_OUTPUT;
+            break;
+
+            case OUTPUT_INSIDE_SRC:
+            msg = "Your output path cannot be inside your mod folder.\n\n{0}";
+            args[0] = RULES_OUTPUT;
+            break;
+        }
+        return EMBException.buildException(preamble + msg, args); 
     }
 }

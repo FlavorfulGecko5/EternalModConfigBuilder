@@ -1,5 +1,10 @@
 interface Constants
 {
+    // Constants pertaining published file data
+    const string EXE_NAME = "EternalModBuilder";
+    const string EXE_VERSION = "INDEV-Beta 1.6.0";
+
+    // Enums and Constants for the Execution Mode command-line argument
     public enum ExecutionMode
     {
         COMPLETE,
@@ -7,7 +12,14 @@ interface Constants
         PARSE,
         PROPAGATE
     }
+    const string DESC_EXEMODE = "Optional Parameter - Execution Mode\n"
+    + "-x [ complete | readonly | parse | propagate ] (Choose One)\n"
+    + "complete  - Reads config. files and performs all build operations (default)\n"
+    + "readonly  - Reads config. files but performs no build operations.\n"
+    + "parse     - Reads config. files and parses labels.\n"
+    + "propagate - Reads config. files and propagates files.\n\n";
 
+    // Enums and constants for the Log Level command-line argument
     public enum LogLevel
     {
         MINIMAL,
@@ -16,10 +28,13 @@ interface Constants
         PROPAGATIONS,
         VERBOSE
     }
-
-    // Constants pertaining published file data
-    const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "INDEV-Beta 1.6.0";
+    const string DESC_LOGLEVEL = "Optional Parameter - Log Level\n"
+    + "-l [ minimal | configs | parsing | propagations | all ] (Choose One)\n"
+    + "minimal      - Only outputs errors and warnings (default)\n"
+    + "configs      - Outputs parsed command-line argument and configuration file data.\n"
+    + "parsings      - Outputs what each label's expression resolved to.\n"
+    + "propagations - Outputs each successful propagation.\n"
+    + "verbose      - Outputs everything";
 
     // Constants pertaining to command-line arguments
     const long MAX_INPUT_SIZE_BYTES = 2000000000; // ~2 gigabytes
@@ -46,11 +61,15 @@ interface Constants
     const int EXP_INFINITE_LOOP_THRESHOLD = 500;
     const string NULL_EXP_RESULT = "NULL";
 
-    // Constants pertaining to labels
+    // Enums and Constants pertaining to labels
+    enum LabelType
+    {
+        VAR
+    }
     const string LABEL_CHAR_BORDER    = "$";
     const string LABEL_CHAR_SEPARATOR = "#";
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
-    const string LABEL_ANY_VARIABLE   = LABEL_ANY + "VAR";
+    const string LABEL_VAR            = LABEL_ANY + "VAR";
 
     // Constants pertaining to log messages
     const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
@@ -64,25 +83,17 @@ interface Constants
     + "- This program can't detect every conceivable typo you might make.\n"
     + "If your game crashes, double-check your mod files for errors.\n";       
     
-    const string MSG_FAILURE = "Mod building halted due to the above error.";
+    const string MSG_FAILURE = "\nMod building halted due to the above error.";
 
     // Rules
-    const string RULES_USAGE = "Usage: ./" + EXE_NAME + ".exe -c [config "
+    const string RULES_USAGE_GENERAL = "Usage: ./" + EXE_NAME + ".exe -c [config "
     + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]\n"
-    + "You may enter multiple configuration files (use '-c' once per file).\n\n"
-    + "Optional Parameter - Execution Mode\n"
-    + "-x [ complete | readonly | parse | propagate ] (Choose One)\n"
-    + "complete  - Reads config. files and performs all build operations (default)\n"
-    + "readonly  - Reads config. files but performs no build operations.\n"
-    + "parse     - Reads config. files and parses labels.\n"
-    + "propagate - Reads config. files and propagates files.\n\n"
-    + "Optional Parameter - Log Level\n"
-    + "-l [ minimal | configs | parsing | propagations | all ] (Choose One)\n"
-    + "minimal      - Only outputs errors and warnings (default)\n"
-    + "configs      - Outputs parsed command-line argument and configuration file data.\n"
-    + "parsings      - Outputs what each label's expression resolved to.\n"
-    + "propagations - Outputs each successful propagation.\n"
-    + "verbose      - Outputs everything";
+    + "You may enter multiple configuration files (use '-c' once per file).\n\n";
+
+    const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL 
+    + "For information on optional parameters, run this application with 0 arguments.\n\n";
+
+    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL + DESC_EXEMODE + DESC_LOGLEVEL;
 
     const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
     + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"

@@ -35,7 +35,7 @@ class Label
         string typeString = raw.Substring(0, separator).ToUpper();
         switch(typeString)
         {
-            case LABEL_ANY_VARIABLE:
+            case LABEL_VAR:
             type = LabelType.VAR;
             break;
 
@@ -140,9 +140,4 @@ class Label
         string formattedMsg = String.Format(msg, args);
         return new EMBException(preamble + formattedMsg);
     }
-}
-
-enum LabelType
-{
-    VAR
 }
