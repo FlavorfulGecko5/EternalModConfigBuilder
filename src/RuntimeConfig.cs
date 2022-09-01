@@ -28,38 +28,30 @@ class RuntimeConfig
         }
         catch (Exception e)
         {
-            reportUnknownError(e);
+            reportError("An unknown error occurred, printing Exception:\n\n" 
+                + e.ToString());
             Environment.Exit(2);
         }
     }
 
-    private static void run(string[] args)
-    {
-        Console.WriteLine(MSG_WELCOME);
-        if (Directory.Exists(DIR_TEMP))
-            Directory.Delete(DIR_TEMP, true);
-
-        initialize(args);
-        ModBuilder builder = new ModBuilder();
-        builder.buildMod();
-
-        Console.WriteLine(MSG_SUCCESS);
-    }
-
-    private static void reportUnknownError(Exception e)
-    {
-        reportError(String.Format(
-            "An unknown error occurred, printing Exception:\n\n{0}",
-            e.ToString()
-        ));
-    }
-    
     private static void reportError(string msg)
     {
         Console.WriteLine(MSG_ERROR + msg + MSG_FAILURE);
     }
 
-    public static void initialize(string[] args)
+    private static void run(string[] args)
+    {
+        if (Directory.Exists(DIR_TEMP))
+            Directory.Delete(DIR_TEMP, true);
+
+        Console.WriteLine(MSG_WELCOME);
+        initialize(args);
+        ModBuilder builder = new ModBuilder();
+        builder.buildMod();
+        Console.WriteLine(MSG_SUCCESS);
+    }
+
+    private static void initialize(string[] args)
     {
         readToVariables(args);
         validateConfigArg();
@@ -78,18 +70,18 @@ class RuntimeConfig
     {
         string configList = "";
         foreach(string config in configPaths)
-            configList += "      --" + config + "\n";
+            configList += " --" + config + "\n";
         string sourceType = srcIsZip ? "Zip File" : "Folder";
         string outputType = outToZip ? "Zip File" : "Folder"; 
 
         string msg = "Parsed Command-Line Argument Data:"
-            + "\n   - Configuration Files:\n" + configList
-            + "   - Source Path: " + srcPath
-            + "\n   - Source Type: " + sourceType
-            + "\n   - Output Path: " + outPath
-            + "\n   - Output Type: " + outputType
-            + "\n   - Execution Mode: " + exeMode.ToString()
-            + "\n   - Log Level: " + logMode.ToString();
+            + "\n - Configuration Files:\n" + configList
+            + " - Source Path: " + srcPath
+            + "\n - Source Type: " + sourceType
+            + "\n - Output Path: " + outPath
+            + "\n - Output Type: " + outputType
+            + "\n - Execution Mode: " + exeMode.ToString()
+            + "\n - Log Level: " + logMode.ToString();
         
         return msg;
     }
@@ -112,59 +104,54 @@ class RuntimeConfig
                 case "-c":
                     configPaths.Add(args[i + 1]);
                     hasConfig = true;
-                    break;
+                break;
 
                 case "-s":
-                    if (!hasSource)
-                    {
-                        srcPath = args[i + 1];
-                        hasSource = true;
-                    }
-                    else
-                        goto CATCH_INVALID_ARGUMENT;
-                    break;
+                    if(hasSource)
+                        throw ArgError(DUPLICATE_ARGUMENT, "Mod");
+                    srcPath = args[i + 1];
+                    hasSource = true;
+                break;
 
                 case "-o":
-                    if (!hasOutput)
-                    {
-                        outPath = args[i + 1];
-                        hasOutput = true;
-                    }
-                    else
-                        goto CATCH_INVALID_ARGUMENT;
-                    break;
+                    if(hasOutput) 
+                        throw ArgError(DUPLICATE_ARGUMENT, "output location");
+                    outPath = args[i + 1];
+                    hasOutput = true;
+                break;
                 
                 case "-x":
-                    if(!hasExecutionMode)
+                    if(hasExecutionMode)
+                        throw ArgError(DUPLICATE_ARGUMENT, "execution mode");
+                    try
                     {
-                        int index = args[i + 1].toEnumIndex<ExecutionMode>();
-                        if(index != -1)
-                            exeMode = (ExecutionMode)index;
-                        else
-                            goto CATCH_INVALID_ARGUMENT;
-                        hasExecutionMode = true;
+                        exeMode = (ExecutionMode)Enum.Parse(
+                            typeof(ExecutionMode), args[i+1].ToUpper());
                     }
-                    else
-                        goto CATCH_INVALID_ARGUMENT;
-                    break;
+                    catch(Exception)
+                    {
+                        throw ArgError(BAD_EXECUTION_MODE, args[i+1]);
+                    }
+                    hasExecutionMode = true;
+                break;
                 
                 case "-l":
-                    if(!hasLogLevel)
+                    if(hasLogLevel)
+                        throw ArgError(DUPLICATE_ARGUMENT, "log level");
+                    try
                     {
-                        int index = args[i + 1].toEnumIndex<LogLevel>();
-                        if(index != -1)
-                            logMode = (LogLevel)index;
-                        else
-                            goto CATCH_INVALID_ARGUMENT;
-                        hasLogLevel = true;
+                        logMode = (LogLevel)Enum.Parse(
+                                typeof(LogLevel), args[i+1].ToUpper());
                     }
-                    else
-                        goto CATCH_INVALID_ARGUMENT;
-                    break;
+                    catch(Exception) 
+                    {
+                        throw ArgError(BAD_LOG_LEVEL, args[i+1]);
+                    }
+                    hasLogLevel = true;
+                break;
 
                 default:
-                CATCH_INVALID_ARGUMENT:
-                    throw ArgError(BAD_ARGUMENT, argIndex: i);
+                    throw ArgError(BAD_PARAMETER, args[i]);
             }
         }
 
@@ -223,7 +210,10 @@ class RuntimeConfig
     public enum ArgumentError
     {
         BAD_NUMBER_ARGUMENTS,
-        BAD_ARGUMENT,
+        BAD_PARAMETER,
+        BAD_EXECUTION_MODE,
+        BAD_LOG_LEVEL,
+        DUPLICATE_ARGUMENT,
         MISSING_ARGS,
         BAD_CONFIG_EXTENSION,
         CONFIG_NOT_FOUND,
@@ -235,7 +225,7 @@ class RuntimeConfig
         OUTPUT_INSIDE_SRC,
     }
 
-    private static EMBException ArgError(ArgumentError e, string cfg = "", int argIndex = -1)
+    private static EMBException ArgError(ArgumentError e, string arg = "")
     {
         string preamble = "Failed to parse command-line arguments:\n",
                msg = "";
@@ -247,9 +237,27 @@ class RuntimeConfig
             args[0] = RULES_USAGE_MINIMAL;
             break;
             
-            case BAD_ARGUMENT:
-            msg = "Command line argument #{0} is invalid.\n\n{1}";
-            args[0] = (argIndex + 1).ToString();
+            case BAD_PARAMETER:
+            msg = "'{0}' is not a valid parameter.\n\n{1}";
+            args[0] = arg;
+            args[1] = RULES_USAGE_MINIMAL;
+            break;
+
+            case BAD_EXECUTION_MODE:
+            msg = "'{0}' is not a valid Execution Mode.\n\n{1}";
+            args[0] = arg;
+            args[1] = DESC_EXEMODE;
+            break;
+
+            case BAD_LOG_LEVEL:
+            msg = "'{1}' is not a valid Log Level.\n\n{1}";
+            args[0] = arg;
+            args[1] = DESC_LOGLEVEL;
+            break;
+
+            case DUPLICATE_ARGUMENT:
+            msg = "You may only input one {0}.\n\n{1}";
+            args[0] = arg;
             args[1] = RULES_USAGE_MINIMAL;
             break;
 
@@ -260,13 +268,13 @@ class RuntimeConfig
 
             case BAD_CONFIG_EXTENSION:
             msg = "The configuration file '{0}' must be a {1} file.";
-            args[0] = cfg;
+            args[0] = arg;
             args[1] = DESC_CFG_EXTENSIONS;
             break;
 
             case CONFIG_NOT_FOUND:
             msg = "Failed to find the configuration file '{0}'";
-            args[0] = cfg;
+            args[0] = arg;
             break;
 
             case MOD_NOT_FOUND:

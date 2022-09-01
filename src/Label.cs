@@ -117,7 +117,7 @@ class Label
 
             case BAD_TYPE:
             msg = "The type is unrecognized.\n\n{0}";
-            args[0] = RULES_LABEL_TYPES;
+            args[0] = DESC_LABEL_TYPES;
             break;
 
             case EXP_LOOPS_INFINITELY:

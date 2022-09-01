@@ -1,5 +1,4 @@
 using static FileParser.Error;
-using System.Text;
 class FileParser
 {
     private string path, text;

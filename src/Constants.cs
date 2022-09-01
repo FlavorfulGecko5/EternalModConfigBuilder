@@ -70,6 +70,8 @@ interface Constants
     const string LABEL_CHAR_SEPARATOR = "#";
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
     const string LABEL_VAR            = LABEL_ANY + "VAR";
+    const string DESC_LABEL_TYPES = "The current valid types for labels are:\n"
++ "- 'EMB_VAR'";
 
     // Constants pertaining to log messages
     const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
@@ -127,7 +129,4 @@ interface Constants
     + "- [EXPRESSION] is a valid arithmetic or logical expression - see examples.\n"
     + "- To insert an option from your config. files into an expression, use the notation {NAME}\n"
     + "- Case-insensitivity of all label elements is allowed.";
-
-    const string RULES_LABEL_TYPES = "The current valid types for labels are:\n"
-    + "- 'EMB_VAR'";
 }

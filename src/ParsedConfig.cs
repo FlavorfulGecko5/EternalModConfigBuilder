@@ -9,11 +9,12 @@ class ParsedConfig
     private string configPath = "", name = "";
     private JToken option = new JProperty("");
 
-    public ParsedConfig(List<string> configPathList)
+    public ParsedConfig()
     {
-        foreach(string path in configPathList)
+        foreach(string path in RuntimeConfig.configPaths)
         {
             configPath = path;
+            name = "N/A";
             parseConfig();
         }
         LogMaker logger = new LogMaker(LogLevel.CONFIGS);
@@ -145,64 +146,58 @@ class ParsedConfig
     private EMBException EMBError(Error e, string arg0 = "", string arg1 = "")
     {
         string preamble = String.Format(
-            "Problem encountered with configuration file '{0}'\n",
-            configPath
+            "Problem encountered in config. file '{0}' with Property '{1}':\n",
+            configPath,
+            name
         );
         string msg = "";
-        string[] args = {"", "", "", ""};
+        string[] args = {"", "", ""};
         switch(e)
         {
             case BAD_JSON_FILE:
-            msg = "There is a syntax error. Printing Exception message:\n\n{0}";
+            msg = "The file has a syntax error. Printing Exception message:\n\n{0}";
             args[0] = arg0; // The Exception message
             break;
 
             case BAD_NAME_FORMATTING:
-            msg = "The Option '{0}' has an invalid name.\n\n{1}";
-            args[0] = name;
-            args[1] = RULES_OPTION_NAME;
+            msg = "The name is invalid.\n\n{0}";
+            args[0] = RULES_OPTION_NAME;
             break;
 
             case DUPLICATE_NAME:
-            msg = "The name '{0}' is used to define multiple Options.\n\n{1}";
-            args[0] = name;
-            args[1] = RULES_OPTION_NAME;
+            msg = "This name is used to define multiple Options.\n\n{0}";
+            args[0] = RULES_OPTION_NAME;
             break;
 
             case BAD_OPTION_TYPE:
-            msg = "The Option '{0}' is not defined in a valid way.\n\n{1}";
-            args[0] = name;
-            args[1] = RULES_OPTION_TYPE;
+            msg = "This Option is not defined in a valid way.\n\n{0}";
+            args[0] = RULES_OPTION_TYPE;
             break;
 
             case PROPAGATE_ISNT_OBJECT:
-            msg = "The '{0}' property is not defined as an object.\n\n{1}";
-            args[0] = name;
-            args[1] = RULES_PROPAGATE;
+            msg = "This property must be defined as an object.\n\n{0}";
+            args[0] = RULES_PROPAGATE;
             break;
 
             case BAD_PROP_ARRAY:
-            msg = "The '{0}' property has an invalid sub-property '{1}'\n\n{2}";
-            args[0] = name;
-            args[1] = arg0; // Propagate list name
-            args[2] = RULES_PROPAGATE;
+            msg = "This property has an invalid sub-property '{0}'\n\n{1}";
+            args[0] = arg0; // Propagate list name
+            args[1] = RULES_PROPAGATE;
             break;
 
             case NOT_LOCALREL_PROP_NAME:
-            msg = "The '{0}' sub-property '{1}' has a non-relative"
-                    + " or backtracking name.\n\n{2}";
-            args[0] = name;
-            args[1] = arg0; // Propagate list name
-            args[2] = RULES_PROPAGATE;
+            msg = "The sub-property '{0}' has a non-relative"
+                    + " or backtracking name.\n\n{1}";
+            args[0] = arg0; // Propagate list name
+            args[1] = RULES_PROPAGATE;
             break;
 
             case NOT_LOCALREL_PROP_PATH:
-            msg = "The '{0}' list '{1}' contains non-relative"
-                    + " or backtracking path '{2}'\n\n{3}";
-            args[0] = name;
-            args[1] = arg0; // Propagate list name
-            args[2] = arg1; // Propagate list element
-            args[3] = RULES_PROPAGATE;
+            msg = "The list '{0}' contains non-relative"
+                    + " or backtracking path '{1}'\n\n{2}";
+            args[0] = arg0; // Propagate list name
+            args[1] = arg1; // Propagate list element
+            args[2] = RULES_PROPAGATE;
             break;
         }
         return EMBException.buildException(preamble + msg, args);

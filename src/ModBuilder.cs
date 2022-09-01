@@ -5,40 +5,38 @@ class ModBuilder
 
     public ModBuilder()
     {
-        cfg = new ParsedConfig(RuntimeConfig.configPaths);
+        cfg = new ParsedConfig();
         startDir = Directory.GetCurrentDirectory();
         activeDir = "";
     }
 
     public void buildMod()
     {
+        if(RuntimeConfig.exeMode == ExecutionMode.READONLY)
+            return;
+
+        createActiveOutputDir();
+        Directory.SetCurrentDirectory(activeDir);
         switch(RuntimeConfig.exeMode)
         {
             case ExecutionMode.COMPLETE:
-            createAndSetActiveOutputDir();
             parseFiles();
             propagateAll();
-            finishBuilding();
-            break;
-
-            case ExecutionMode.READONLY:
             break;
 
             case ExecutionMode.PARSE:
-            createAndSetActiveOutputDir();
             parseFiles();
-            finishBuilding();
             break;
 
             case ExecutionMode.PROPAGATE:
-            createAndSetActiveOutputDir();
             propagateAll();
-            finishBuilding();
             break;
         }
+        Directory.SetCurrentDirectory(startDir);
+        finishBuilding();
     }
 
-    private void createAndSetActiveOutputDir()
+    private void createActiveOutputDir()
     {
         // If zip, use temp. directory then zip to output after processing
         activeDir = RuntimeConfig.outToZip ? DIR_TEMP : RuntimeConfig.outPath;
@@ -49,7 +47,6 @@ class ModBuilder
             ZipUtil.unzip(RuntimeConfig.srcPath, activeDir);
         else
             DirUtil.copyDirectory(RuntimeConfig.srcPath, activeDir);
-        Directory.SetCurrentDirectory(activeDir);
     }
 
     private void parseFiles()
@@ -81,7 +78,6 @@ class ModBuilder
 
     private void finishBuilding()
     {
-        Directory.SetCurrentDirectory(startDir);
         if(RuntimeConfig.outToZip)
         {
             ZipUtil.makeZip(DIR_TEMP, RuntimeConfig.outPath);
