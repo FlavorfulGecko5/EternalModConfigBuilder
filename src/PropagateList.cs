@@ -11,9 +11,9 @@ class PropagateList
 
     public override string ToString()
     {
-        string formattedString = "   - Propagation List '" + name + "'";
+        string formattedString = " - Propagation List '" + name + "'";
         foreach(string file in filePaths)
-            formattedString += "\n      -- '" + file + "'";
+            formattedString += "\n  - '" + file + "'";
         return formattedString;
     }
 

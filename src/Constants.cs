@@ -17,7 +17,7 @@ interface Constants
     + "complete  - Reads config. files and performs all build operations (default)\n"
     + "readonly  - Reads config. files but performs no build operations.\n"
     + "parse     - Reads config. files and parses labels.\n"
-    + "propagate - Reads config. files and propagates files.\n\n";
+    + "propagate - Reads config. files and propagates files.";
 
     // Enums and constants for the Log Level command-line argument
     public enum LogLevel
@@ -32,7 +32,7 @@ interface Constants
     + "-l [ minimal | configs | parsing | propagations | all ] (Choose One)\n"
     + "minimal      - Only outputs errors and warnings (default)\n"
     + "configs      - Outputs parsed command-line argument and configuration file data.\n"
-    + "parsings      - Outputs what each label's expression resolved to.\n"
+    + "parsings     - Outputs what each label's expression resolved to.\n"
     + "propagations - Outputs each successful propagation.\n"
     + "verbose      - Outputs everything";
 
@@ -71,10 +71,10 @@ interface Constants
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
     const string LABEL_VAR            = LABEL_ANY + "VAR";
     const string DESC_LABEL_TYPES = "The current valid types for labels are:\n"
-+ "- 'EMB_VAR'";
+    + "- 'EMB_VAR'";
 
     // Constants pertaining to log messages
-    const string MSG_WELCOME = EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
+    const string MSG_WELCOME = "\n" + EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
     const string MSG_ERROR   = "ERROR: ";
     const string MSG_WARNING = "WARNING: ";
     const string MSG_LOG     = "LOG: ";
@@ -85,7 +85,7 @@ interface Constants
     + "- This program can't detect every conceivable typo you might make.\n"
     + "If your game crashes, double-check your mod files for errors.\n";       
     
-    const string MSG_FAILURE = "\nMod building halted due to the above error.";
+    const string MSG_FAILURE = "\n\nMod building halted due to the above error.\n";
 
     // Rules
     const string RULES_USAGE_GENERAL = "Usage: ./" + EXE_NAME + ".exe -c [config "
@@ -93,9 +93,9 @@ interface Constants
     + "You may enter multiple configuration files (use '-c' once per file).\n\n";
 
     const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL 
-    + "For information on optional parameters, run this application with 0 arguments.\n\n";
+    + "For information on optional parameters, run this application with 0 arguments.";
 
-    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL + DESC_EXEMODE + DESC_LOGLEVEL;
+    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL + DESC_EXEMODE + "\n\n" + DESC_LOGLEVEL;
 
     const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
     + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"

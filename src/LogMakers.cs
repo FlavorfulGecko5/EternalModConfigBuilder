@@ -2,7 +2,7 @@ using System.Text;
 class LogMaker
 {
     public bool mustLog {get; private set;}
-    protected StringBuilder msg = new StringBuilder();
+    protected StringBuilder logMsg = new StringBuilder();
 
     public LogMaker(LogLevel requiredLogLevel)
     {
@@ -12,17 +12,17 @@ class LogMaker
 
     public void appendString(string appendString)
     {
-        msg.Append(appendString);
+        logMsg.Append(appendString);
     }
 
     public void log()
     {
-        Console.WriteLine(MSG_LOG + msg.ToString());
+        Console.WriteLine(MSG_LOG + logMsg.ToString());
     }
 
-    public void reportWarning(string message)
+    public void reportWarning(string warningMessage)
     {
-        Console.WriteLine(MSG_WARNING + msg);
+        Console.WriteLine(MSG_WARNING + warningMessage);
     }
 }
 
@@ -32,13 +32,13 @@ class ParserLogMaker : LogMaker
 
     public void startNewFileLog(string path)
     {
-        msg.Clear();
-        msg.Append("Parsing File '" + path + "'");
+        logMsg.Clear();
+        logMsg.Append("Parsing File '" + path + "'");
     }
 
     public void appendLabelResult(Label l)
     {
-        msg.Append("\n - Label '" + l.raw + "' resolved to '" + l.result + "'");
+        logMsg.Append("\n - Label '" + l.raw + "' resolved to '" + l.result + "'");
     }
 }
 
@@ -48,17 +48,17 @@ class PropagationLogMaker : LogMaker
 
     public void startNewPropagationLog(string listName)
     {
-        msg.Append("Propagating to '" + listName + "'");
+        logMsg.Append("Propagating to '" + listName + "'");
     }
 
     public void appendFileCopyResult(string fileName)
     {
-        msg.Append("\n - Created file '" + fileName + "'");
+        logMsg.Append("\n - Created file '" + fileName + "'");
     }
 
     public void appendFolderCopyResult(string folderName)
     {
-        msg.Append("\n - Created folder '" + folderName + "'");
+        logMsg.Append("\n - Created folder '" + folderName + "'");
     }
 
     public void logWarningMissingFile(string path, string listName)

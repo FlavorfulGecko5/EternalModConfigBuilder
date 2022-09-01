@@ -70,7 +70,7 @@ class RuntimeConfig
     {
         string configList = "";
         foreach(string config in configPaths)
-            configList += " --" + config + "\n";
+            configList += "  -" + config + "\n";
         string sourceType = srcIsZip ? "Zip File" : "Folder";
         string outputType = outToZip ? "Zip File" : "Folder"; 
 
@@ -250,7 +250,7 @@ class RuntimeConfig
             break;
 
             case BAD_LOG_LEVEL:
-            msg = "'{1}' is not a valid Log Level.\n\n{1}";
+            msg = "'{0}' is not a valid Log Level.\n\n{1}";
             args[0] = arg;
             args[1] = DESC_LOGLEVEL;
             break;

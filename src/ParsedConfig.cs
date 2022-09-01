@@ -29,11 +29,11 @@ class ParsedConfig
     {
         string optionList = "";
         foreach(Option o in options)
-            optionList += "   - " + o.ToString() + '\n';
+            optionList += " - " + o.ToString() + '\n';
 
         string propagationList = "";
         foreach(PropagateList list in propagations)
-            propagationList += list.ToString();
+            propagationList += list.ToString() + '\n';
         
         string msg = "Parsed Configuration File Data:\n"
             + optionList + propagationList;
