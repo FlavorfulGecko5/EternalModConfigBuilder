@@ -31,7 +31,7 @@
     },
 
     "propagate":{
-        "gameresources/generated/decls": ["modFileCopyOne.decl"],
+        "gameresources/generated/decls": ["fileOne.txt"],
         "gameresources_patch1": ["directory/"]
     }
 }
