@@ -64,14 +64,22 @@ interface Constants
     // Enums and Constants pertaining to labels
     enum LabelType
     {
-        VAR
+        VAR,
+        TOGGLE_START,
+        TOGGLE_END
     }
     const string LABEL_CHAR_BORDER    = "$";
     const string LABEL_CHAR_SEPARATOR = "#";
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
     const string LABEL_VAR            = LABEL_ANY + "VAR";
+    const string LABEL_TOGGLE_ANY     = LABEL_ANY + "TOGGLE";
+    const string LABEL_TOGGLE_START   = LABEL_TOGGLE_ANY;
+    const string LABEL_TOGGLE_END     = LABEL_TOGGLE_ANY + "_END";
     const string DESC_LABEL_TYPES = "The current valid types for labels are:\n"
-    + "- 'EMB_VAR'";
+    + "- 'EMB_VAR'\n"
+    + "- 'EMB_TOGGLE'\n"
+    + "- 'EMG_TOGGLE_END'";
+    const string DESC_LABEL_TOGGLE_END = LABEL_TOGGLE_END + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
 
     // Constants pertaining to log messages
     const string MSG_WELCOME = "\n" + EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
@@ -123,10 +131,18 @@ interface Constants
     + "- These strings must be relative paths to files or directories inside your mod's '" + DIR_PROPAGATE + "' folder.\n"
     + "When your mod is built, listed files/directories will be copied to the directory specified by the list's name.";
 
-    const string RULES_LABEL_FORMAT = "Labels must have the form " + LABEL_ANY 
+    const string RULES_LABEL_FORMAT = "Labels must have the form " + LABEL_CHAR_BORDER 
     + "[TYPE]" + LABEL_CHAR_SEPARATOR + "[EXPRESSION]" + LABEL_CHAR_BORDER + " where:\n"
     + "- [TYPE] is a pre-defined string - see examples that show all types.\n"
     + "- [EXPRESSION] is a valid arithmetic or logical expression - see examples.\n"
     + "- To insert an option from your config. files into an expression, use the notation {NAME}\n"
     + "- Case-insensitivity of all label elements is allowed.";
+
+    const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '"
+    + DESC_LABEL_TOGGLE_END + "' label placed after it.\n"
+    + "These two labels define the toggle-block controlled by the expression.";
+
+    const string RULES_TOGGLE_RESULT = "Expressions in toggle labels must yield one of these results:\n"
+    + "- A Boolean (true/false) value, from a logical expression or from reading a string.\n"
+    + "- A numerical value. A number less than one is interpeted as false, and one or higher is interpreted as true.";
 }

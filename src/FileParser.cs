@@ -22,11 +22,11 @@ class FileParser
             logger.startNewFileLog(path);
 
         // Labels are parsed sequentially by scanning the entire text file.
-        int nextStartIndex = findNextLabelIndex(0);
+        int nextStartIndex = findNextLabelIndex(LABEL_ANY, 0);
         while (nextStartIndex != -1)
         {
             parseLabel(nextStartIndex);
-            nextStartIndex = findNextLabelIndex(nextStartIndex);
+            nextStartIndex = findNextLabelIndex(LABEL_ANY, nextStartIndex);
         }
 
         FileUtil.writeFile(path, text);
@@ -35,17 +35,19 @@ class FileParser
             logger.log();
     }
 
-    private int findNextLabelIndex(int searchStartIndex)
+    private int findNextLabelIndex(string labelToFind, int searchStartIndex)
     {
-        return text.embIndexOf(LABEL_ANY, searchStartIndex);
+        return text.embIndexOf(labelToFind, searchStartIndex);
     }
 
     private void parseLabel(int startIndex)
     {
         Label label = buildLabel(startIndex);
-        label.split();
+
+        if(label.type == LabelType.TOGGLE_END)
+            throw EMBError(EXTRA_END_TOGGLE);
+
         label.computeResult();
-        
         if(logger.mustLog)
             logger.appendLabelResult(label);
 
@@ -53,7 +55,11 @@ class FileParser
         {
             case LabelType.VAR:
                 parseVariable(label);
-                break;
+            break;
+            
+            case LabelType.TOGGLE_START:
+                parseToggle(label);
+            break;
         }
     }
 
@@ -66,7 +72,7 @@ class FileParser
         int end = text.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
             throw EMBError(INCOMPLETE_LABEL);   
-        if(end == findNextLabelIndex(start + 1))
+        if(end == findNextLabelIndex(LABEL_VAR, start + 1))
         {
             parseLabel(end);
             goto NESTED_LABEL_LOOP;
@@ -84,20 +90,51 @@ class FileParser
             + text.Substring(label.end + 1, text.Length - label.end - 1);
     }
 
+    private void parseToggle(Label start)
+    {
+        int numEndLabelsNeeded = 1; // Allows nested toggles
+        int endStart = start.start;
+        Label end = new Label();
+
+        while(numEndLabelsNeeded > 0)
+        {
+            endStart = findNextLabelIndex(LABEL_TOGGLE_ANY, endStart + 1);
+            if(endStart == -1)
+                throw EMBError(MISSING_END_TOGGLE, start.raw);
+            end = buildLabel(endStart);
+
+            if(end.type == LabelType.TOGGLE_END)
+                numEndLabelsNeeded--;
+            else if(end.type == LabelType.TOGGLE_START)
+                numEndLabelsNeeded++;
+        }
+
+        bool resultBool = start.resultToToggleBool();
+        if (resultBool) // Keep what's in-between, remove the labels
+            text = text.Substring(0, start.start)
+                + text.Substring(start.end + 1, endStart - start.end - 1)
+                + text.Substring(end.end + 1, text.Length - end.end - 1);
+        else // Remove the labels and what's in-between them
+            text = text.Substring(0, start.start)
+                + text.Substring(end.end + 1, text.Length - end.end - 1);
+    }
+
     public enum Error
     {
         INCOMPLETE_LABEL,
         PARSER_LOOPS_INFINITELY,
+        EXTRA_END_TOGGLE,
+        MISSING_END_TOGGLE
     }
 
-    private EMBException EMBError(Error e)
+    private EMBException EMBError(Error e, string rawLabel="")
     {
         string preamble = String.Format(
             "Problem encountered in mod file '{0}'\n",
             path
         );
         string msg = "";
-        string[] args = {"", ""};
+        string[] args = {"", "", ""};
         switch(e)
         {
             case INCOMPLETE_LABEL:
@@ -109,7 +146,21 @@ class FileParser
             case PARSER_LOOPS_INFINITELY:
             msg = "Parsing this file's labels creates an infinite loop.";
             break;
+
+            case EXTRA_END_TOGGLE:
+            msg = "There is a '{0}' label with no preceding start label.\n\n{1}";
+            args[0] = DESC_LABEL_TOGGLE_END;
+            args[1] = RULES_TOGGLE_BLOCK;
+            break;
+
+            case MISSING_END_TOGGLE:
+            msg = "The label '{0}' has no '{1}' label following it.\n\n{2}";
+            args[0] = rawLabel;
+            args[1] = DESC_LABEL_TOGGLE_END;
+            args[2] = RULES_TOGGLE_BLOCK;
+            break;
         }
-        return EMBException.buildException(preamble + msg, args);
+        string formattedMsg = String.Format(msg, args);
+        return new EMBException(preamble + formattedMsg);
     }
 }
