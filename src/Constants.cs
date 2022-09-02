@@ -103,7 +103,7 @@ interface Constants
     const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL 
     + "For information on optional parameters, run this application with 0 arguments.";
 
-    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL + DESC_EXEMODE + "\n\n" + DESC_LOGLEVEL;
+    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL + DESC_EXEMODE + "\n\n" + DESC_LOGLEVEL + "\n";
 
     const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
     + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"
