@@ -11,7 +11,7 @@ class ParsedConfig
 
     public ParsedConfig()
     {
-        foreach(string path in RuntimeConfig.configPaths)
+        foreach(string path in EternalModBuilder.configPaths)
         {
             configPath = path;
             name = "N/A";

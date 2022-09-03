@@ -1,6 +1,6 @@
 global using static Constants;
-using static RuntimeConfig.ArgumentError;
-class RuntimeConfig
+using static EternalModBuilder.ArgumentError;
+class EternalModBuilder
 {
     public static List<string> configPaths {get; private set;} = new List<string>();
     public static string srcPath  {get; private set;} = "";

@@ -12,12 +12,12 @@ class ModBuilder
 
     public void buildMod()
     {
-        if(RuntimeConfig.exeMode == ExecutionMode.READONLY)
+        if(EternalModBuilder.exeMode == ExecutionMode.READONLY)
             return;
 
         createActiveOutputDir();
         Directory.SetCurrentDirectory(activeDir);
-        switch(RuntimeConfig.exeMode)
+        switch(EternalModBuilder.exeMode)
         {
             case ExecutionMode.COMPLETE:
             parseFiles();
@@ -39,14 +39,14 @@ class ModBuilder
     private void createActiveOutputDir()
     {
         // If zip, use temp. directory then zip to output after processing
-        activeDir = RuntimeConfig.outToZip ? DIR_TEMP : RuntimeConfig.outPath;
+        activeDir = EternalModBuilder.outToZip ? DIR_TEMP : EternalModBuilder.outPath;
 
         // Clone the contents of src to the active output directory
         Directory.CreateDirectory(activeDir);
-        if (RuntimeConfig.srcIsZip)
-            ZipUtil.unzip(RuntimeConfig.srcPath, activeDir);
+        if (EternalModBuilder.srcIsZip)
+            ZipUtil.unzip(EternalModBuilder.srcPath, activeDir);
         else
-            DirUtil.copyDirectory(RuntimeConfig.srcPath, activeDir);
+            DirUtil.copyDirectory(EternalModBuilder.srcPath, activeDir);
     }
 
     private void parseFiles()
@@ -78,9 +78,9 @@ class ModBuilder
 
     private void finishBuilding()
     {
-        if(RuntimeConfig.outToZip)
+        if(EternalModBuilder.outToZip)
         {
-            ZipUtil.makeZip(DIR_TEMP, RuntimeConfig.outPath);
+            ZipUtil.makeZip(DIR_TEMP, EternalModBuilder.outPath);
             Directory.Delete(DIR_TEMP, true);
         }
     }

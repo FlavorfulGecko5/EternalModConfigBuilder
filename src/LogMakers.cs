@@ -6,7 +6,7 @@ class LogMaker
 
     public LogMaker(LogLevel requiredLogLevel)
     {
-        LogLevel logMode = RuntimeConfig.logMode;
+        LogLevel logMode = EternalModBuilder.logMode;
         mustLog = logMode == requiredLogLevel || logMode == LogLevel.VERBOSE;
     }
 
