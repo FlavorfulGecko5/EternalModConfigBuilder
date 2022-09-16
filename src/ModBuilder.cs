@@ -56,22 +56,17 @@ class ModBuilder
     private void parseFiles()
     {
         FileParser parser = new FileParser(cfg.options);
-        List<string> filesToParse = new List<string>();
+        List<string> labelFiles = new List<string>();
 
-        string[] declFiles = DirUtil.getFilePathsFromCurrentDir("*.decl");
-        foreach (string decl in declFiles)
-            filesToParse.Add(decl);
+        string[] allFiles = DirUtil.getAllFilesInCurrentDir();
+        foreach(string file in allFiles)
+            if(file.EndsWithCCIC(".decl") || file.EndsWithCCIC(".json"))
+                labelFiles.Add(file);
+            else if(file.EndsWithCCIC(".entities"))
+                if(!EntityCompressor.isEntityFileCompressed(file))
+                    labelFiles.Add(file);
 
-        string[] jsonFiles = DirUtil.getFilePathsFromCurrentDir("*.json");
-        foreach (string json in jsonFiles)
-            filesToParse.Add(json);
-
-        string[] entityFiles = DirUtil.getFilePathsFromCurrentDir("*.entities");
-        foreach(string entity in entityFiles)
-            if(!EntityCompressor.isEntityFileCompressed(entity))
-                filesToParse.Add(entity);
-        
-        foreach(string file in filesToParse)
+        foreach(string file in labelFiles)
             parser.parseFile(file);
     }
 

@@ -69,9 +69,9 @@ class DirUtil
             file.CopyTo(Path.Combine(target.FullName, file.Name), true);
     }
 
-    public static string[] getFilePathsFromCurrentDir(string fileType)
+    public static string[] getAllFilesInCurrentDir()
     {
-        return Directory.GetFiles(".", fileType, SearchOption.AllDirectories);
+        return Directory.GetFiles(".", "*", SearchOption.AllDirectories);
     }
 
     public static void createDirectoryInFilePath(string filepath)
