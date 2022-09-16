@@ -15,13 +15,4 @@ class ExtUtil
                 return true;
         return false;
     }
-
-    // Returns true if a mod file has a valid extension for containing labels
-    public static bool hasValidModFileExtension(string filePath)
-    {
-        foreach(string extension in LABEL_FILES)
-            if(hasExtension(filePath, extension))
-                return true;
-        return false;
-    }
 }

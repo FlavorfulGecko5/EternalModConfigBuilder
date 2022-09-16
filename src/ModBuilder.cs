@@ -22,10 +22,14 @@ class ModBuilder
             case ExecutionMode.COMPLETE:
             parseFiles();
             propagateAll();
+            if(EternalModBuilder.compressEntities)
+                compressEntities();
             break;
 
             case ExecutionMode.PARSE:
             parseFiles();
+            if(EternalModBuilder.compressEntities)
+                compressEntities();
             break;
 
             case ExecutionMode.PROPAGATE:
@@ -52,11 +56,23 @@ class ModBuilder
     private void parseFiles()
     {
         FileParser parser = new FileParser(cfg.options);
+        List<string> filesToParse = new List<string>();
 
-        string[] allFiles = DirUtil.getAllDirectoryFiles(".");
-        foreach (string file in allFiles)
-            if (ExtUtil.hasValidModFileExtension(file))
-                parser.parseFile(file);
+        string[] declFiles = DirUtil.getFilePathsFromCurrentDir("*.decl");
+        foreach (string decl in declFiles)
+            filesToParse.Add(decl);
+
+        string[] jsonFiles = DirUtil.getFilePathsFromCurrentDir("*.json");
+        foreach (string json in jsonFiles)
+            filesToParse.Add(json);
+
+        string[] entityFiles = DirUtil.getFilePathsFromCurrentDir("*.entities");
+        foreach(string entity in entityFiles)
+            if(!EntityCompressor.isEntityFileCompressed(entity))
+                filesToParse.Add(entity);
+        
+        foreach(string file in filesToParse)
+            parser.parseFile(file);
     }
 
     private void propagateAll()
@@ -74,6 +90,11 @@ class ModBuilder
         }
         else if (cfg.propagations.Count > 0)
             warningLogger.logWarningNoPropFolder();
+    }
+
+    private void compressEntities()
+    {
+
     }
 
     private void finishBuilding()

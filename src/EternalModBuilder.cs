@@ -3,10 +3,11 @@ using static EternalModBuilder.ArgumentError;
 class EternalModBuilder
 {
     public static List<string> configPaths {get; private set;} = new List<string>();
-    public static string srcPath  {get; private set;} = "";
-    public static string outPath  {get; private set;} = "";
-    public static bool   srcIsZip {get; private set;} = false;
-    public static bool   outToZip {get; private set;} = false;
+    public static string srcPath          {get; private set;} = "";
+    public static string outPath          {get; private set;} = "";
+    public static bool   srcIsZip         {get; private set;} = false;
+    public static bool   outToZip         {get; private set;} = false;
+    public static bool   compressEntities {get; private set;} = true;
 
     public static ExecutionMode exeMode {get; private set;} = ExecutionMode.COMPLETE;
     public static LogLevel logMode {get; private set;} = LogLevel.MINIMAL;
@@ -92,7 +93,7 @@ class EternalModBuilder
         bool hasConfig = false, hasSource = false, hasOutput = false;
 
         // Optional
-        bool hasExecutionMode = false, hasLogLevel = false;
+        bool hasCompEnts = false, hasExecutionMode = false, hasLogLevel = false;
 
         if (args.Length % 2 != 0)
             throw ArgError(BAD_NUMBER_ARGUMENTS);
@@ -118,6 +119,20 @@ class EternalModBuilder
                         throw ArgError(DUPLICATE_ARGUMENT, "output location");
                     outPath = args[i + 1];
                     hasOutput = true;
+                break;
+
+                case "-e":
+                    if(hasCompEnts)
+                        throw ArgError(DUPLICATE_ARGUMENT, "compress-entites setting");
+                    try
+                    {
+                        compressEntities = Boolean.Parse(args[i+1]);
+                    }
+                    catch(System.FormatException)
+                    {
+                        throw ArgError(BAD_COMPRESS_ENTITIES);
+                    }
+                    hasCompEnts = true;
                 break;
                 
                 case "-x":
@@ -213,6 +228,7 @@ class EternalModBuilder
         BAD_PARAMETER,
         BAD_EXECUTION_MODE,
         BAD_LOG_LEVEL,
+        BAD_COMPRESS_ENTITIES,
         DUPLICATE_ARGUMENT,
         MISSING_ARGS,
         BAD_CONFIG_EXTENSION,
@@ -253,6 +269,11 @@ class EternalModBuilder
             msg = "'{0}' is not a valid Log Level.\n\n{1}";
             args[0] = arg;
             args[1] = DESC_LOGLEVEL;
+            break;
+
+            case BAD_COMPRESS_ENTITIES:
+            msg = "Compress-entities needs a true/false value.\n\n{0}";
+            args[0] = DESC_COMP_ENTITIES;
             break;
 
             case DUPLICATE_ARGUMENT:

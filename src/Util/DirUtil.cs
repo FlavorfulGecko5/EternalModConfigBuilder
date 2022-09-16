@@ -1,4 +1,3 @@
-using static System.IO.SearchOption;
 class DirUtil
 {
     public static bool isDirectoryLarge(string dir)
@@ -70,9 +69,9 @@ class DirUtil
             file.CopyTo(Path.Combine(target.FullName, file.Name), true);
     }
 
-    public static string[] getAllDirectoryFiles(string dir)
+    public static string[] getFilePathsFromCurrentDir(string fileType)
     {
-        return Directory.GetFiles(dir, "*.*", AllDirectories);
+        return Directory.GetFiles(".", fileType, SearchOption.AllDirectories);
     }
 
     public static void createDirectoryInFilePath(string filepath)

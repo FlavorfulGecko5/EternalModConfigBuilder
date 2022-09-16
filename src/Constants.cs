@@ -2,7 +2,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "Beta 1.6.0";
+    const string EXE_VERSION = "INDEV-Beta 1.7.0";
 
     // Enums and Constants for the Execution Mode command-line argument
     public enum ExecutionMode
@@ -36,14 +36,20 @@ interface Constants
     + "propagations - Outputs each successful propagation.\n"
     + "verbose      - Outputs everything";
 
+    // Constants for the Compress Entities command-line argument
+    const string DESC_COMP_ENTITIES = "Optional Parameter - Compress Entities\n"
+    + "-e [ true | false ] (Choose One)\n"
+    + "If true (default), .entities files will be compressed during the build process.\n"
+    + "If false, they will not be compressed.\n"
+    + "Compression will never occur, regardless of setting, if the execution mode is 'readonly' or 'propagate'";
+
     // Constants pertaining to command-line arguments
     const long MAX_INPUT_SIZE_BYTES = 2000000000; // ~2 gigabytes
     
     // Constants pertaining to file extensions.
     static readonly string[] CFG_EXTENSIONS = new string[] {".txt", ".json"};
     const string DESC_CFG_EXTENSIONS = ".txt or .json";
-    static readonly string[] LABEL_FILES = new string[] {".decl", ".json"};
-    const string DESC_LABEL_FILES = ".decl and .json";
+    const string DESC_LABEL_FILES = ".decl, .json and .entities";
 
     // Constants pertaining to directories
     const string DIR_TEMP = "eternalmodbuilder_temp";
@@ -103,7 +109,8 @@ interface Constants
     const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL 
     + "For information on optional parameters, run this application with 0 arguments.";
 
-    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL + DESC_EXEMODE + "\n\n" + DESC_LOGLEVEL + "\n";
+    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL 
+    + DESC_COMP_ENTITIES + "\n\n" + DESC_EXEMODE + "\n\n" + DESC_LOGLEVEL + "\n";
 
     const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
     + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"
