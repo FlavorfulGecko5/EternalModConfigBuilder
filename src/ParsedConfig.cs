@@ -48,7 +48,7 @@ class ParsedConfig
             name = property.Name;
             option = property.Value;
             validateName();
-            if (name.embEquals(PROPERTY_PROPAGATE))
+            if (name.EqualsCCIC(PROPERTY_PROPAGATE))
                 parsePropagate();
             else
                 parseOptionValue();
@@ -89,7 +89,7 @@ class ParsedConfig
                 throw EMBError(BAD_NAME_FORMATTING);
 
         foreach(Option o in options)
-            if(o.name.embEquals(name))
+            if(o.name.EqualsCCIC(name))
                 throw EMBError(DUPLICATE_NAME);
     }
 

@@ -178,7 +178,7 @@ class EternalModBuilder
     {
         foreach(string config in configPaths)
         {
-            if (!ExtUtil.hasValidConfigFileExtension(config))
+            if(!config.EndsWithCCIC(".json") && !config.EndsWithCCIC(".txt"))
                 throw ArgError(BAD_CONFIG_EXTENSION, config);
             if (!File.Exists(config))
                 throw ArgError(CONFIG_NOT_FOUND, config);
@@ -218,8 +218,7 @@ class EternalModBuilder
         if (!srcIsZip)
             if(DirUtil.isParentDir(srcPath, outPath))
                 throw ArgError(OUTPUT_INSIDE_SRC);
-
-        outToZip = ExtUtil.hasExtension(outPath, ".zip");
+        outToZip = outPath.EndsWithCCIC(".zip");
     }
 
     public enum ArgumentError

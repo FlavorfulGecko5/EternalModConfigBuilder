@@ -37,7 +37,7 @@ class FileParser
 
     private int findNextLabelIndex(string labelToFind, int searchStartIndex)
     {
-        return text.embIndexOf(labelToFind, searchStartIndex);
+        return text.IndexOfCCIC(labelToFind, searchStartIndex);
     }
 
     private void parseLabel(int startIndex)

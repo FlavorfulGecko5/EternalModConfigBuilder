@@ -4,7 +4,7 @@ class ZipUtil
 {
     public static bool isFileValidZip(string file)
     {
-        if (!ExtUtil.hasExtension(file, ".zip"))
+        if(!file.EndsWithCCIC(".zip"))
             return false;
         try
         {

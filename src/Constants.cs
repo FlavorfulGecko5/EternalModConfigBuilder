@@ -47,7 +47,6 @@ interface Constants
     const long MAX_INPUT_SIZE_BYTES = 2000000000; // ~2 gigabytes
     
     // Constants pertaining to file extensions.
-    static readonly string[] CFG_EXTENSIONS = new string[] {".txt", ".json"};
     const string DESC_CFG_EXTENSIONS = ".txt or .json";
     const string DESC_LABEL_FILES = ".decl, .json and .entities";
 
