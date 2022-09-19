@@ -1,20 +1,21 @@
 using System.Runtime.InteropServices;
 class EntityCompressor
 {
-    [DllImport("oo2core_8_win64.dll", CallingConvention = CallingConvention.Cdecl)]
-    public static extern int OodleLZ_Compress
-    (
-        int codec, byte[] src, long srcLength, byte[] output, int compression,
-        IntPtr opts, long offs, long unused, IntPtr scratch, long scratchSize
-    );      
+    private static OodleWrapper oodle;
+
+    static EntityCompressor()
+    {
+        if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            oodle = new LinuxOodleWrapper();
+        else
+            oodle = new WindowsOodleWrapper();
+    }
 
     public static void compressAndWrite(string filePath)
     {
         byte[] src = File.ReadAllBytes(filePath);
         byte[] output = new byte[src.Length + 65536];
-        int outputLength = OodleLZ_Compress(13, src, src.Length, output, 4, new IntPtr(0), 0, 0, new IntPtr(0), 0);
-
-       
+        int outputLength = oodle.compress(src, output);
 
         byte[] resizedOutput = new byte[16 + outputLength];
         byte[] decompressedSizeBytes = BitConverter.GetBytes((long)src.Length);
