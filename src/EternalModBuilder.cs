@@ -1,5 +1,6 @@
 global using static Constants;
 using static EternalModBuilder.ArgumentError;
+using System.Diagnostics;
 class EternalModBuilder
 {
     public static List<string> configPaths {get; private set;} = new List<string>();
@@ -24,20 +25,14 @@ class EternalModBuilder
         }
         catch (EMBException e)
         {
-            reportError(e.Message);
+            Console.WriteLine(MSG_ERROR + e.Message + MSG_FAILURE);
             Environment.Exit(1);
         }
         catch (Exception e)
         {
-            reportError("An unknown error occurred, printing Exception:\n\n" 
-                + e.ToString());
+            Console.WriteLine(MSG_ERROR_UNKNOWN + e.ToString() + MSG_FAILURE);
             Environment.Exit(2);
         }
-    }
-
-    private static void reportError(string msg)
-    {
-        Console.WriteLine(MSG_ERROR + msg + MSG_FAILURE);
     }
 
     private static void run(string[] args)
@@ -46,10 +41,15 @@ class EternalModBuilder
             Directory.Delete(DIR_TEMP, true);
 
         Console.WriteLine(MSG_WELCOME);
+        Stopwatch embTimer = new Stopwatch();
+        embTimer.Start();
+
         initialize(args);
         ModBuilder builder = new ModBuilder();
         builder.buildMod();
-        Console.WriteLine(MSG_SUCCESS);
+        
+        embTimer.Stop();
+        Console.WriteLine(MSG_SUCCESS, embTimer.ElapsedMilliseconds / 1000.0);
     }
 
     private static void initialize(string[] args)
@@ -82,7 +82,8 @@ class EternalModBuilder
             + "\n - Output Path: " + outPath
             + "\n - Output Type: " + outputType
             + "\n - Execution Mode: " + exeMode.ToString()
-            + "\n - Log Level: " + logMode.ToString();
+            + "\n - Log Level: " + logMode.ToString()
+            + "\n - Compress Entities: " + compressEntities;
         
         return msg;
     }

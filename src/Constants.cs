@@ -89,10 +89,11 @@ interface Constants
     // Constants pertaining to log messages
     const string MSG_WELCOME = "\n" + EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
     const string MSG_ERROR   = "ERROR: ";
+    const string MSG_ERROR_UNKNOWN = MSG_ERROR + "An unknown error occurred:\n\n";
     const string MSG_WARNING = "WARNING: ";
     const string MSG_LOG     = "LOG: ";
 
-    const string MSG_SUCCESS = "\nYour mod was successfully built.\n\n"
+    const string MSG_SUCCESS = "\nMod successfully built in {0} seconds.\n\n"
     + "Please Note:\n"
     + "- Only " + DESC_LABEL_FILES + " files are checked for labels.\n"
     + "- This program can't detect every conceivable typo you might make.\n"

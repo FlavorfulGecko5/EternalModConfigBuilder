@@ -72,11 +72,16 @@ class ModBuilder
 
     private void propagateAll()
     {
-        ModBuilderLogMaker warningLogger = new ModBuilderLogMaker();
+        const string WARNING_NO_LISTS = "The '" + DIR_PROPAGATE + "' folder"
+        + " exists in your mod, but no propagation lists are defined."
+        + " Propagation will not occur."; 
+        const string WARNING_NO_DIR = "You have propagation lists, but no '"
+        + DIR_PROPAGATE + "' folder in your mod. Propagation will not occur.";
+
         if (Directory.Exists(DIR_PROPAGATE))
         {
             if (cfg.propagations.Count == 0)
-                warningLogger.logWarningNoPropLists();
+                LogMaker.reportWarning(WARNING_NO_LISTS);
 
             foreach (PropagateList resource in cfg.propagations)
                 resource.propagate();
@@ -84,7 +89,7 @@ class ModBuilder
             Directory.Delete(DIR_PROPAGATE, true);
         }
         else if (cfg.propagations.Count > 0)
-            warningLogger.logWarningNoPropFolder();
+            LogMaker.reportWarning(WARNING_NO_DIR);
     }
 
     private void compressEntities()

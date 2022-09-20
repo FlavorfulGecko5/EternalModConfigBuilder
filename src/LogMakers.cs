@@ -20,7 +20,7 @@ class LogMaker
         Console.WriteLine(MSG_LOG + logMsg.ToString());
     }
 
-    public void reportWarning(string warningMessage)
+    public static void reportWarning(string warningMessage)
     {
         Console.WriteLine(MSG_WARNING + warningMessage);
     }
@@ -71,26 +71,5 @@ class PropagationLogMaker : LogMaker
             DIR_PROPAGATE
         );
         reportWarning(warning);
-    }
-}
-
-class ModBuilderLogMaker : LogMaker
-{
-    public ModBuilderLogMaker() : base(LogLevel.MINIMAL){}
-
-    public void logWarningNoPropLists()
-    {
-        reportWarning(
-            "The '" + DIR_PROPAGATE + "' directory exists in your mod, but no"
-            + " propagation list are defined. Propagation will not occur."
-        );
-    }
-
-    public void logWarningNoPropFolder()
-    {
-        reportWarning(
-            "You have propagation lists, but no '" + DIR_PROPAGATE
-                + "' directory in your mod. Propagation will not occur."
-        );
     }
 }
