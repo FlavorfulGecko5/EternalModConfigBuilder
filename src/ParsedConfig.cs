@@ -65,7 +65,7 @@ class ParsedConfig
 
         try
         {
-            string text = FileUtil.readFileText(configPath);
+            string text = FSUtil.readFileText(configPath);
             rawJson = JObject.Parse(text, reportExactDuplicates);
         }
         catch (Newtonsoft.Json.JsonReaderException e)
@@ -117,7 +117,7 @@ class ParsedConfig
         string workingDir = Directory.GetCurrentDirectory();
         foreach (JProperty list in ((JObject)option).Properties())
         {
-            if (!DirUtil.isPathLocalRelative(list.Name, workingDir))
+            if (!FSUtil.isPathLocalRelative(list.Name, workingDir))
                 throw EMBError(NOT_LOCALREL_PROP_NAME, list.Name);
 
             string[]? filePaths = JsonUtil.readListTokenValue(list.Value);
@@ -125,7 +125,7 @@ class ParsedConfig
                 throw EMBError(BAD_PROP_ARRAY, list.Name);
 
             foreach (string path in filePaths)
-                if (!DirUtil.isPathLocalRelative(path, workingDir))
+                if (!FSUtil.isPathLocalRelative(path, workingDir))
                     throw EMBError(NOT_LOCALREL_PROP_PATH, list.Name, path);
             propagations.Add(new PropagateList(list.Name, filePaths));
         }

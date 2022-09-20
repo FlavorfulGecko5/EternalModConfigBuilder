@@ -50,7 +50,7 @@ class ModBuilder
         if (EternalModBuilder.srcIsZip)
             ZipUtil.unzip(EternalModBuilder.srcPath, activeDir);
         else
-            DirUtil.copyDirectory(EternalModBuilder.srcPath, activeDir);
+            FSUtil.copyDirectory(EternalModBuilder.srcPath, activeDir);
     }
 
     private void parseFiles()
@@ -58,7 +58,7 @@ class ModBuilder
         FileParser parser = new FileParser(cfg.options);
         List<string> labelFiles = new List<string>();
 
-        string[] allFiles = DirUtil.getAllFilesInCurrentDir();
+        string[] allFiles = FSUtil.getAllFilesInCurrentDir();
         foreach(string file in allFiles)
             if(file.EndsWithCCIC(".decl") || file.EndsWithCCIC(".json"))
                 labelFiles.Add(file);

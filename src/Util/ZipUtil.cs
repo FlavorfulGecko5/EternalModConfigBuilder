@@ -28,7 +28,7 @@ class ZipUtil
     public static void makeZip(string srcDir, string outputZip)
     {
         // Zip can only be created inside a pre-existing directory
-        DirUtil.createDirectoryInFilePath(outputZip);
+        FSUtil.createDirectoryInFilePath(outputZip);
         ZipFile.CreateFromDirectory(srcDir, outputZip);
     }
 }

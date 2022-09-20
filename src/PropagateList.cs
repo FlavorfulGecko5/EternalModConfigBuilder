@@ -29,7 +29,7 @@ class PropagateList
             
             if(File.Exists(copyFrom))
             {
-                DirUtil.createDirectoryInFilePath(copyTo);
+                FSUtil.createDirectoryInFilePath(copyTo);
                 File.Copy(copyFrom, copyTo, true);
                 if(logger.mustLog)
                     logger.appendFileCopyResult(copyTo);
@@ -37,7 +37,7 @@ class PropagateList
             else if (Directory.Exists(copyFrom))
             {
                 Directory.CreateDirectory(copyTo);
-                DirUtil.copyDirectory(copyFrom, copyTo);
+                FSUtil.copyDirectory(copyFrom, copyTo);
                 if(logger.mustLog)
                     logger.appendFolderCopyResult(copyTo);
             }    

@@ -194,14 +194,14 @@ class EternalModBuilder
             if (!ZipUtil.isFileValidZip(srcPath))
                 throw ArgError(MOD_NOT_VALID);
 
-            if(FileUtil.isFileLarge(srcPath))
+            if(FSUtil.isFileLarge(srcPath))
                 throw ArgError(MOD_TOO_BIG);
 
             srcIsZip = true;
         }
         else if (Directory.Exists(srcPath))
         {
-            if(DirUtil.isDirectoryLarge(srcPath))
+            if(FSUtil.isDirectoryLarge(srcPath))
                 throw ArgError(MOD_TOO_BIG);
         }
         else
@@ -213,11 +213,11 @@ class EternalModBuilder
         if (File.Exists(outPath))
             throw ArgError(OUTPUT_PREEXISTING_FILE);
         else if (Directory.Exists(outPath))
-            if(DirUtil.dirContainsData(outPath))
+            if(FSUtil.dirContainsData(outPath))
                 throw ArgError(OUTPUT_NONEMPTY_DIRECTORY);
 
         if (!srcIsZip)
-            if(DirUtil.isParentDir(srcPath, outPath))
+            if(FSUtil.isParentDir(srcPath, outPath))
                 throw ArgError(OUTPUT_INSIDE_SRC);
         outToZip = outPath.EndsWithCCIC(".zip");
     }

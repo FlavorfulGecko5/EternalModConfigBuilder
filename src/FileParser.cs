@@ -15,7 +15,7 @@ class FileParser
     public void parseFile(string pathParameter)
     {
         path = pathParameter;
-        text = FileUtil.readFileText(path);
+        text = FSUtil.readFileText(path);
         numBuildLabelCalls = 0;
 
         if(logger.mustLog)
@@ -29,7 +29,7 @@ class FileParser
             nextStartIndex = findNextLabelIndex(LABEL_ANY, nextStartIndex);
         }
 
-        FileUtil.writeFile(path, text);
+        FSUtil.writeFile(path, text);
         
         if(logger.mustLog)
             logger.log();
