@@ -106,29 +106,6 @@ static class FSUtil
 
 
     /// <summary>
-    /// Checks if a pathway is not empty, is relative, and is a child of
-    /// (or refers to) a particular directory.
-    /// </summary>
-    /// <param name="path"> Pathway to check </param>
-    /// <param name="dirAbs"> An absolute directory pathway </param>
-    /// <returns>
-    /// Returns True if all three of the above conditions are satisfied,
-    /// otherwise returns False.
-    /// </returns>
-    public static bool isPathLocalRelative(string path, string dirAbs)
-    {
-        if(path.Equals(""))
-            return false;
-        if(Path.IsPathRooted(path))
-            return false;
-        
-        string pathAbs = Path.GetFullPath(path);
-        return pathAbs.StartsWith(dirAbs);
-    }
-
-
-
-    /// <summary>
     /// Copies the contents of a source directory into a target directory
     /// </summary>
     /// <param name="srcDir"> The source directory </param>

@@ -111,13 +111,14 @@ class ParsedConfig
 
     private void parsePropagate()
     {
+        string workingDir = Directory.GetCurrentDirectory();
+
         if(option.Type != JTokenType.Object)
             throw EMBError(PROPAGATE_ISNT_OBJECT);
-        
-        string workingDir = Directory.GetCurrentDirectory();
+
         foreach (JProperty list in ((JObject)option).Properties())
         {
-            if (!FSUtil.isPathLocalRelative(list.Name, workingDir))
+            if (!isPropPathValid(list.Name))
                 throw EMBError(NOT_LOCALREL_PROP_NAME, list.Name);
 
             string[]? filePaths = JsonUtil.readListTokenValue(list.Value);
@@ -125,9 +126,27 @@ class ParsedConfig
                 throw EMBError(BAD_PROP_ARRAY, list.Name);
 
             foreach (string path in filePaths)
-                if (!FSUtil.isPathLocalRelative(path, workingDir))
+                if (!isPropPathValid(path))
                     throw EMBError(NOT_LOCALREL_PROP_PATH, list.Name, path);
             propagations.Add(new PropagateList(list.Name, filePaths));
+        }
+
+        /// <summary>
+        /// Ensures a propagation pathway is valid
+        /// </summary>
+        /// <param name="propPath"> The propagation pathway to check </param>
+        /// <returns>
+        /// True if the path is not empty, is relative, and does not backtrack.
+        /// Otherwise, returns false
+        /// </returns>
+        bool isPropPathValid(string propPath)
+        {
+            if(propPath.Length == 0)
+                return false;
+            if(Path.IsPathRooted(propPath))
+                return false;
+            string pathAbs = Path.GetFullPath(propPath);
+            return pathAbs.StartsWith(workingDir);
         }
     }
 

@@ -20,16 +20,12 @@ class ModBuilder
         switch(EternalModBuilder.exeMode)
         {
             case ExecutionMode.COMPLETE:
-            parseFiles();
+            parseAndCompressFiles();
             propagateAll();
-            if(EternalModBuilder.compressEntities)
-                compressEntities();
             break;
 
             case ExecutionMode.PARSE:
-            parseFiles();
-            if(EternalModBuilder.compressEntities)
-                compressEntities();
+            parseAndCompressFiles();
             break;
 
             case ExecutionMode.PROPAGATE:
@@ -53,10 +49,11 @@ class ModBuilder
             FSUtil.copyDirectory(EternalModBuilder.srcPath, activeDir);
     }
 
-    private void parseFiles()
+    private void parseAndCompressFiles()
     {
         FileParser parser = new FileParser(cfg.options);
         List<string> labelFiles = new List<string>();
+        List<string> uncompressedEntities = new List<string>();
 
         string[] allFiles = FSUtil.getAllFilesInCurrentDir();
         foreach(string file in allFiles)
@@ -64,10 +61,17 @@ class ModBuilder
                 labelFiles.Add(file);
             else if(file.EndsWithCCIC(".entities"))
                 if(!EntityCompressor.isEntityFileCompressed(file))
+                {
                     labelFiles.Add(file);
-
+                    uncompressedEntities.Add(file);
+                }
+                    
         foreach(string file in labelFiles)
             parser.parseFile(file);
+        
+        if(EternalModBuilder.compressEntities && EntityCompressor.canCompress)
+            foreach(string entityFile in uncompressedEntities)
+                EntityCompressor.compressAndWrite(entityFile);
     }
 
     private void propagateAll()
@@ -91,12 +95,7 @@ class ModBuilder
         else if (cfg.propagations.Count > 0)
             LogMaker.reportWarning(WARNING_NO_DIR);
     }
-
-    private void compressEntities()
-    {
-
-    }
-
+    
     private void finishBuilding()
     {
         if(EternalModBuilder.outToZip)
