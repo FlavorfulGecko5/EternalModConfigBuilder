@@ -2,7 +2,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "INDEV-Beta 1.7.0";
+    const string EXE_VERSION = "Beta 1.7.0";
 
     // Enums and Constants for the Execution Mode command-line argument
     public enum ExecutionMode
