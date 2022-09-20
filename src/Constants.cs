@@ -39,7 +39,7 @@ interface Constants
     // Constants for the Compress Entities command-line argument
     const string DESC_COMP_ENTITIES = "Optional Parameter - Compress Entities\n"
     + "-e [ true | false ] (Choose One)\n"
-    + "If true (default), .entities files will be compressed during the build process.\n"
+    + "If true (default), decompressed .entities files will be compressed during the build process.\n"
     + "If false, they will not be compressed.\n"
     + "Compression will never occur, regardless of setting, if the execution mode is 'readonly' or 'propagate'";
 
@@ -48,7 +48,7 @@ interface Constants
     
     // Constants pertaining to file extensions.
     const string DESC_CFG_EXTENSIONS = ".txt or .json";
-    const string DESC_LABEL_FILES = ".decl, .json and .entities";
+    const string DESC_LABEL_FILES = ".decl, .json and decompressed .entities";
 
     // Constants pertaining to directories
     const string DIR_TEMP = "eternalmodbuilder_temp";
