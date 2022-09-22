@@ -2,7 +2,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "INDEV-Beta 1.8.0";
+    const string EXE_VERSION = "LOOP-FUNCTIONAL-Beta 1.8.0";
 
     // Enums and Constants for the Execution Mode command-line argument
     public enum ExecutionMode
@@ -72,20 +72,26 @@ interface Constants
         INVALID,
         VAR,
         TOGGLE_START,
-        TOGGLE_END
+        TOGGLE_END,
+        LOOP
     }
-    const string LABEL_CHAR_BORDER    = "$";
-    const string LABEL_CHAR_SEPARATOR = "#";
+    const string LABEL_CHAR_BORDER         = "$";
+    const string LABEL_CHAR_SEPARATOR      = "#";
+    const string LABEL_CHAR_LOOP_SEPARATOR = "&";
     const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
     const string LABEL_VAR            = LABEL_ANY + "VAR";
     const string LABEL_TOGGLE_ANY     = LABEL_ANY + "TOGGLE";
     const string LABEL_TOGGLE_START   = LABEL_TOGGLE_ANY;
     const string LABEL_TOGGLE_END     = LABEL_TOGGLE_ANY + "_END";
+    const string LABEL_LOOP           = LABEL_ANY + "LOOP";
     const string DESC_LABEL_TYPES = "The current valid types for labels are:\n"
     + "- 'EMB_VAR'\n"
     + "- 'EMB_TOGGLE'\n"
-    + "- 'EMG_TOGGLE_END'";
+    + "- 'EMG_TOGGLE_END'\n"
+    + "- 'EMB_LOOP'";
     const string DESC_LABEL_TOGGLE_END = LABEL_TOGGLE_END + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
+
+    const string SYM_LOOP_INC = "{!INC}";
 
     // Constants pertaining to log messages
     const string MSG_WELCOME = "\n" + EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
@@ -153,4 +159,12 @@ interface Constants
     const string RULES_TOGGLE_RESULT = "Expressions in toggle labels must yield one of these results:\n"
     + "- A Boolean (true/false) value, from a logical expression or from reading a string.\n"
     + "- A numerical value. A number less than one is interpeted as false, and one or higher is interpreted as true.";
+
+    const string RULES_LOOPS = "Loop labels have the form "
+    + LABEL_LOOP + LABEL_CHAR_SEPARATOR + "[Start]" + LABEL_CHAR_LOOP_SEPARATOR
+    + "[Stop]" + LABEL_CHAR_LOOP_SEPARATOR + "[Expression]" + LABEL_CHAR_BORDER + " where:\n"
+    + "- [Start] and [Stop] are expressions that evaluate to integers.\n"
+    + "- [Start] is less than or equal to [Stop]\n"
+    + "- You may use '" + SYM_LOOP_INC + "' in [Expression] to get the value of the current loop iteration.\n"
+    + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
 }

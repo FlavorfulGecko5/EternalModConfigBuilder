@@ -56,6 +56,10 @@ class FileParser
                     expResult = parseToggle(label);
                 break;
 
+                case LabelType.LOOP:
+                    expResult = parseLoop(label);
+                break;
+
                 case LabelType.TOGGLE_END:
                     throw EMBError(EXTRA_END_TOGGLE);
 
@@ -132,6 +136,14 @@ class FileParser
             text = text.Substring(0, start.start)
                 + text.Substring(end.end + 1, text.Length - end.end - 1);
         return resultBool.ToString();
+    }
+
+    private string parseLoop(Label label)
+    {
+        string result = ExpressionHandler.computeLoopExpression(label.exp);
+        text = text.Substring(0, label.start) + result
+            + text.Substring(label.end + 1, text.Length - label.end - 1);
+        return result;
     }
 
     public enum Error

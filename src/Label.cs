@@ -30,6 +30,10 @@ class Label
                 type = LabelType.TOGGLE_END;
             break;
 
+            case LABEL_LOOP:
+                type = LabelType.LOOP;
+            break;
+
             default:
                 type = LabelType.INVALID;
             break;

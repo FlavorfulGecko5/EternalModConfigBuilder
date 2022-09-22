@@ -75,7 +75,7 @@ class ExpressionHandler
             {
                 resultBool = Convert.ToDouble(rawResult) >= 1 ? true : false;
             }
-            catch (Exception)
+            catch (System.Exception)
             {
                 throw new ArithmeticException("The expression does not evaluate"
                 + " to a Boolean.\nExpression Result: '" + rawResult + "'\n\n" 
@@ -83,5 +83,57 @@ class ExpressionHandler
             }
         }
         return resultBool;
+    }
+
+    public static string computeLoopExpression(string exp)
+    {
+        int indexOne = -1, indexTwo = -1, startNum = -1, endNum = -1;
+        string stringStartNum = "", stringEndNum = "", mainExp = "";
+        try
+        {
+            // Get the indexes for the separators
+            indexOne = exp.IndexOf(LABEL_CHAR_LOOP_SEPARATOR);
+            indexTwo = exp.IndexOf(LABEL_CHAR_LOOP_SEPARATOR, indexOne + 1);
+            if(indexOne == -1 || indexTwo == -1)
+                throw new System.ArgumentOutOfRangeException();
+            // Split the expression using these indexes
+            stringStartNum = exp.Substring(0, indexOne);
+            stringEndNum = exp.Substring(indexOne + 1, indexTwo - indexOne - 1);
+            mainExp = exp.Substring(indexTwo + 1, exp.Length - indexTwo - 1);
+
+        }
+        catch(System.ArgumentOutOfRangeException)
+        {
+            throw new ArithmeticException("The expression is missing "
+                + "information required for a Loop Label.\n\n" + RULES_LOOPS);
+        }
+
+        // Evaluate the first two split strings into numbers
+        // Lets Arithmetic Exceptions be thrown for catching outside this class
+        stringStartNum = calculateResult(substituteVariables(stringStartNum));
+        stringEndNum   = calculateResult(substituteVariables(stringEndNum));
+        try
+        {
+            startNum = Convert.ToInt32(stringStartNum);
+            endNum   = Convert.ToInt32(stringEndNum);
+        }
+        catch(System.Exception)
+        {
+            throw new ArithmeticException("The loop's start or end value "
+                + "failed to evaluate to an integer.\n\n" + RULES_LOOPS);
+        }
+        if(startNum > endNum)
+            throw new ArithmeticException("The loop's ending value must "
+                + "be larger than it's starting value.\n\n" + RULES_LOOPS);
+        
+        // Construct the final expression that will be substituted for the label
+        string expandedExp = "";
+        for(int i = startNum; i <= endNum; i++)
+        {
+            string currentExp = mainExp.ReplaceCCIC(SYM_LOOP_INC, i.ToString());
+            currentExp = calculateResult(substituteVariables(currentExp));
+            expandedExp += currentExp;
+        }
+        return expandedExp;
     }
 }
