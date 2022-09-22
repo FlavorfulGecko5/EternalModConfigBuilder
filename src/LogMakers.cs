@@ -36,9 +36,9 @@ class ParserLogMaker : LogMaker
         logMsg.Append("Parsing File '" + path + "'");
     }
 
-    public void appendLabelResult(Label l)
+    public void appendLabelResult(Label l, string result)
     {
-        logMsg.Append("\n - Label '" + l.raw + "' resolved to '" + l.result + "'");
+        logMsg.Append("\n - Label '" + l.raw + "' resolved to '" + result + "'");
     }
 }
 
