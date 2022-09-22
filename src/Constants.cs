@@ -166,5 +166,6 @@ interface Constants
     + "- [Start] and [Stop] are expressions that evaluate to integers.\n"
     + "- [Start] is less than or equal to [Stop]\n"
     + "- You may use '" + SYM_LOOP_INC + "' in [Expression] to get the value of the current loop iteration.\n"
+    + "- '" + SYM_LOOP_INC + "' cannot be used inside of nested variable labels, nor be inserted by other variables.\n"
     + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
 }

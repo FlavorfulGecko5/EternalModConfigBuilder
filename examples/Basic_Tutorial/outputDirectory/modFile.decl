@@ -88,6 +88,29 @@ I will be visible thanks to nested variable labels!
 
 
 
+Beta 1.8.0 has introduced the Loop Label. This allows you to iterate over a set of integers and evaluate an expression multiple times.
+
+A simple example: hello hello hello 
+> This label will be replaced with the world "hello" written three times.
+> Here, 1 is the initial loop value, 3 is the final value, and 'hello' is the expression that will be evaluated multiple times. 
+> These three elements are separated by the character '&'
+
+We can retrieve the loop value using the '{!inc}' symbol. The following loop label will output all loop values, one per iteration:
+-3 -2 -1 0 1 2 3 4 5 
+
+This label can be very powerful when combined with lists. For instance:
+1
+hello there
+3.45
+True
+
+
+This loop will output all elements of the listA variable - one element per line.
+
+
+
+
+
 There are many other features you can include in these expressions. To get a better idea of what
 operators and functions are available, consult the following documentation:
 https://docs.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression?redirectedfrom=MSDN&view=net-6.0#System_Data_DataColumn_Expression
