@@ -8,6 +8,11 @@
 
     "SimpleStandards": "Or, you can define simple variables like this",
 
+    "_Comment_Standards": {
+        "About": "Options whose names begin with an underscore (_) will be treated as a comment and won't be processed as a variable.",
+        "Usage": "Use comments to provide additional explanation without creating an extra, unused variable."
+    },
+
     "x":{
         "Value": 123
     },
@@ -34,4 +39,5 @@
         "gameresources/generated/decls": ["fileOne.txt"],
         "gameresources_patch1": ["directory/"]
     }
+
 }

@@ -47,7 +47,11 @@ class ParsedConfig
         {
             name = property.Name;
             option = property.Value;
+
             validateName();
+            if(name[0] == '_') // Special comment variables
+                continue;
+
             if (name.EqualsCCIC(PROPERTY_PROPAGATE))
                 parsePropagate();
             else

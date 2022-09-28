@@ -2,7 +2,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "Beta 1.8.0";
+    const string EXE_VERSION = "Beta 1.8.1";
 
     // Enums and Constants for the Execution Mode command-line argument
     public enum ExecutionMode
@@ -136,7 +136,8 @@ interface Constants
     + "- Letters (a-z, A-Z)\n"
     + "- Numbers (0-9)\n"
     + "- Underscores (_)\n"
-    + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.";
+    + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.\n"
+    + "Options with names beginning with an underscore (_) will be treated as comments, and won't be processed as variables.";
     
     const string RULES_PROPAGATE = "Configuration files may have '" + PROPERTY_PROPAGATE + "' properties that must obey these rules:\n"
     + "- These properties must be defined as objects.\n"
