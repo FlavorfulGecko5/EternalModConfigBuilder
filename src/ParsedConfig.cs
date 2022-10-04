@@ -100,15 +100,13 @@ class ParsedConfig
         string[]? values = JsonUtil.readAnyTokenValue(option);
         if(values == null)
             throw EMBError(BAD_OPTION_TYPE);
-        
-        if(JsonUtil.isOptionList(option))
+
+        options.Add(name, values[0]);        
+        if(values.Length > 1)
         {
-            options.Add(name, values.Length.ToString());
-            for (int i = 0; i < values.Length; i++)
-                options.Add(name + '[' + i + ']', values[i]);
+            for (int i = 1; i < values.Length; i++)
+                options.Add(name + '[' + (i - 1) + ']', values[i]);
         }
-        else
-            options.Add(name, values[0]);
     }
 
     private void parsePropagate()

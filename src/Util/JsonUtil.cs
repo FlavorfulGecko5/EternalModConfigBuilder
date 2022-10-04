@@ -1,24 +1,6 @@
 using Newtonsoft.Json.Linq;
 class JsonUtil
 {
-    public static bool isOptionList(JToken token)
-    {
-        switch(token.Type)
-        {
-            case JTokenType.Array:
-                return true;
-            
-            case JTokenType.Object:
-                JToken? objToken = ((JObject)token).GetValue(PROPERTY_VALUE);
-                if(objToken == null)
-                    return false;
-                return objToken.Type == JTokenType.Array;
-
-            default:
-                return false;
-        }
-    }
-
     public static string[]? readAnyTokenValue(JToken token)
     {
         return read(token, true, true);
@@ -28,7 +10,16 @@ class JsonUtil
     {
         if (list.Type != JTokenType.Array)
             return null;
-        return read(list, false, true);
+        string[]? rawList = read(list, false, true);
+        
+        if(rawList == null)
+            return null;
+        
+        // Since we know we're reading a list, we remove the length element
+        string[] elementsOnly = new string[rawList.Length - 1];
+        for(int i = 1; i < rawList.Length; i++)
+            elementsOnly[i - 1] = rawList[i];
+        return elementsOnly;
     }
 
     private static string[]? read(JToken? token, bool allowObjects, bool allowLists)
@@ -40,8 +31,10 @@ class JsonUtil
             case JTokenType.Array:
                 if(!allowLists)
                     return null;
-                int i = 0;
-                string[] itemList = new String[token.Count()];
+
+                string[] itemList = new String[token.Count() + 1];
+                itemList[0] = token.Count().ToString();
+                int i = 1;
                 foreach(JToken element in token)
                 {
                     string[]? item = read(element, false, false);
