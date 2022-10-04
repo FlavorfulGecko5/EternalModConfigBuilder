@@ -51,7 +51,8 @@ class ModBuilder
 
     private void parseAndCompressFiles()
     {
-        FileParser parser = new FileParser(cfg.options);
+        ExpressionHandler.setOptionList(cfg.options);
+        FileParser parser = new FileParser();
         List<string> labelFiles = new List<string>();
         List<string> uncompressedEntities = new List<string>();
 

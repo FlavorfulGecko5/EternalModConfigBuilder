@@ -5,11 +5,10 @@ class FileParser
     private int numBuildLabelCalls;
     private ParserLogMaker logger;
 
-    public FileParser(List<Option> options)
+    public FileParser()
     {
         path = text = "";
         logger = new ParserLogMaker();
-        ExpressionHandler.setOptionList(options);
     }
 
     public void parseFile(string pathParameter)

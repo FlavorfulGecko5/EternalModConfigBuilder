@@ -2,9 +2,9 @@ using System.Data;
 class ExpressionHandler
 {
     private static DataTable computer = new DataTable();
-    private static List<Option> options = new List<Option>();
+    private static Dictionary<string, string> options = new Dictionary<string, string>();
 
-    public static void setOptionList(List<Option> optionsParameter)
+    public static void setOptionList(Dictionary<string, string> optionsParameter)
     {
         options = optionsParameter;
     }
@@ -12,23 +12,40 @@ class ExpressionHandler
     private static string substituteVariables(string exp)
     {
         int numIterations = 0;         // Prevents infinite loops
-        bool replacedThisCycle = true; // Allows nested variables
-        while (replacedThisCycle)
+
+        int openIndex = exp.IndexOf('{');
+        while (openIndex > -1)
         {
-            if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
-                throw new ArithmeticException("The expression loops infinitely"
-                    + " when inserting Option values.\n"
-                    + "Last edited form of the expression: '" + exp + "'");
-            
-            replacedThisCycle = false;
-            foreach (Option option in options)
+            int nextOpenIndex = exp.IndexOf('{', openIndex + 1),
+                closeIndex = exp.IndexOf('}', openIndex + 1);
+
+            if (closeIndex == -1) // Also accounts for nextOpen == close (both -1)
+                break;
+            if (nextOpenIndex < closeIndex) // Potentially a nested brace pair
             {
-                string search = '{' + option.name + '}';
-                if (exp.IndexOfCCIC(search) != -1)
+                if (nextOpenIndex == -1)
+                    replace();
+                else
+                    openIndex = nextOpenIndex;
+            }
+            else
+                replace();
+
+            void replace()
+            {
+                string name = exp.Substring(openIndex + 1, closeIndex - openIndex - 1).ToLower();
+                if (options.ContainsKey(name))
                 {
-                    replacedThisCycle = true;
-                    exp = exp.ReplaceCCIC(search, option.value);
+                    exp = exp.ReplaceCCIC('{' + name + '}', options[name]);
+                    openIndex = exp.IndexOf('{');
+
+                    if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
+                        throw new ArithmeticException("The expression loops"
+                            + " infinitely when inserting Option values.\n"
+                            + "Last edited form of the expression: '" + exp + "'");
                 }
+                else
+                    openIndex = nextOpenIndex;
             }
         }
         return exp;

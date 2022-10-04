@@ -2,7 +2,7 @@ using Newtonsoft.Json.Linq;
 using static ParsedConfig.Error;
 class ParsedConfig
 {
-    public List<Option> options = new List<Option>();
+    public Dictionary<string, string> options = new Dictionary<string, string>();
     public List<PropagateList> propagations = new List<PropagateList>();
 
     // Used to avoid constantly passing by value
@@ -28,8 +28,8 @@ class ParsedConfig
     public override string ToString()
     {
         string optionList = "";
-        foreach(Option o in options)
-            optionList += " - " + o.ToString() + '\n';
+        foreach(KeyValuePair<string, string> entry in options)
+            optionList += " - '" + entry.Key + "' - '" + entry.Value + "'\n";
 
         string propagationList = "";
         foreach(PropagateList list in propagations)
@@ -45,7 +45,7 @@ class ParsedConfig
     {
         foreach(JProperty property in readConfig().Properties())
         {
-            name = property.Name;
+            name = property.Name.ToLower(); // Options are stored lowercase
             option = property.Value;
 
             validateName();
@@ -87,14 +87,12 @@ class ParsedConfig
         
         foreach(char c in name)
             if(!(c <= 'z' && c >= 'a'))
-            if(!(c <= 'Z' && c >= 'A'))
             if(!(c <= '9' && c >= '0'))
             if(!NAME_SPECIAL_CHARACTERS.Contains(c))
                 throw EMBError(BAD_NAME_FORMATTING);
-
-        foreach(Option o in options)
-            if(o.name.EqualsCCIC(name))
-                throw EMBError(DUPLICATE_NAME);
+        
+        if(options.ContainsKey(name))
+            throw EMBError(DUPLICATE_NAME);
     }
 
     private void parseOptionValue()
@@ -105,12 +103,12 @@ class ParsedConfig
         
         if(JsonUtil.isOptionList(option))
         {
-            options.Add(new Option(name, values.Length.ToString()));
+            options.Add(name, values.Length.ToString());
             for (int i = 0; i < values.Length; i++)
-                options.Add(new Option(name + '[' + i + ']', values[i]));
+                options.Add(name + '[' + i + ']', values[i]);
         }
         else
-            options.Add(new Option(name, values[0]));
+            options.Add(name, values[0]);
     }
 
     private void parsePropagate()
