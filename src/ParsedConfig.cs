@@ -1,5 +1,4 @@
 using Newtonsoft.Json.Linq;
-using static ParsedConfig.Error;
 class ParsedConfig
 {
     public Dictionary<string, string> options = new Dictionary<string, string>();
@@ -11,7 +10,7 @@ class ParsedConfig
 
     public ParsedConfig()
     {
-        foreach(string path in EternalModBuilder.configPaths)
+        foreach (string path in EternalModBuilder.configPaths)
         {
             configPath = path;
             name = "N/A";
@@ -74,7 +73,9 @@ class ParsedConfig
         }
         catch (Newtonsoft.Json.JsonReaderException e)
         {
-            throw EMBError(BAD_JSON_FILE, e.Message);
+            throw ConfigError(
+                "The file has a syntax error. Printing Exception message:\n\n{0}",
+                e.Message);
         }
 
         return rawJson;
@@ -83,23 +84,32 @@ class ParsedConfig
     private void validateName()
     {
         if(name.Length == 0)
-            throw EMBError(BAD_NAME_FORMATTING);
+            throw invalidName();
         
         foreach(char c in name)
             if(!(c <= 'z' && c >= 'a'))
             if(!(c <= '9' && c >= '0'))
             if(!NAME_SPECIAL_CHARACTERS.Contains(c))
-                throw EMBError(BAD_NAME_FORMATTING);
+                throw invalidName();
         
         if(options.ContainsKey(name))
-            throw EMBError(DUPLICATE_NAME);
+            throw ConfigError(
+                "This name is used to define multiple Options.\n\n{0}",
+                RULES_OPTION_NAME);
+        
+        EMBConfigException invalidName()
+        {
+            return ConfigError("The name is invalid.\n\n{0}", RULES_OPTION_NAME);
+        }
     }
 
     private void parseOptionValue()
     {
         string[]? values = JsonUtil.readAnyTokenValue(option);
         if(values == null)
-            throw EMBError(BAD_OPTION_TYPE);
+            throw ConfigError(
+                "This Option is not defined in a valid way.\n\n{0}",
+                RULES_OPTION_TYPE);
 
         options.Add(name, values[0]);        
         if(values.Length > 1)
@@ -114,20 +124,28 @@ class ParsedConfig
         string workingDir = Directory.GetCurrentDirectory();
 
         if(option.Type != JTokenType.Object)
-            throw EMBError(PROPAGATE_ISNT_OBJECT);
+            throw ConfigError(
+                "This property must be defined as an object.\n\n{0}",
+                RULES_PROPAGATE);
 
         foreach (JProperty list in ((JObject)option).Properties())
         {
             if (!isPropPathValid(list.Name))
-                throw EMBError(NOT_LOCALREL_PROP_NAME, list.Name);
+                throw ConfigError(
+                    "The sub-property '{0}' has a non-relative or backtracking name.\n\n{1}",
+                    list.Name, RULES_PROPAGATE);
 
             string[]? filePaths = JsonUtil.readListTokenValue(list.Value);
             if(filePaths == null)
-                throw EMBError(BAD_PROP_ARRAY, list.Name);
+                throw ConfigError(
+                    "This property has an invalid sub-property '{0}'\n\n{1}",
+                    list.Name, RULES_PROPAGATE);
 
             foreach (string path in filePaths)
                 if (!isPropPathValid(path))
-                    throw EMBError(NOT_LOCALREL_PROP_PATH, list.Name, path);
+                    throw ConfigError(
+                       "The list '{0}' contains non-relative or backtracking path '{1}'\n\n{2}",
+                       list.Name, path, RULES_PROPAGATE);
             propagations.Add(new PropagateList(list.Name, filePaths));
         }
 
@@ -150,75 +168,19 @@ class ParsedConfig
         }
     }
 
-    public enum Error
-    {
-        BAD_JSON_FILE,
-        BAD_NAME_FORMATTING,
-        DUPLICATE_NAME,
-        BAD_OPTION_TYPE,
-        PROPAGATE_ISNT_OBJECT,
-        BAD_PROP_ARRAY,
-        NOT_LOCALREL_PROP_NAME,
-        NOT_LOCALREL_PROP_PATH,   
-    }
-
-    private EMBException EMBError(Error e, string arg0 = "", string arg1 = "")
+    private EMBConfigException ConfigError(string msg, string arg0="", string arg1="", string arg2="")
     {
         string preamble = String.Format(
-            "Problem encountered in config. file '{0}' with Property '{1}':\n",
-            configPath,
-            name
+            "Problem encountered in config. file '{0}' with Property '{1}':\n", 
+            configPath, name
         );
-        string msg = "";
-        string[] args = {"", "", ""};
-        switch(e)
-        {
-            case BAD_JSON_FILE:
-            msg = "The file has a syntax error. Printing Exception message:\n\n{0}";
-            args[0] = arg0; // The Exception message
-            break;
+        string formattedMessage = String.Format(msg, arg0, arg1, arg2);
 
-            case BAD_NAME_FORMATTING:
-            msg = "The name is invalid.\n\n{0}";
-            args[0] = RULES_OPTION_NAME;
-            break;
+        return new EMBConfigException(preamble + formattedMessage);
+    }
 
-            case DUPLICATE_NAME:
-            msg = "This name is used to define multiple Options.\n\n{0}";
-            args[0] = RULES_OPTION_NAME;
-            break;
-
-            case BAD_OPTION_TYPE:
-            msg = "This Option is not defined in a valid way.\n\n{0}";
-            args[0] = RULES_OPTION_TYPE;
-            break;
-
-            case PROPAGATE_ISNT_OBJECT:
-            msg = "This property must be defined as an object.\n\n{0}";
-            args[0] = RULES_PROPAGATE;
-            break;
-
-            case BAD_PROP_ARRAY:
-            msg = "This property has an invalid sub-property '{0}'\n\n{1}";
-            args[0] = arg0; // Propagate list name
-            args[1] = RULES_PROPAGATE;
-            break;
-
-            case NOT_LOCALREL_PROP_NAME:
-            msg = "The sub-property '{0}' has a non-relative"
-                    + " or backtracking name.\n\n{1}";
-            args[0] = arg0; // Propagate list name
-            args[1] = RULES_PROPAGATE;
-            break;
-
-            case NOT_LOCALREL_PROP_PATH:
-            msg = "The list '{0}' contains non-relative"
-                    + " or backtracking path '{1}'\n\n{2}";
-            args[0] = arg0; // Propagate list name
-            args[1] = arg1; // Propagate list element
-            args[2] = RULES_PROPAGATE;
-            break;
-        }
-        return EMBException.buildException(preamble + msg, args);
+    public class EMBConfigException : EMBException
+    {
+        public EMBConfigException(string msg) : base (msg) {}
     }
 }

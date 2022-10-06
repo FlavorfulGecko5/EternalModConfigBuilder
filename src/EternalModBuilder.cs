@@ -1,5 +1,4 @@
 global using static Constants;
-using static EternalModBuilder.ArgumentError;
 using System.Diagnostics;
 class EternalModBuilder
 {
@@ -97,7 +96,8 @@ class EternalModBuilder
         bool hasCompEnts = false, hasExecutionMode = false, hasLogLevel = false;
 
         if (args.Length % 2 != 0)
-            throw ArgError(BAD_NUMBER_ARGUMENTS);
+            throw ArgError("Please enter an even number of arguments.\n\n{0}", 
+                RULES_USAGE_MINIMAL);
 
         for (int i = 0; i < args.Length; i += 2)
         {
@@ -110,35 +110,37 @@ class EternalModBuilder
 
                 case "-s":
                     if(hasSource)
-                        throw ArgError(DUPLICATE_ARGUMENT, "Mod");
+                        throw duplicateArg("Mod");
                     srcPath = args[i + 1];
                     hasSource = true;
                 break;
 
                 case "-o":
                     if(hasOutput) 
-                        throw ArgError(DUPLICATE_ARGUMENT, "output location");
+                        throw duplicateArg("output location");
                     outPath = args[i + 1];
                     hasOutput = true;
                 break;
 
                 case "-e":
                     if(hasCompEnts)
-                        throw ArgError(DUPLICATE_ARGUMENT, "compress-entites setting");
+                        throw duplicateArg("compress-entites setting");
                     try
                     {
                         compressEntities = Boolean.Parse(args[i+1]);
                     }
                     catch(System.FormatException)
                     {
-                        throw ArgError(BAD_COMPRESS_ENTITIES);
+                        throw ArgError(
+                            "Compress-entities needs a true/false value.\n\n{0}",
+                            DESC_COMP_ENTITIES);
                     }
                     hasCompEnts = true;
                 break;
                 
                 case "-x":
                     if(hasExecutionMode)
-                        throw ArgError(DUPLICATE_ARGUMENT, "execution mode");
+                        throw duplicateArg("execution mode");
                     try
                     {
                         exeMode = (ExecutionMode)Enum.Parse(
@@ -146,14 +148,16 @@ class EternalModBuilder
                     }
                     catch(Exception)
                     {
-                        throw ArgError(BAD_EXECUTION_MODE, args[i+1]);
+                        throw ArgError(
+                            "'{0}' is not a valid Execution Mode.\n\n{1}",
+                            args[i+1], DESC_EXEMODE);
                     }
                     hasExecutionMode = true;
                 break;
                 
                 case "-l":
                     if(hasLogLevel)
-                        throw ArgError(DUPLICATE_ARGUMENT, "log level");
+                        throw duplicateArg("log level");
                     try
                     {
                         logMode = (LogLevel)Enum.Parse(
@@ -161,18 +165,26 @@ class EternalModBuilder
                     }
                     catch(Exception) 
                     {
-                        throw ArgError(BAD_LOG_LEVEL, args[i+1]);
+                        throw ArgError("'{0}' is not a valid Log Level.\n\n{1}",
+                            args[i+1], DESC_LOGLEVEL);
                     }
                     hasLogLevel = true;
                 break;
 
                 default:
-                    throw ArgError(BAD_PARAMETER, args[i]);
+                    throw ArgError("'{0}' is not a valid parameter.\n\n{1}",
+                        args[i], RULES_USAGE_MINIMAL);
+            }
+            EMBArgumentException duplicateArg(string type)
+            {
+                return ArgError( "You may only input one {0}.\n\n{1}",
+                    type, RULES_USAGE_MINIMAL);
             }
         }
 
         if(!hasConfig || !hasSource || !hasOutput)
-            throw ArgError(MISSING_ARGS);
+            throw ArgError("Missing required command line argument(s).\n\n{0}",
+                RULES_USAGE_MINIMAL);
     }
 
     private static void validateConfigArg()
@@ -180,9 +192,13 @@ class EternalModBuilder
         foreach(string config in configPaths)
         {
             if(!config.EndsWithCCIC(".json") && !config.EndsWithCCIC(".txt"))
-                throw ArgError(BAD_CONFIG_EXTENSION, config);
+                throw ArgError(
+                    "The configuration file '{0}' must be a {1} file.",
+                    config, DESC_CFG_EXTENSIONS);
+
             if (!File.Exists(config))
-                throw ArgError(CONFIG_NOT_FOUND, config);
+                throw ArgError("Failed to find the configuration file '{0}'",
+                    config);
         }
 
     }
@@ -192,140 +208,57 @@ class EternalModBuilder
         if(File.Exists(srcPath))
         {
             if (!ZipUtil.isFileValidZip(srcPath))
-                throw ArgError(MOD_NOT_VALID);
+                throw ArgError(
+                    "The mod file is not a valid directory or .zip file.");
 
             if(FSUtil.isFileLarge(srcPath))
-                throw ArgError(MOD_TOO_BIG);
+                throw modTooLarge();
 
             srcIsZip = true;
         }
         else if (Directory.Exists(srcPath))
         {
             if(FSUtil.isDirectoryLarge(srcPath))
-                throw ArgError(MOD_TOO_BIG);
+                throw modTooLarge();
         }
         else
-            throw ArgError(MOD_NOT_FOUND);
+            throw ArgError("The mod directory or .zip file does not exist.");
+        
+        EMBArgumentException modTooLarge()
+        {
+            return ArgError("Your mod may not be larger than ~{0} gigabytes.",
+                (MAX_INPUT_SIZE_BYTES / 1000000000.0).ToString());
+        }
     }
 
     private static void validateOutputArg()
     {
         if (File.Exists(outPath))
-            throw ArgError(OUTPUT_PREEXISTING_FILE);
+            throw ArgError("A file already exists at the output path.\n\n{0}",
+                RULES_OUTPUT);
         else if (Directory.Exists(outPath))
             if(FSUtil.dirContainsData(outPath))
-                throw ArgError(OUTPUT_NONEMPTY_DIRECTORY);
+                throw ArgError(
+                    "A non-empty folder exists at the output path.\n\n{0}",
+                    RULES_OUTPUT);
 
         if (!srcIsZip)
             if(FSUtil.isParentDir(srcPath, outPath))
-                throw ArgError(OUTPUT_INSIDE_SRC);
+                throw ArgError(
+                    "Your output path cannot be inside your mod folder.\n\n{0}",
+                    RULES_OUTPUT);
         outToZip = outPath.EndsWithCCIC(".zip");
     }
 
-    public enum ArgumentError
+    private static EMBArgumentException ArgError(string msg, string arg0="", string arg1 = "")
     {
-        BAD_NUMBER_ARGUMENTS,
-        BAD_PARAMETER,
-        BAD_EXECUTION_MODE,
-        BAD_LOG_LEVEL,
-        BAD_COMPRESS_ENTITIES,
-        DUPLICATE_ARGUMENT,
-        MISSING_ARGS,
-        BAD_CONFIG_EXTENSION,
-        CONFIG_NOT_FOUND,
-        MOD_NOT_FOUND,
-        MOD_NOT_VALID,
-        MOD_TOO_BIG,
-        OUTPUT_PREEXISTING_FILE,
-        OUTPUT_NONEMPTY_DIRECTORY,
-        OUTPUT_INSIDE_SRC,
+        string formattedMessage = "Failed to parse command-line arguments:\n"
+            + String.Format(msg, arg0, arg1);
+        return new EMBArgumentException(formattedMessage);
     }
 
-    private static EMBException ArgError(ArgumentError e, string arg = "")
+    public class EMBArgumentException : EMBException
     {
-        string preamble = "Failed to parse command-line arguments:\n",
-               msg = "";
-        string[] args = {"", ""};
-        switch(e)
-        {
-            case BAD_NUMBER_ARGUMENTS:
-            msg = "Please enter an even number of arguments.\n\n{0}";
-            args[0] = RULES_USAGE_MINIMAL;
-            break;
-            
-            case BAD_PARAMETER:
-            msg = "'{0}' is not a valid parameter.\n\n{1}";
-            args[0] = arg;
-            args[1] = RULES_USAGE_MINIMAL;
-            break;
-
-            case BAD_EXECUTION_MODE:
-            msg = "'{0}' is not a valid Execution Mode.\n\n{1}";
-            args[0] = arg;
-            args[1] = DESC_EXEMODE;
-            break;
-
-            case BAD_LOG_LEVEL:
-            msg = "'{0}' is not a valid Log Level.\n\n{1}";
-            args[0] = arg;
-            args[1] = DESC_LOGLEVEL;
-            break;
-
-            case BAD_COMPRESS_ENTITIES:
-            msg = "Compress-entities needs a true/false value.\n\n{0}";
-            args[0] = DESC_COMP_ENTITIES;
-            break;
-
-            case DUPLICATE_ARGUMENT:
-            msg = "You may only input one {0}.\n\n{1}";
-            args[0] = arg;
-            args[1] = RULES_USAGE_MINIMAL;
-            break;
-
-            case MISSING_ARGS:
-            msg = "Missing required command line argument(s).\n\n{0}";
-            args[0] = RULES_USAGE_MINIMAL;
-            break;
-
-            case BAD_CONFIG_EXTENSION:
-            msg = "The configuration file '{0}' must be a {1} file.";
-            args[0] = arg;
-            args[1] = DESC_CFG_EXTENSIONS;
-            break;
-
-            case CONFIG_NOT_FOUND:
-            msg = "Failed to find the configuration file '{0}'";
-            args[0] = arg;
-            break;
-
-            case MOD_NOT_FOUND:
-            msg = "The mod directory or .zip file does not exist.";
-            break;
-
-            case MOD_NOT_VALID:
-            msg = "The mod file is not a valid directory or .zip file.";
-            break;
-
-            case MOD_TOO_BIG:
-            msg = "Your mod may not be larger than ~{0} gigabytes.";
-            args[0] = (MAX_INPUT_SIZE_BYTES / 1000000000.0).ToString();
-            break;
-
-            case OUTPUT_PREEXISTING_FILE:
-            msg = "A file already exists at the output path.\n\n{0}";
-            args[0] = RULES_OUTPUT;
-            break;
-
-            case OUTPUT_NONEMPTY_DIRECTORY:
-            msg = "A non-empty folder exists at the output path.\n\n{0}";
-            args[0] = RULES_OUTPUT;
-            break;
-
-            case OUTPUT_INSIDE_SRC:
-            msg = "Your output path cannot be inside your mod folder.\n\n{0}";
-            args[0] = RULES_OUTPUT;
-            break;
-        }
-        return EMBException.buildException(preamble + msg, args); 
+        public EMBArgumentException(string msg) : base (msg) {}
     }
 }

@@ -1,4 +1,3 @@
-using static FileParser.Error;
 class FileParser
 {
     private string path, text;
@@ -60,15 +59,21 @@ class FileParser
                 break;
 
                 case LabelType.TOGGLE_END:
-                    throw EMBError(EXTRA_END_TOGGLE);
+                    throw ParseError(
+                        "There is a '{0}' label with no preceding start label.\n\n{1}", 
+                        DESC_LABEL_TOGGLE_END, RULES_TOGGLE_BLOCK);
 
                 case LabelType.INVALID:
-                    throw EMBError(BAD_LABEL_TYPE, label.raw);
+                    throw ParseError(
+                        "The label '{0}' has an unrecognized type. \n\n'{1}'", 
+                        label.raw, DESC_LABEL_TYPES);
             }
         }
-        catch(ArithmeticException e)
+        catch(ExpressionHandler.EMBExpressionException e)
         {
-            throw EMBError(EXPRESSION_ERROR, label.raw, e.Message);
+            throw ParseError(
+                "Failed to evaluate expression in label '{0}'\n{1}", 
+                label.raw, e.Message);
         }
 
         if (logger.mustLog)
@@ -78,12 +83,15 @@ class FileParser
     private Label buildLabel(int start)
     {
         if(numBuildLabelCalls++ == PARSER_INFINITE_LOOP_THRESHOLD)
-            throw EMBError(PARSER_LOOPS_INFINITELY);
+            throw ParseError(
+                "Parsing this file's labels creates an infinite loop.");
         
         NESTED_LABEL_LOOP:
         int end = text.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
-            throw EMBError(INCOMPLETE_LABEL);   
+            throw ParseError(
+                "A label is missing a '{0}' on it's right side.\n\n{1}", 
+                LABEL_CHAR_BORDER, RULES_LABEL_FORMAT);   
         if(end == findNextLabelIndex(LABEL_VAR, start + 1))
         {
             parseLabel(end);
@@ -93,7 +101,9 @@ class FileParser
         string rawLabel = text.Substring(start, end - start + 1);
         int separator = rawLabel.IndexOf(LABEL_CHAR_SEPARATOR);
         if (separator == -1)
-            throw EMBError(MISSING_EXP_SEPARATOR, rawLabel);
+            throw ParseError(
+                "The label '{0}' has no '{1}' written after the type.\n\n{2}", 
+                rawLabel, LABEL_CHAR_SEPARATOR, RULES_LABEL_FORMAT);
 
         Label label = new Label(start, end, rawLabel, separator);
         return label;
@@ -117,7 +127,9 @@ class FileParser
         {
             endStart = findNextLabelIndex(LABEL_TOGGLE_ANY, endStart + 1);
             if(endStart == -1)
-                throw EMBError(MISSING_END_TOGGLE, start.raw);
+                throw ParseError(
+                    "The label '{0}' has no '{1}' label following it.\n\n{2}", 
+                    start.raw, DESC_LABEL_TOGGLE_END, RULES_TOGGLE_BLOCK);
             end = buildLabel(endStart);
 
             if(end.type == LabelType.TOGGLE_END)
@@ -145,73 +157,16 @@ class FileParser
         return result;
     }
 
-    public enum Error
-    {
-        INCOMPLETE_LABEL,
-        PARSER_LOOPS_INFINITELY,
-        MISSING_EXP_SEPARATOR,
-        BAD_LABEL_TYPE,
-        EXTRA_END_TOGGLE,
-        MISSING_END_TOGGLE,
-        EXPRESSION_ERROR
-    }
-
-    private EMBException EMBError(Error e, string arg0="", string arg1="")
+    private EMBParserException ParseError(string msg, string arg0="", string arg1="", string arg2="")
     {
         string preamble = String.Format(
-            "Problem encountered in mod file '{0}'\n",
-            path
-        );
-        string msg = "";
-        string[] args = {"", "", ""};
-        switch(e)
-        {
-            case INCOMPLETE_LABEL:
-            msg = "A label is missing a '{0}' on it's right side.\n\n{1}";
-            args[0] = LABEL_CHAR_BORDER;
-            args[1] = RULES_LABEL_FORMAT;
-            break;
+            "Problem encountered in mod file '{0}'\n", path);
+        string formattedMessage = String.Format(msg, arg0, arg1, arg2);
+        return new EMBParserException(preamble + formattedMessage);
+    }
 
-            case MISSING_EXP_SEPARATOR:
-            msg = "The label '{0}' has no '{1}' written after the type.\n\n{2}";
-            args[0] = arg0;
-            args[1] = LABEL_CHAR_SEPARATOR;
-            args[2] = RULES_LABEL_FORMAT;
-            break;
-
-            case PARSER_LOOPS_INFINITELY:
-            msg = "Parsing this file's labels creates an infinite loop.";
-            break;
-
-            case BAD_LABEL_TYPE:
-            msg = "The label '{0}' has an unrecognized type. \n\n'{1}'";
-            args[0] = arg0;
-            args[1] = DESC_LABEL_TYPES;
-            break;
-
-            case EXTRA_END_TOGGLE:
-            msg = "There is a '{0}' label with no preceding start label.\n\n{1}";
-            args[0] = DESC_LABEL_TOGGLE_END;
-            args[1] = RULES_TOGGLE_BLOCK;
-            break;
-
-            case MISSING_END_TOGGLE:
-            msg = "The label '{0}' has no '{1}' label following it.\n\n{2}";
-            args[0] = arg0;
-            args[1] = DESC_LABEL_TOGGLE_END;
-            args[2] = RULES_TOGGLE_BLOCK;
-            break;
-
-            case EXPRESSION_ERROR:
-            msg = "Failed to evaluate expression in label '{0}'\n{1}";
-            args[0] = arg0;
-            args[1] = arg1; // Error Message
-            break;
-        }
-        // Prevents System.Format exception from label syntax
-        // (Technically still possible in other EMBError functions, but
-        // should not realistically happen)
-        string formattedMsg = String.Format(msg, args);
-        return new EMBException(preamble + formattedMsg);
+    public class EMBParserException : EMBException
+    {
+        public EMBParserException(string msg) : base (msg){}
     }
 }

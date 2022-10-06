@@ -11,7 +11,7 @@ class ExpressionHandler
 
     private static string substituteVariables(string exp)
     {
-        int numIterations = 0;         // Prevents infinite loops
+        int numIterations = 0; // Prevents infinite loops
 
         int openIndex = exp.IndexOf('{');
         while (openIndex > -1)
@@ -40,9 +40,10 @@ class ExpressionHandler
                     openIndex = exp.IndexOf('{');
 
                     if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
-                        throw new ArithmeticException("The expression loops"
-                            + " infinitely when inserting Option values.\n"
-                            + "Last edited form of the expression: '" + exp + "'");
+                        throw ExpError(
+                            "The expression loops infinitely when inserting Option values."
+                            + "\nLast edited form of the expression: '{0}'", 
+                            exp);
                 }
                 else
                     openIndex = nextOpenIndex;
@@ -61,9 +62,10 @@ class ExpressionHandler
         }
         catch (Exception e)
         {
-            throw new ArithmeticException("Failed to compute result."
-                + "\nExpression form at evaluation: '" + exp + "'"
-                + "\n\nPrinting Error Message:\n" + e.Message);
+            throw ExpError("Failed to compute result."
+                + "\nExpression form at evaluation: '{0}'"
+                + "\n\nPrinting Error Message:\n{1}", 
+                exp, e.Message);
         }
 
         // Decl files use lowercase true/false
@@ -94,9 +96,9 @@ class ExpressionHandler
             }
             catch (System.Exception)
             {
-                throw new ArithmeticException("The expression does not evaluate"
-                + " to a Boolean.\nExpression Result: '" + rawResult + "'\n\n" 
-                + RULES_TOGGLE_RESULT);
+                throw ExpError("The expression does not evaluate"
+                + " to a Boolean.\nExpression Result: '{0}'\n\n{1}", 
+                rawResult, RULES_TOGGLE_RESULT);
             }
         }
         return resultBool;
@@ -121,8 +123,9 @@ class ExpressionHandler
         }
         catch(System.ArgumentOutOfRangeException)
         {
-            throw new ArithmeticException("The expression is missing "
-                + "information required for a Loop Label.\n\n" + RULES_LOOPS);
+            throw ExpError("The expression is missing "
+                + "information required for a Loop Label.\n\n{0}",
+                RULES_LOOPS);
         }
 
         // Evaluate the first two split strings into numbers
@@ -136,12 +139,14 @@ class ExpressionHandler
         }
         catch(System.Exception)
         {
-            throw new ArithmeticException("The loop's start or end value "
-                + "failed to evaluate to an integer.\n\n" + RULES_LOOPS);
+            throw ExpError("The loop's start or end value "
+                + "failed to evaluate to an integer.\n\n{0}",
+                RULES_LOOPS);
         }
         if(startNum > endNum)
-            throw new ArithmeticException("The loop's ending value must "
-                + "be larger than it's starting value.\n\n" + RULES_LOOPS);
+            throw ExpError("The loop's ending value must "
+                + "be larger than it's starting value.\n\n{0}", 
+                RULES_LOOPS);
         
         // Construct the final expression that will be substituted for the label
         string expandedExp = "";
@@ -152,5 +157,16 @@ class ExpressionHandler
             expandedExp += currentExp;
         }
         return expandedExp;
+    }
+
+    private static EMBExpressionException ExpError(string msg, string arg0="", string arg1="")
+    {
+        string formattedMessage = String.Format(msg, arg0, arg1);
+        return new EMBExpressionException(formattedMessage);
+    }
+
+    public class EMBExpressionException : EMBException
+    {
+        public EMBExpressionException(string msg) : base(msg) {}
     }
 }
