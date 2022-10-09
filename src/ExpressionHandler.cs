@@ -9,10 +9,49 @@ class ExpressionHandler
         options = optionsParameter;
     }
 
-    private static string substituteVariables(string exp)
+    private static string calculateResult(string exp)
     {
-        int numIterations = 0; // Prevents infinite loops
+        // PHASE 1 - Evaluate Sub-Expressions
+        int subStartIndex = exp.IndexOfCCIC(SYM_SUBEXP_START);
+        int subEndIndex = subStartIndex, numEndsNeeded = 1;
+        while(subStartIndex > -1)
+        { 
+            subEndIndex = exp.IndexOfCCIC(SYM_SUBEXP_ANY, subEndIndex + 1);
+            if(subEndIndex == -1)
+                throw ExpError(
+                    "There is a '{0}' symbol with no '{1}' symbol following it.\n\n{2}",
+                    SYM_SUBEXP_START, SYM_SUBEXP_END, RULES_SUBEXPRESSIONS);
+            if(subEndIndex == exp.IndexOfCCIC(SYM_SUBEXP_START, subEndIndex))
+                numEndsNeeded++;
+            else if(subEndIndex == exp.IndexOfCCIC(SYM_SUBEXP_END, subEndIndex))
+            {
+                if(--numEndsNeeded == 0)
+                {
+                    // Indices used in substring calculations
+                    int subExpIndex = subStartIndex + SYM_SUBEXP_START.Length;
+                    int postSubExp = subEndIndex + SYM_SUBEXP_END.Length;
 
+                    // Get sub-expression, and place result into expression
+                    string subExp = exp.Substring(subExpIndex, 
+                        subEndIndex - subExpIndex);
+                    string subResult = calculateResult(subExp);
+                    exp = exp.Substring(0, subStartIndex) + subResult 
+                        + exp.Substring(postSubExp, exp.Length - postSubExp);
+
+                    // Setup next loop check
+                    subStartIndex = exp.IndexOfCCIC(SYM_SUBEXP_START);
+                    subEndIndex = subStartIndex;
+                    numEndsNeeded = 1;
+                }
+            }
+        }
+        if(exp.IndexOfCCIC(SYM_SUBEXP_END) > -1)
+            throw ExpError(
+                "There is a '{0}' symbol with no preceding '{1}' symbol.\n\n{2}",
+                SYM_SUBEXP_END, SYM_SUBEXP_START, RULES_SUBEXPRESSIONS);
+
+        // PHASE 2 - Substitute Variables
+        int numIterations = 0; // Prevents infinite loops
         int openIndex = exp.IndexOf('{');
         while (openIndex > -1)
         {
@@ -49,13 +88,9 @@ class ExpressionHandler
                     openIndex = nextOpenIndex;
             }
         }
-        return exp;
-    }
 
-    private static string calculateResult(string exp)
-    {
+        // PHASE 3 - Calculate Result
         string result = "";
-
         try
         {
             result = computer.Compute(exp, "").ToString() ?? NULL_EXP_RESULT;
@@ -64,7 +99,7 @@ class ExpressionHandler
         {
             throw ExpError("Failed to compute result."
                 + "\nExpression form at evaluation: '{0}'"
-                + "\n\nPrinting Error Message:\n{1}", 
+                + "\n\nPrinting Error Message:\n{1}",
                 exp, e.Message);
         }
 
@@ -77,12 +112,12 @@ class ExpressionHandler
 
     public static string computeVarExpression(string exp)
     {
-        return calculateResult(substituteVariables(exp));
+        return calculateResult(exp);
     }
 
     public static bool computeToggleExpression(string exp)
     {
-        string rawResult = calculateResult(substituteVariables(exp));
+        string rawResult = calculateResult(exp);
         bool resultBool = false;
         try
         {
@@ -130,8 +165,8 @@ class ExpressionHandler
 
         // Evaluate the first two split strings into numbers
         // Lets Arithmetic Exceptions be thrown for catching outside this class
-        stringStartNum = calculateResult(substituteVariables(stringStartNum));
-        stringEndNum   = calculateResult(substituteVariables(stringEndNum));
+        stringStartNum = calculateResult(stringStartNum);
+        stringEndNum   = calculateResult(stringEndNum);
         try
         {
             startNum = Convert.ToInt32(stringStartNum);
@@ -153,15 +188,15 @@ class ExpressionHandler
         for(int i = startNum; i <= endNum; i++)
         {
             string currentExp = mainExp.ReplaceCCIC(SYM_LOOP_INC, i.ToString());
-            currentExp = calculateResult(substituteVariables(currentExp));
+            currentExp = calculateResult(currentExp);
             expandedExp += currentExp;
         }
         return expandedExp;
     }
 
-    private static EMBExpressionException ExpError(string msg, string arg0="", string arg1="")
+    private static EMBExpressionException ExpError(string msg, string arg0="", string arg1="", string arg2="")
     {
-        string formattedMessage = String.Format(msg, arg0, arg1);
+        string formattedMessage = String.Format(msg, arg0, arg1, arg2);
         return new EMBExpressionException(formattedMessage);
     }
 
