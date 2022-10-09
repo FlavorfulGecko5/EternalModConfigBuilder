@@ -91,7 +91,7 @@ interface Constants
     + "- 'EMB_LOOP'";
     const string DESC_LABEL_TOGGLE_END = LABEL_TOGGLE_END + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
 
-    const string SYM_LOOP_INC = "{!INC}";
+    const string SYM_LOOP_INC = "!inc";
     const string SYM_SUBEXP_ANY   = "{!SUB";
     const string SYM_SUBEXP_START = "{!SUB}";
     const string SYM_SUBEXP_END   = "{!SUBEND}";
@@ -169,8 +169,7 @@ interface Constants
     + "[Stop]" + LABEL_CHAR_LOOP_SEPARATOR + "[Expression]" + LABEL_CHAR_BORDER + " where:\n"
     + "- [Start] and [Stop] are expressions that evaluate to integers.\n"
     + "- [Start] is less than or equal to [Stop]\n"
-    + "- You may use '" + SYM_LOOP_INC + "' in [Expression] to get the value of the current loop iteration.\n"
-    + "- '" + SYM_LOOP_INC + "' cannot be used inside of nested variable labels, nor be inserted by other variables.\n"
+    + "- You may use '{" + SYM_LOOP_INC + "}' in [Expression] to get the value of the current loop iteration.\n"
     + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
 
     const string RULES_SUBEXPRESSIONS = "A subexpression block:\n"

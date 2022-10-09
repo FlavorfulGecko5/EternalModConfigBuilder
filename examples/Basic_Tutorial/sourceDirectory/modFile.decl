@@ -47,16 +47,6 @@ $emb_var#{z}$
 
 
 
-Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
-The elements of a list are accessed by their index, starting at index 0
-The first element in 'listA' is $emb_var#{listA[0]}$
-
-The name of the list, without any index notation, represents the number of elements inside the list:
-$emb_var#'listA contains {listA} elements'$
-
-To access the last element in the list, using the number of elements, you could do something like:
-The last element in 'listA' is $emb_var#{listA[$emb_var#{listA} - 1$]}$
-
 
 
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
@@ -83,12 +73,35 @@ $emb_toggle_end#$
 
 
 
-'emb_var' labels can also be nested inside the expressions of other labels. The inner-most labels will be processed first.
-$emb_var# $emb_var#1$ + $emb_var#2$ $
 
-$emb_toggle# $emb_var#true$ $
-I will be visible thanks to nested variable labels!
+
+Expressions are evaluated by first substituting variables, then computing the result.
+However, you may run into situations where you need to fully evaluate parts of an expression
+before variables are substituted into the rest of it. In these instances, you can define a
+subexpression block using the format: {!SUB}[Expression]{!SUBEND}
+$emb_var# {!sub}2 + 3{!subend} * {!sub}2{!subend} $
+
+$emb_toggle# {!sub}true{!subend} $
+I will be visible thanks to subexpressions!
 $emb_toggle_end#$
+
+
+
+
+
+Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
+The elements of a list are accessed by their index, starting at index 0
+The first element in 'listA' is $emb_var#{listA[0]}$
+
+The name of the list, without any index notation, represents the number of elements inside the list:
+$emb_var#'listA contains {listA} elements'$
+
+To access the last element in the list, using the number of elements, you could do something like:
+The last element in 'listA' is $emb_var#{listA[{!sub}{listA} - 1{!subend}]}$
+
+This last expression also shows a practical application of the subexpression system discussed above.
+
+
 
 
 

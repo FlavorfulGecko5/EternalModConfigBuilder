@@ -47,16 +47,6 @@ be replaced with the value of "y":
 
 
 
-Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
-The elements of a list are accessed by their index, starting at index 0
-The first element in 'listA' is 1
-
-The name of the list, without any index notation, represents the number of elements inside the list:
-listA contains 4 elements
-
-To access the last element in the list, using the number of elements, you could do something like:
-The last element in 'listA' is true
-
 
 
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
@@ -79,11 +69,34 @@ I will be visible when this file is parsed.
 
 
 
-'emb_var' labels can also be nested inside the expressions of other labels. The inner-most labels will be processed first.
-3
 
 
-I will be visible thanks to nested variable labels!
+Expressions are evaluated by first substituting variables, then computing the result.
+However, you may run into situations where you need to fully evaluate parts of an expression
+before variables are substituted into the rest of it. In these instances, you can define a
+subexpression block using the format: {!SUB}[Expression]{!SUBEND}
+10
+
+
+I will be visible thanks to subexpressions!
+
+
+
+
+
+
+Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
+The elements of a list are accessed by their index, starting at index 0
+The first element in 'listA' is 1
+
+The name of the list, without any index notation, represents the number of elements inside the list:
+listA contains 4 elements
+
+To access the last element in the list, using the number of elements, you could do something like:
+The last element in 'listA' is true
+
+This last expression also shows a practical application of the subexpression system discussed above.
+
 
 
 

@@ -86,17 +86,11 @@ class FileParser
             throw ParseError(
                 "Parsing this file's labels creates an infinite loop.");
         
-        NESTED_LABEL_LOOP:
         int end = text.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
             throw ParseError(
                 "A label is missing a '{0}' on it's right side.\n\n{1}", 
-                LABEL_CHAR_BORDER, RULES_LABEL_FORMAT);   
-        if(end == findNextLabelIndex(LABEL_VAR, start + 1))
-        {
-            parseLabel(end);
-            goto NESTED_LABEL_LOOP;
-        }
+                LABEL_CHAR_BORDER, RULES_LABEL_FORMAT);
  
         string rawLabel = text.Substring(start, end - start + 1);
         int separator = rawLabel.IndexOf(LABEL_CHAR_SEPARATOR);

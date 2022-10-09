@@ -184,13 +184,15 @@ class ExpressionHandler
                 RULES_LOOPS);
         
         // Construct the final expression that will be substituted for the label
+        options.Add(SYM_LOOP_INC, "");
         string expandedExp = "";
         for(int i = startNum; i <= endNum; i++)
         {
-            string currentExp = mainExp.ReplaceCCIC(SYM_LOOP_INC, i.ToString());
-            currentExp = calculateResult(currentExp);
+            options[SYM_LOOP_INC] = i.ToString();
+            string currentExp = calculateResult(mainExp);
             expandedExp += currentExp;
         }
+        options.Remove(SYM_LOOP_INC);
         return expandedExp;
     }
 
