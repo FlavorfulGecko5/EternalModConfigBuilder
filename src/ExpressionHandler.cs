@@ -11,46 +11,7 @@ class ExpressionHandler
 
     private static string calculateResult(string exp)
     {
-        // PHASE 1 - Evaluate Sub-Expressions
-        int subStartIndex = exp.IndexOfCCIC(SYM_SUBEXP_START);
-        int subEndIndex = subStartIndex, numEndsNeeded = 1;
-        while(subStartIndex > -1)
-        { 
-            subEndIndex = exp.IndexOfCCIC(SYM_SUBEXP_ANY, subEndIndex + 1);
-            if(subEndIndex == -1)
-                throw ExpError(
-                    "There is a '{0}' symbol with no '{1}' symbol following it.\n\n{2}",
-                    SYM_SUBEXP_START, SYM_SUBEXP_END, RULES_SUBEXPRESSIONS);
-            if(subEndIndex == exp.IndexOfCCIC(SYM_SUBEXP_START, subEndIndex))
-                numEndsNeeded++;
-            else if(subEndIndex == exp.IndexOfCCIC(SYM_SUBEXP_END, subEndIndex))
-            {
-                if(--numEndsNeeded == 0)
-                {
-                    // Indices used in substring calculations
-                    int subExpIndex = subStartIndex + SYM_SUBEXP_START.Length;
-                    int postSubExp = subEndIndex + SYM_SUBEXP_END.Length;
-
-                    // Get sub-expression, and place result into expression
-                    string subExp = exp.Substring(subExpIndex, 
-                        subEndIndex - subExpIndex);
-                    string subResult = calculateResult(subExp);
-                    exp = exp.Substring(0, subStartIndex) + subResult 
-                        + exp.Substring(postSubExp, exp.Length - postSubExp);
-
-                    // Setup next loop check
-                    subStartIndex = exp.IndexOfCCIC(SYM_SUBEXP_START);
-                    subEndIndex = subStartIndex;
-                    numEndsNeeded = 1;
-                }
-            }
-        }
-        if(exp.IndexOfCCIC(SYM_SUBEXP_END) > -1)
-            throw ExpError(
-                "There is a '{0}' symbol with no preceding '{1}' symbol.\n\n{2}",
-                SYM_SUBEXP_END, SYM_SUBEXP_START, RULES_SUBEXPRESSIONS);
-
-        // PHASE 2 - Substitute Variables
+        // PHASE 1 - Substitute Variables
         int numIterations = 0; // Prevents infinite loops
         int openIndex = exp.IndexOf('{');
         while (openIndex > -1)
@@ -73,23 +34,38 @@ class ExpressionHandler
             void replace()
             {
                 string name = exp.Substring(openIndex + 1, closeIndex - openIndex - 1).ToLower();
-                if (options.ContainsKey(name))
+                switch(name)
                 {
-                    exp = exp.ReplaceCCIC('{' + name + '}', options[name]);
+                    case SYM_SUBEXP_START:
+                    exp = evalSubExpression(exp, openIndex);
                     openIndex = exp.IndexOf('{');
+                    break;
 
-                    if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
+                    case SYM_SUBEXP_END:
                         throw ExpError(
-                            "The expression loops infinitely when inserting Option values."
-                            + "\nLast edited form of the expression: '{0}'", 
-                            exp);
+                            "There is a '{0}' symbol with no preceding '{1}' symbol.\n\n{2}",
+                            '{' + SYM_SUBEXP_END + '}', '{' + SYM_SUBEXP_START + '}', RULES_SUBEXPRESSIONS);
+
+                    default:
+                        if (options.ContainsKey(name))
+                        {
+                            exp = exp.ReplaceCCIC('{' + name + '}', options[name]);
+                            openIndex = exp.IndexOf('{');
+
+                            if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
+                                throw ExpError(
+                                    "The expression loops infinitely when inserting Option values."
+                                    + "\nLast edited form of the expression: '{0}'",
+                                    exp);
+                        }
+                        else
+                            openIndex = nextOpenIndex;
+                    break;
                 }
-                else
-                    openIndex = nextOpenIndex;
             }
         }
 
-        // PHASE 3 - Calculate Result
+        // PHASE 2 - Calculate Result
         string result = "";
         try
         {
@@ -108,6 +84,34 @@ class ExpressionHandler
         if (result.EqualsCCIC("true") || result.EqualsCCIC("false"))
             result = result.ToLower();
         return result;
+    }
+
+    private static string evalSubExpression(string exp, int startIndex)
+    {
+        int endIndex = startIndex, numEndsNeeded = 1;
+        while (numEndsNeeded > 0)
+        {
+            endIndex = exp.IndexOfCCIC('{' + SYM_SUBEXP_START, endIndex + 1);
+            if (endIndex == -1)
+                throw ExpError(
+                    "There is a '{0}' symbol with no '{1}' symbol following it.\n\n{2}",
+                    '{' + SYM_SUBEXP_START + '}', '{' + SYM_SUBEXP_END + '}', RULES_SUBEXPRESSIONS);
+            if (endIndex == exp.IndexOfCCIC('{' + SYM_SUBEXP_START + '}', endIndex))
+                numEndsNeeded++;
+            else if (endIndex == exp.IndexOfCCIC('{' + SYM_SUBEXP_END + '}', endIndex))
+                numEndsNeeded--;
+        }
+        // Indices used in substring calculations
+        int subExpIndex = startIndex + SYM_SUBEXP_START.Length + 2;
+        int postSubExp = endIndex + SYM_SUBEXP_END.Length + 2;
+
+        // Get sub-expression, and place result into expression
+        string subExp = exp.Substring(subExpIndex, endIndex - subExpIndex);
+        string subResult = calculateResult(subExp);
+        exp = exp.Substring(0, startIndex) + subResult
+            + exp.Substring(postSubExp, exp.Length - postSubExp);
+
+        return exp;
     }
 
     public static string computeVarExpression(string exp)

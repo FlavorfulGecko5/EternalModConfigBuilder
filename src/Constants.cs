@@ -2,7 +2,7 @@ interface Constants
 {
     // Constants pertaining published file data
     const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "Beta 1.9.0";
+    const string EXE_VERSION = "INDEV-Beta 1.10.0";
 
     // Enums and Constants for the Execution Mode command-line argument
     public enum ExecutionMode
@@ -92,9 +92,8 @@ interface Constants
     const string DESC_LABEL_TOGGLE_END = LABEL_TOGGLE_END + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
 
     const string SYM_LOOP_INC = "!inc";
-    const string SYM_SUBEXP_ANY   = "{!SUB";
-    const string SYM_SUBEXP_START = "{!SUB}";
-    const string SYM_SUBEXP_END   = "{!SUBEND}";
+    const string SYM_SUBEXP_START = "!sub";
+    const string SYM_SUBEXP_END   = "!subend";
 
     // Constants pertaining to log messages
     const string MSG_WELCOME = "\n" + EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
@@ -173,7 +172,7 @@ interface Constants
     + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
 
     const string RULES_SUBEXPRESSIONS = "A subexpression block:\n"
-    + "- Starts with the symbol '" + SYM_SUBEXP_START 
-    + "'\n- Ends with the symbol '" + SYM_SUBEXP_END 
-    + "'\nAnything inside a subexpression block will be fully evaluated before the rest of the expression.";
+    + "- Starts with the symbol '{" + SYM_SUBEXP_START 
+    + "}'\n- Ends with the symbol '{" + SYM_SUBEXP_END 
+    + "}'\nAnything inside a subexpression block will be fully evaluated before the rest of the expression.";
 }
