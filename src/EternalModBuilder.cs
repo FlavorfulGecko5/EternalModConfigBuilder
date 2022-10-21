@@ -28,6 +28,21 @@ class EternalModBuilder
         }
     }
 
+    public static bool mustLog(LogLevel targetLevel)
+    {
+        return runParms.logMode == targetLevel || runParms.logMode == LogLevel.VERBOSE;
+    }
+
+    public static void log(string msg)
+    {
+        Console.WriteLine(MSG_LOG + msg);
+    }
+
+    public static void reportWarning(string msg)
+    {
+        Console.WriteLine(MSG_WARNING + msg);
+    }
+
     private static void run(string[] args)
     {
         if (Directory.Exists(DIR_TEMP))
@@ -123,7 +138,7 @@ class EternalModBuilder
         if (Directory.Exists(DIR_PROPAGATE))
         {
             if (configData.propagations.Count == 0)
-                LogMaker.reportWarning(WARNING_NO_LISTS);
+                reportWarning(WARNING_NO_LISTS);
 
             foreach (PropagateList resource in configData.propagations)
                 resource.propagate();
@@ -131,7 +146,7 @@ class EternalModBuilder
             Directory.Delete(DIR_PROPAGATE, true);
         }
         else if (configData.propagations.Count > 0)
-            LogMaker.reportWarning(WARNING_NO_DIR);
+            reportWarning(WARNING_NO_DIR);
     }
     
     private static void finishBuilding()

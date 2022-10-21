@@ -30,7 +30,7 @@ class FileParser
         FSUtil.writeFile(path, text);
         
         if(logger.mustLog)
-            logger.log();
+            EternalModBuilder.log(logger.getMessage());
     }
 
     private int findNextLabelIndex(string labelToFind, int searchStartIndex)
@@ -162,5 +162,21 @@ class FileParser
     public class EMBParserException : EMBException
     {
         public EMBParserException(string msg) : base (msg){}
+    }
+
+    private class ParserLogMaker : LogMaker
+    {
+        public ParserLogMaker() : base(LogLevel.PARSINGS) {}
+
+        public void startNewFileLog(string path)
+        {
+            logMsg.Clear();
+            logMsg.Append("Parsing File '" + path + "'");
+        }
+
+        public void appendLabelResult(Label l, string result)
+        {
+            logMsg.Append("\n - Label '" + l.raw + "' resolved to '" + result + "'");
+        }
     }
 }

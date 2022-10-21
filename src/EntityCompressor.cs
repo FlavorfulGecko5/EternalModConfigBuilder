@@ -20,7 +20,7 @@ class EntityCompressor
         }
         catch(Exception)
         {
-            LogMaker.reportWarning("The file(s) required for compressing "
+            EternalModBuilder.reportWarning("The file(s) required for compressing "
             + ".entities files are missing or corrupted. Compression of "
             + ".entities files will NOT occur. See installation instructions "
             + "for more details.");
@@ -36,7 +36,7 @@ class EntityCompressor
         int outputLength = oodle.compress(src, output);
         if(outputLength < 0)
         {
-            LogMaker.reportWarning("Failed to compress '" + filePath
+            EternalModBuilder.reportWarning("Failed to compress '" + filePath
                 + "' - Your built mod will contain the uncompressed version.");
             return;
         }

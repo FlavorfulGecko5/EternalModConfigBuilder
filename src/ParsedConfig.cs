@@ -18,12 +18,8 @@ class ParsedConfig
             name = "N/A";
             parseConfig();
         }
-        LogMaker logger = new LogMaker(LogLevel.CONFIGS);
-        if(logger.mustLog)
-        {
-            logger.appendString(ToString());
-            logger.log();
-        }
+        if(EternalModBuilder.mustLog(LogLevel.CONFIGS))
+            EternalModBuilder.log(ToString());
     }
 
     public override string ToString()
