@@ -8,9 +8,11 @@ class ParsedConfig
     private string configPath = "", name = "";
     private JToken option = new JProperty("");
 
-    public ParsedConfig()
+    public ParsedConfig() {}
+
+    public ParsedConfig(List<string> configPaths)
     {
-        foreach (string path in EternalModBuilder.configPaths)
+        foreach (string path in configPaths)
         {
             configPath = path;
             name = "N/A";

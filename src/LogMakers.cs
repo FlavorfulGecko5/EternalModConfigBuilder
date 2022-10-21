@@ -6,7 +6,7 @@ class LogMaker
 
     public LogMaker(LogLevel requiredLogLevel)
     {
-        LogLevel logMode = EternalModBuilder.logMode;
+        LogLevel logMode = EternalModBuilder.runParms.logMode;
         mustLog = logMode == requiredLogLevel || logMode == LogLevel.VERBOSE;
     }
 
