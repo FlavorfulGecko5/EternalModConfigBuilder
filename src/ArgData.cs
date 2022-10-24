@@ -162,9 +162,14 @@ class ArgData
     /// command line arguments.
     /// </summary>
     /// <param name="args">Command-line arguments</param>
-    /// <exception cref="EMBArgumentException">Parsing fails for any predicted reason</exception>
+    /// <exception cref="EMBArgumentException">
+    /// Argument parsing or validationfails for any predicted reason
+    /// </exception>
     public ArgData(string[] args)
     {
+        /*
+        * Read all arguments to variables 
+        */
         const string // Error messages used when throwing Exceptions
         ERR_NUM_ARGS = "Please enter an even number of arguments.\n\n{0}",
         ERR_BAD_PARAM = "'{0}' is not a valid parameter.\n\n{1}",
@@ -265,46 +270,28 @@ class ArgData
         if(!hasConfig || !hasSource || !hasOutput)
             throw ArgError(ERR_MISSING_ARGS, RULES_USAGE_MINIMAL);
 
-        // Due to aggregate data and dependencies on each other
-        // (i.e. inputting multiple config. files, source path needed
-        // to validate the output path), these validation functions should
-        // only execute when all args have been parsed, and in this order
-        validateConfigArg();
-        validateSourceArg();
-        validateOutputArg();
-        if(EternalModBuilder.mustLog(LogLevel.CONFIGS))
-            EternalModBuilder.log(ToString());
-    }
-
-    /// <summary>
-    /// Validates all parsed configuration filepaths
-    /// </summary>
-    /// <exception cref="EMBArgumentException">A filepath cannot be validated</exception>
-    private void validateConfigArg()
-    {
+        /*
+        * Verify all configuration files are valid
+        */
         const string
-        ERR_BAD_EXT = "The configuration file '{0}' must be a {1} file.",
+        ERR_CFG_EXT = "The configuration file '{0}' must be a {1} file.",
         ERR_CFG_MISSING = "Failed to find the configuration file '{0}'";
 
         foreach(string config in configPaths)
         {
             // Ensure the file extension is acceptable
             if(!config.EndsWithCCIC(".json") && !config.EndsWithCCIC(".txt"))
-                throw ArgError(ERR_BAD_EXT, config, DESC_CFG_EXTENSIONS);
+                throw ArgError(ERR_CFG_EXT, config, DESC_CFG_EXTENSIONS);
             
             // Ensure the file exists
             if (!File.Exists(config))
                 throw ArgError(ERR_CFG_MISSING, config);
         }
 
-    }
-
-    /// <summary>
-    /// Validates the parsed source path argument
-    /// </summary>
-    /// <exception cref="EMBArgumentException">The source path cannot be validated</exception>
-    private void validateSourceArg()
-    {
+        /*
+        * Validate the source file argument and determine if it's a
+        * zip file or a directory
+        */
         const string 
         ERR_MOD_INVALID = "The mod file is not a valid directory or .zip file.",
         ERR_MOD_MISSING = "The mod directory or .zip file does not exist.",
@@ -334,14 +321,11 @@ class ArgData
         {
             return ArgError(ERR_MOD_SIZE, (MAX_INPUT_SIZE_BYTES / 1000000000.0).ToString());
         }
-    }
-
-    /// <summary>
-    /// Validates the parsed output path argument
-    /// </summary>
-    /// <exception cref="EMBArgumentException">The output path cannot be validated</exception>
-    private void validateOutputArg()
-    {
+        
+        /*
+        * Validate the output argument and determine if we're outputting to
+        * a zip file or a directory
+        */
         const string
         ERR_FILE_EXISTS = "A file already exists at the output path.\n\n{0}",
         ERR_NONEMPTY_FOLDER = "A non-empty folder exists at the output path.\n\n{0}",
@@ -360,6 +344,14 @@ class ArgData
             if(FSUtil.isParentDir(srcPath, outPath))
                 throw ArgError(ERR_OUTPUT_IN_SRC, RULES_OUTPUT);
         outToZip = outPath.EndsWithCCIC(".zip");
+        
+        /*
+        * Log if necessary
+        * Compares the enums directly in this method to ensure the most
+        * accurate logMode value is used.
+        */
+        if(logMode == LogLevel.CONFIGS || logMode == LogLevel.VERBOSE)
+            EternalModBuilder.log(ToString());     
     }
 
     /// <summary>
