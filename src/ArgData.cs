@@ -1,9 +1,91 @@
 /// <summary>
 /// An object that parses and stores all data needing to be read from
 /// command-line arguments. <para/>
+/// Defines all behavior pertaining to command-line argument format and usage
 /// </summary>
 class ArgData
 {
+    /* Program Configuration Constants */
+
+    /// <summary>
+    /// The maximum size allowed for the mod input, in bytes
+    /// </summary>
+    const long MAX_INPUT_SIZE_BYTES = 2000000000;
+
+    /// <summary>
+    /// Describes all extensions a valid configuration file may have
+    /// </summary>
+    const string DESC_CFG_EXTENSIONS = ".txt or .json";
+
+
+
+
+
+    /* Constants Defining Program Rules and Behavior */
+
+    /// <summary>
+    /// Shows how to run EternalModBuilder with only the mandatory
+    /// command-line arguments
+    /// </summary>
+    const string RULES_USAGE_GENERAL = "Usage: ./EternalModBuilder -c [config "
+    + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]\n"
+    + "You may enter multiple configuration files (use '-c' once per file).\n\n";
+
+    /// <summary>
+    /// Shows how to run EternalModBuilder with only the mandatory command-line
+    /// arguments. Details how to display information for all arguments.
+    /// </summary>
+    const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL 
+    + "For information on optional parameters, run this application with 0 arguments.";
+
+    /// <summary>
+    /// Shows how to run EternalModBuilder by outputting information on
+    /// all possible command-line arguments and how they function
+    /// </summary>
+    public const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL 
+    + RULES_COMP_ENTITIES + "\n\n" + RULES_EXEMODE + "\n\n" + RULES_LOGLEVEL + "\n";
+
+    /// <summary>
+    /// Defines the input instructions for the Compress Entities argument
+    /// and how this argument will be utilized
+    /// </summary>
+    const string RULES_COMP_ENTITIES = "Optional Parameter - Compress Entities\n"
+    + "-e [ true | false ] (Choose One)\n"
+    + "If true (default), decompressed .entities files will be compressed when building the mod.\n"
+    + "If false, they will not be compressed.\n"
+    + "Compression can not occur if the execution mode is 'readonly' or 'propagate'";
+
+    /// <summary>
+    /// Defines the input instructions for the Execution Mode argument
+    /// and how this argument will be utilized
+    /// </summary>
+    const string RULES_EXEMODE = "Optional Parameter - Execution Mode\n"
+    + "-x [mode] (Choose one of the following):\n" + EnumDesc.SUMMARY_EXEMODE;
+
+    /// <summary>
+    /// Defines the input instructions for the Log Level argument
+    /// and how this argument will be utilized
+    /// </summary>
+    const string RULES_LOGLEVEL = "Optional Parameter - Log Level\n"
+    + "-l [level] (Choose one of the following):\n" + EnumDesc.SUMMARY_LOGLEVEL;
+
+    /// <summary>
+    /// Defines the rules your output location must follow and how
+    /// EternalModBuilder utilizes the temporary directory
+    /// </summary>
+    const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
+    + "- If outputting to a folder, it must be empty or non-existant, unless named '" 
+        + EternalModBuilder.DIR_TEMP + "'.\n"
+    + "-- This directory is ALWAYS deleted when this program is executed.\n"
+    + "- No file may already exist at the output location.\n"
+    + "- Your output path cannot be inside of your source directory.";
+
+
+
+
+
+    /* Instance Fields and Methods */
+
     /// <summary>
     /// Configuration file paths
     /// </summary>
@@ -133,7 +215,7 @@ class ArgData
                     }
                     catch(System.FormatException)
                     {
-                        throw ArgError(ERR_ENTITIES, DESC_COMP_ENTITIES);
+                        throw ArgError(ERR_ENTITIES, RULES_COMP_ENTITIES);
                     }
                     hasCompEnts = true;
                 break;
@@ -151,7 +233,7 @@ class ArgData
                     }
                     catch(Exception)
                     {
-                        throw ArgError(ERR_EXEMODE, args[i+1], DESC_EXEMODE);
+                        throw ArgError(ERR_EXEMODE, args[i+1], RULES_EXEMODE);
                     }
                     hasExecutionMode = true;
                 break;
@@ -166,7 +248,7 @@ class ArgData
                     }
                     catch(Exception) 
                     {
-                        throw ArgError(ERR_LOGLEVEL, args[i+1], DESC_LOGLEVEL);
+                        throw ArgError(ERR_LOGLEVEL, args[i+1], RULES_LOGLEVEL);
                     }
                     hasLogLevel = true;
                 break;
@@ -235,14 +317,14 @@ class ArgData
             if (!ZipUtil.isFileValidZip(srcPath))
                 throw ArgError(ERR_MOD_INVALID);
 
-            if(FSUtil.isFileLarge(srcPath))
+            if(FSUtil.isFileLarge(srcPath, MAX_INPUT_SIZE_BYTES))
                 throw modTooLarge();
 
             srcIsZip = true;
         }
         else if (Directory.Exists(srcPath))
         {
-            if(FSUtil.isDirectoryLarge(srcPath))
+            if(FSUtil.isDirectoryLarge(srcPath, MAX_INPUT_SIZE_BYTES))
                 throw modTooLarge();
         }
         else

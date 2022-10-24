@@ -1,57 +1,57 @@
-interface Constants
+/// <summary>
+/// Describes all modes EternalModBuilder can run in
+/// </summary>
+public enum ExecutionMode
 {
-    // Constants pertaining published file data
-    const string EXE_NAME = "EternalModBuilder";
-    const string EXE_VERSION = "INDEV-Beta 1.10.0";
+    COMPLETE,
+    READONLY,
+    PARSE,
+    PROPAGATE
+}
 
-    // Enums and Constants for the Execution Mode command-line argument
-    public enum ExecutionMode
-    {
-        COMPLETE,
-        READONLY,
-        PARSE,
-        PROPAGATE
-    }
-    const string DESC_EXEMODE = "Optional Parameter - Execution Mode\n"
-    + "-x [ complete | readonly | parse | propagate ] (Choose One)\n"
-    + "complete  - Reads config. files and performs all build operations (default)\n"
+/// <summary>
+/// Describes all levels EternalModBuilder's logging feature can operate at
+/// </summary>
+public enum LogLevel
+{
+    MINIMAL,
+    CONFIGS,
+    PARSINGS,
+    PROPAGATIONS,
+    VERBOSE
+}
+
+/// <summary>
+/// Contains string descriptions for any enums defined in this file
+/// </summary>
+class EnumDesc
+{
+    /// <summary>
+    /// Describes what behavior is expected for each element of the
+    /// ExecutionMode enum when they're utilized
+    /// </summary>
+    public const string SUMMARY_EXEMODE = 
+      "complete  - Reads config. files and performs all build operations (default)\n"
     + "readonly  - Reads config. files but performs no build operations.\n"
     + "parse     - Reads config. files and parses labels.\n"
     + "propagate - Reads config. files and propagates files.";
 
-    // Enums and constants for the Log Level command-line argument
-    public enum LogLevel
-    {
-        MINIMAL,
-        CONFIGS,
-        PARSINGS,
-        PROPAGATIONS,
-        VERBOSE
-    }
-    const string DESC_LOGLEVEL = "Optional Parameter - Log Level\n"
-    + "-l [ minimal | configs | parsing | propagations | all ] (Choose One)\n"
-    + "minimal      - Only outputs errors and warnings (default)\n"
+    /// <summary>
+    /// Describes what behavior is expected for each element of the
+    /// LogLevel enum when they're utilized
+    /// </summary>
+    public const string SUMMARY_LOGLEVEL = 
+      "minimal      - Only outputs errors and warnings (default)\n"
     + "configs      - Outputs parsed command-line argument and configuration file data.\n"
     + "parsings     - Outputs what each label's expression resolved to.\n"
     + "propagations - Outputs each successful propagation.\n"
     + "verbose      - Outputs everything";
+}
 
-    // Constants for the Compress Entities command-line argument
-    const string DESC_COMP_ENTITIES = "Optional Parameter - Compress Entities\n"
-    + "-e [ true | false ] (Choose One)\n"
-    + "If true (default), decompressed .entities files will be compressed during the build process.\n"
-    + "If false, they will not be compressed.\n"
-    + "Compression will never occur, regardless of setting, if the execution mode is 'readonly' or 'propagate'";
-
-    // Constants pertaining to command-line arguments
-    const long MAX_INPUT_SIZE_BYTES = 2000000000; // ~2 gigabytes
-    
-    // Constants pertaining to file extensions.
-    const string DESC_CFG_EXTENSIONS = ".txt or .json";
-    const string DESC_LABEL_FILES = ".decl, .json and decompressed .entities";
-
+interface Constants
+{
     // Constants pertaining to directories
-    const string DIR_TEMP = "eternalmodbuilder_temp";
+    
     const string DIR_PROPAGATE = "propagate";
     
     // Constants pertaining to option names
@@ -95,38 +95,7 @@ interface Constants
     const string SYM_SUBEXP_START = "!sub";
     const string SYM_SUBEXP_END   = "!subend";
 
-    // Constants pertaining to log messages
-    const string MSG_WELCOME = "\n" + EXE_NAME + " " + EXE_VERSION + " by FlavorfulGecko5";
-    const string MSG_ERROR   = "ERROR: ";
-    const string MSG_ERROR_UNKNOWN = MSG_ERROR + "An unknown error occurred:\n\n";
-    const string MSG_WARNING = "WARNING: ";
-    const string MSG_LOG     = "LOG: ";
-
-    const string MSG_SUCCESS = "\nMod successfully built in {0} seconds.\n\n"
-    + "Please Note:\n"
-    + "- Only " + DESC_LABEL_FILES + " files are checked for labels.\n"
-    + "- This program can't detect every conceivable typo you might make.\n"
-    + "If your game crashes, double-check your mod files for errors.\n";       
-    
-    const string MSG_FAILURE = "\n\nMod building halted due to the above error.\n";
-
     // Rules
-    const string RULES_USAGE_GENERAL = "Usage: ./" + EXE_NAME + ".exe -c [config "
-    + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]\n"
-    + "You may enter multiple configuration files (use '-c' once per file).\n\n";
-
-    const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL 
-    + "For information on optional parameters, run this application with 0 arguments.";
-
-    const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL 
-    + DESC_COMP_ENTITIES + "\n\n" + DESC_EXEMODE + "\n\n" + DESC_LOGLEVEL + "\n";
-
-    const string RULES_OUTPUT = "Your output location must obey these rules:\n" 
-    + "- If outputting to a folder, it must be empty or non-existant, unless named '" + DIR_TEMP + "'.\n"
-    + "-- This directory is ALWAYS deleted when this program is executed.\n"
-    + "- No file may already exist at the output location.\n"
-    + "- Your output path cannot be inside of your source directory.";
-    
     const string RULES_OPTION_TYPE = "Options must be defined in one of the following ways:\n"
     + "- String: Any text encased in double-quotes.\n"
     + "- Number: An integer or floating-point value.\n"

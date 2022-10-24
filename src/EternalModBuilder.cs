@@ -5,6 +5,75 @@ using System.Diagnostics;
 /// </summary>
 class EternalModBuilder
 {
+    /* Program Configuration Constants */
+
+    /// <summary>
+    /// The version identifier for this build of EternalModBuilder
+    /// </summary>
+    const string EXE_VERSION = "INDEV-Beta 1.10.0";
+
+    /// <summary>
+    /// The name of the directory EternalModBuilder recognizes as temporary
+    /// and safe to delete before/after mod building occurs.
+    /// </summary>
+    public const string DIR_TEMP = "eternalmodbuilder_temp";
+
+    /// <summary>
+    /// Describes all types of mod files that will be scanned for labels
+    /// </summary>
+    const string DESC_LABEL_FILES = ".decl, .json and decompressed .entities";
+
+
+
+
+
+    /* Output Messages */
+
+    /// <summary>
+    /// Initial display message showing the program name and version
+    /// </summary>
+    const string MSG_WELCOME = "\nEternalModBuilder " + EXE_VERSION + " by FlavorfulGecko5";
+
+    /// <summary>
+    /// Output text prefacing any error message
+    /// </summary>
+    const string MSG_ERROR = "ERROR: ";
+
+    /// <summary>
+    /// Output text prefacing any unknown error message
+    /// </summary>
+    const string MSG_ERROR_UNKNOWN = MSG_ERROR + "An unknown error occurred:\n\n";
+
+    /// <summary>
+    /// Output text prefacing any warning message
+    /// </summary>
+    const string MSG_WARNING = "WARNING: ";
+
+    /// <summary>
+    /// Output text prefacing any log message
+    /// </summary>
+    const string MSG_LOG = "LOG: ";
+
+    /// <summary>
+    /// Final output message when mod building fails
+    /// </summary>
+    const string MSG_FAILURE = "\n\nMod building halted due to the above error.\n";
+
+    /// <summary>
+    /// Final output message when mod building succeeds
+    /// </summary>
+    const string MSG_SUCCESS = "\nMod successfully built in {0} seconds.\n\n"
+    + "Please Note:\n"
+    + "- Only " + DESC_LABEL_FILES + " files are checked for labels.\n"
+    + "- This program can't detect every conceivable typo you might make.\n"
+    + "If your game crashes, double-check your mod files for errors.\n";       
+    
+
+    
+
+
+    /* Static Fields and Methods */
+
     /// <summary>
     /// Parsed command-line argument data
     /// </summary>
@@ -71,7 +140,7 @@ class EternalModBuilder
             Console.WriteLine(MSG_WELCOME);
             if (args.Length == 0)
             {
-                Console.WriteLine(RULES_USAGE_VERBOSE);
+                Console.WriteLine(ArgData.RULES_USAGE_VERBOSE);
                 return 0;
             }
 

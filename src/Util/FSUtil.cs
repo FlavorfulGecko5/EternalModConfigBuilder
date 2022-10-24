@@ -4,14 +4,14 @@
 static class FSUtil
 {
     /// <summary>
-    /// Checks if a directory is larger than the maximum size allowed
-    /// for a mod to be built by EternalModBuilder
+    /// Checks if a directory's contents exceed a particular size
     /// </summary>
     /// <param name="dir">Path to the directory</param>
+    /// <param name="maxSize">The maximum size allowed </param>
     /// <returns> 
     /// True if the maximum size is exceeded, otherwise False. 
     /// </returns>
-    public static bool isDirectoryLarge(string dir)
+    public static bool isDirectoryLarge(string dir, long maxSize)
     {
         long sizeCheck = checkDirSize(new DirectoryInfo(dir));
         if (sizeCheck == -1)
@@ -19,17 +19,17 @@ static class FSUtil
         return false;
 
         /// <summary>
-        /// Recursively sums the size of a directory, checking if it
-        /// exceeds the maximum size for a mod to be built by EternalModBuilder
+        /// Recursively sums the size of a directory, checking if it exceeds
+        /// the maximum size
         /// </summary>
         /// <param name="directory"> 
         /// The DirectoryInfo for the directory whose size must be checked. 
         /// </param>
         /// <returns>
         /// The size of the directory, or -1 if the maximum allowed size
-        /// for a mod is exceeded.
+        /// is exceeded.
         /// </returns>
-        static long checkDirSize(DirectoryInfo directory)
+        long checkDirSize(DirectoryInfo directory)
         {
             long size = 0;
 
@@ -48,7 +48,7 @@ static class FSUtil
                 size += subSize;
             }
 
-            if (size > MAX_INPUT_SIZE_BYTES)
+            if (size > maxSize)
                 return -1;
             return size;
         }
@@ -57,17 +57,17 @@ static class FSUtil
 
 
     /// <summary>
-    /// Checks if a file is larger than the maximum size allowed for a mod
-    /// to be built by EternalModBuilder
+    /// Checks if a file exceeds a particular size
     /// </summary>
-    /// <param name="file"> Pathway to the file </param>
+    /// <param name="file">Pathway to the file </param>
+    /// <param name="maxSize">The maximum size allowed </param>
     /// <returns>
-    /// True if the file size exceeds the maximum allowed size, otherwise False
+    /// True if the file size exceeds the maximum size, otherwise False
     /// </returns>
-    public static bool isFileLarge(string file)
+    public static bool isFileLarge(string file, long maxSize)
     {
         FileInfo fileData = new FileInfo(file);
-        return fileData.Length > MAX_INPUT_SIZE_BYTES;
+        return fileData.Length >  maxSize;
     }
 
 
