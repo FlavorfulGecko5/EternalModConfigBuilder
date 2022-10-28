@@ -179,6 +179,12 @@ class EternalModBuilder
         // Parse argument and config data needed for the build process
         runParms = new ArgData(args);
         configData = new ParsedConfig(runParms.configPaths);
+        if(mustLog(LogLevel.CONFIGS))
+        {
+            log(runParms.ToString());
+            log(configData.ToString());
+        }
+
         if(runParms.exeMode == ExecutionMode.READONLY)
             return;
 

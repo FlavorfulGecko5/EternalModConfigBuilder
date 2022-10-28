@@ -18,8 +18,6 @@ class ParsedConfig
             name = "N/A";
             parseConfig();
         }
-        if(EternalModBuilder.mustLog(LogLevel.CONFIGS))
-            EternalModBuilder.log(ToString());
     }
 
     public override string ToString()

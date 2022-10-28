@@ -344,14 +344,6 @@ class ArgData
             if(FSUtil.isParentDir(srcPath, outPath))
                 throw ArgError(ERR_OUTPUT_IN_SRC, RULES_OUTPUT);
         outToZip = outPath.EndsWithCCIC(".zip");
-        
-        /*
-        * Log if necessary
-        * Compares the enums directly in this method to ensure the most
-        * accurate logMode value is used.
-        */
-        if(logMode == LogLevel.CONFIGS || logMode == LogLevel.VERBOSE)
-            EternalModBuilder.log(ToString());     
     }
 
     /// <summary>
