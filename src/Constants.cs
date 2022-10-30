@@ -53,13 +53,6 @@ interface Constants
     // Constants pertaining to directories
     
     const string DIR_PROPAGATE = "propagate";
-    
-    // Constants pertaining to option names
-    const string NAME_SPECIAL_CHARACTERS = "_";
-
-    // Constants pertaining to Json property names
-    const string PROPERTY_VALUE = "Value";
-    const string PROPERTY_PROPAGATE = "Propagate";
 
     // Constants pertaining to Label and expression parsing
     const int PARSER_INFINITE_LOOP_THRESHOLD = 1000;
@@ -96,26 +89,6 @@ interface Constants
     const string SYM_SUBEXP_END   = "!subend";
 
     // Rules
-    const string RULES_OPTION_TYPE = "Options must be defined in one of the following ways:\n"
-    + "- String: Any text encased in double-quotes.\n"
-    + "- Number: An integer or floating-point value.\n"
-    + "- Boolean: Either 'true' or 'false' (case sensitive).\n"
-    + "- List: A list of values containing only strings, numbers and Booleans.\n"
-    + "- Object: This must have a '" + PROPERTY_VALUE + "' (case-sensitive) sub-property defined in one of the above ways.";
-
-    const string RULES_OPTION_NAME = "Option names cannot be empty, and may only contain these characters:\n"
-    + "- Letters (a-z, A-Z)\n"
-    + "- Numbers (0-9)\n"
-    + "- Underscores (_)\n"
-    + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.\n"
-    + "Options with names beginning with an underscore (_) will be treated as comments, and won't be processed as variables.";
-    
-    const string RULES_PROPAGATE = "Configuration files may have '" + PROPERTY_PROPAGATE + "' properties that must obey these rules:\n"
-    + "- These properties must be defined as objects.\n"
-    + "- Each sub-property's name should be a relative, non-backtracking directory.\n"
-    + "- Each sub-property must be defined as a list of strings.\n" 
-    + "- These strings must be relative paths to files or directories inside your mod's '" + DIR_PROPAGATE + "' folder.\n"
-    + "When your mod is built, listed files/directories will be copied to the directory specified by the list's name.";
 
     const string RULES_LABEL_FORMAT = "Labels must have the form " + LABEL_CHAR_BORDER 
     + "[TYPE]" + LABEL_CHAR_SEPARATOR + "[EXPRESSION]" + LABEL_CHAR_BORDER + " where:\n"

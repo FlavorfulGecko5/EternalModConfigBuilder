@@ -1,24 +1,14 @@
-using Newtonsoft.Json.Linq;
 class ParsedConfig
 {
+    const string RULES_OPTION_NAME = "Option names cannot be empty, and may only contain these characters:\n"
+    + "- Letters (a-z, A-Z)\n"
+    + "- Numbers (0-9)\n"
+    + "- Underscores (_)\n"
+    + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.\n"
+    + "Options with names beginning with an underscore (_) will be treated as comments, and won't be processed as variables.";
+
     public Dictionary<string, string> options = new Dictionary<string, string>();
     public List<PropagateList> propagations = new List<PropagateList>();
-
-    // Used to avoid constantly passing by value
-    private string configPath = "", name = "";
-    private JToken option = new JProperty("");
-
-    public ParsedConfig() {}
-
-    public ParsedConfig(List<string> configPaths)
-    {
-        foreach (string path in configPaths)
-        {
-            configPath = path;
-            name = "N/A";
-            parseConfig();
-        }
-    }
 
     public override string ToString()
     {
@@ -36,147 +26,62 @@ class ParsedConfig
         return msg;
     }
 
-    private void parseConfig()
+    public void addOption(string name, string value)
     {
-        foreach(JProperty property in readConfig().Properties())
-        {
-            name = property.Name.ToLower(); // Options are stored lowercase
-            option = property.Value;
-
-            validateName();
-            if(name[0] == '_') // Special comment variables
-                continue;
-
-            if (name.EqualsCCIC(PROPERTY_PROPAGATE))
-                parsePropagate();
-            else
-                parseOptionValue();
-        }
+        name = validateName(name);
+        options.Add(name, value);
     }
 
-    private JObject readConfig()
+    public void addListOption(string name, string[] values)
     {
-        JObject rawJson = new JObject();
-        JsonLoadSettings reportExactDuplicates = new JsonLoadSettings()
-        {
-            DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error
-        };
-
-        try
-        {
-            string text = FSUtil.readFileText(configPath);
-            rawJson = JObject.Parse(text, reportExactDuplicates);
-        }
-        catch (Newtonsoft.Json.JsonReaderException e)
-        {
-            throw ConfigError(
-                "The file has a syntax error. Printing Exception message:\n\n{0}",
-                e.Message);
-        }
-
-        return rawJson;
+        name = validateName(name);
+        options.Add(name, values.Length.ToString());
+        for (int i = 0; i < values.Length; i++)
+            options.Add(name + '[' + i + ']', values[i]);
     }
 
-    private void validateName()
+    public void addPropagationLists(PropagateList[] newLists)
     {
-        if(name.Length == 0)
+        foreach(PropagateList list in newLists)
+            propagations.Add(list);
+    }
+
+    private string validateName(string name)
+    {
+        const string
+        ERR_INVALID_NAME = "'{0}' is an invalid name.\n\n{1}",
+        ERR_DUPE_NAME = "'{0}' is used to define multiple Options.\n\n{1}";
+
+        string fixedName = name.ToLower();
+        if (fixedName.Length == 0)
             throw invalidName();
-        
-        foreach(char c in name)
-            if(!(c <= 'z' && c >= 'a'))
-            if(!(c <= '9' && c >= '0'))
-            if(!NAME_SPECIAL_CHARACTERS.Contains(c))
+
+        foreach (char c in fixedName)
+            if (!(c <= 'z' && c >= 'a'))
+            if (!(c <= '9' && c >= '0'))
+            if (!(c == '_'))
                 throw invalidName();
+
+        if (options.ContainsKey(fixedName))
+            throw NameError(ERR_DUPE_NAME, name, RULES_OPTION_NAME);
         
-        if(options.ContainsKey(name))
-            throw ConfigError(
-                "This name is used to define multiple Options.\n\n{0}",
-                RULES_OPTION_NAME);
-        
-        EMBConfigException invalidName()
+        return fixedName;
+
+        EMBConfigNameException invalidName()
         {
-            return ConfigError("The name is invalid.\n\n{0}", RULES_OPTION_NAME);
-        }
+            return NameError(ERR_INVALID_NAME, name, RULES_OPTION_NAME);
+        }        
     }
 
-    private void parseOptionValue()
+    private EMBConfigNameException NameError(string msg, string arg0 = "", string arg1 = "")
     {
-        string[]? values = JsonUtil.readAnyTokenValue(option);
-        if(values == null)
-            throw ConfigError(
-                "This Option is not defined in a valid way.\n\n{0}",
-                RULES_OPTION_TYPE);
+        string formattedMessage = String.Format(msg, arg0, arg1);
 
-        options.Add(name, values[0]);        
-        if(values.Length > 1)
-        {
-            for (int i = 1; i < values.Length; i++)
-                options.Add(name + '[' + (i - 1) + ']', values[i]);
-        }
+        return new EMBConfigNameException(formattedMessage);
     }
 
-    private void parsePropagate()
+    public class EMBConfigNameException : EMBException
     {
-        string workingDir = Directory.GetCurrentDirectory();
-
-        if(option.Type != JTokenType.Object)
-            throw ConfigError(
-                "This property must be defined as an object.\n\n{0}",
-                RULES_PROPAGATE);
-
-        foreach (JProperty list in ((JObject)option).Properties())
-        {
-            if (!isPropPathValid(list.Name))
-                throw ConfigError(
-                    "The sub-property '{0}' has a non-relative or backtracking name.\n\n{1}",
-                    list.Name, RULES_PROPAGATE);
-
-            string[]? filePaths = JsonUtil.readListTokenValue(list.Value);
-            if(filePaths == null)
-                throw ConfigError(
-                    "This property has an invalid sub-property '{0}'\n\n{1}",
-                    list.Name, RULES_PROPAGATE);
-
-            foreach (string path in filePaths)
-                if (!isPropPathValid(path))
-                    throw ConfigError(
-                       "The list '{0}' contains non-relative or backtracking path '{1}'\n\n{2}",
-                       list.Name, path, RULES_PROPAGATE);
-            propagations.Add(new PropagateList(list.Name, filePaths));
-        }
-
-        /// <summary>
-        /// Ensures a propagation pathway is valid
-        /// </summary>
-        /// <param name="propPath"> The propagation pathway to check </param>
-        /// <returns>
-        /// True if the path is not empty, is relative, and does not backtrack.
-        /// Otherwise, returns false
-        /// </returns>
-        bool isPropPathValid(string propPath)
-        {
-            if(propPath.Length == 0)
-                return false;
-            if(Path.IsPathRooted(propPath))
-                return false;
-            string pathAbs = Path.GetFullPath(propPath);
-            return pathAbs.StartsWith(workingDir);
-        }
-    }
-
-    private EMBConfigException ConfigError(string msg, string arg0="", string arg1="", string arg2="")
-    {
-        string preamble = String.Format(
-            "Problem encountered in config. file '{0}' with Property '{1}':\n", 
-            configPath, name
-        );
-        string formattedMessage = String.Format(msg, arg0, arg1, arg2);
-
-        return new EMBConfigException(preamble + formattedMessage);
-    }
-
-    public class EMBConfigException : EMBException
-    {
-        public EMBConfigException(string msg) : base (msg) {}
+        public EMBConfigNameException(string msg) : base(msg) { }
     }
 }
