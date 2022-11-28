@@ -50,12 +50,12 @@ class ConfigBuilder
 
                 switch (reader.lastTokenType)
                 {
-                    case OptionType.DEFAULT_PRIMITIVE:
-                        config.addOption(name, reader.val_defaultPrimitive);
+                    case OptionType.STANDARD_PRIMITIVE:
+                        config.addOption(name, reader.val_standardPrimitive);
                     break;
 
-                    case OptionType.DEFAULT_LIST:
-                        config.addListOption(name, reader.val_defaultList);
+                    case OptionType.STANDARD_LIST:
+                        config.addListOption(name, reader.val_standardList);
                     break;
                     
                     case OptionType.COMMENT:

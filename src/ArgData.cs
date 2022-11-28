@@ -163,10 +163,17 @@ class ArgData
     /// </summary>
     /// <param name="args">Command-line arguments</param>
     /// <exception cref="EMBArgumentException">
-    /// Argument parsing or validationfails for any predicted reason
+    /// Argument parsing or validation fails for any predicted reason
     /// </exception>
     public ArgData(string[] args)
     {
+        EMBArgumentException ArgError(string msg, string arg0 = "", string arg1 = "")
+        {
+            string formattedMessage = "Failed to parse command-line arguments:\n"
+                + String.Format(msg, arg0, arg1);
+            return new EMBArgumentException(formattedMessage);
+        }
+
         /*
         * Read all arguments to variables 
         */
@@ -297,30 +304,25 @@ class ArgData
         ERR_MOD_MISSING = "The mod directory or .zip file does not exist.",
         ERR_MOD_SIZE = "Your mod may not be larger than ~{0} gigabytes.";
 
+        bool modTooLarge = false;
+
         // The mod must be a valid zip file or directory that does not
         // exceed the maximum mod size requirement
         if(File.Exists(srcPath))
         {
             if (!ZipUtil.isFileValidZip(srcPath))
                 throw ArgError(ERR_MOD_INVALID);
-
-            if(FSUtil.isFileLarge(srcPath, MAX_INPUT_SIZE_BYTES))
-                throw modTooLarge();
-
+            
+            modTooLarge = FSUtil.isFileLarge(srcPath, MAX_INPUT_SIZE_BYTES);
             srcIsZip = true;
         }
         else if (Directory.Exists(srcPath))
-        {
-            if(FSUtil.isDirectoryLarge(srcPath, MAX_INPUT_SIZE_BYTES))
-                throw modTooLarge();
-        }
+            modTooLarge = FSUtil.isDirectoryLarge(srcPath, MAX_INPUT_SIZE_BYTES);
         else
             throw ArgError(ERR_MOD_MISSING);
         
-        EMBArgumentException modTooLarge()
-        {
-            return ArgError(ERR_MOD_SIZE, (MAX_INPUT_SIZE_BYTES / 1000000000.0).ToString());
-        }
+        if(modTooLarge)
+            throw ArgError(ERR_MOD_SIZE, (MAX_INPUT_SIZE_BYTES / 1000000000.0).ToString());
         
         /*
         * Validate the output argument and determine if we're outputting to
@@ -344,21 +346,6 @@ class ArgData
             if(FSUtil.isParentDir(srcPath, outPath))
                 throw ArgError(ERR_OUTPUT_IN_SRC, RULES_OUTPUT);
         outToZip = outPath.EndsWithCCIC(".zip");
-    }
-
-    /// <summary>
-    /// Generates an Exception with a formatted message based on the supplied
-    /// string inputs.
-    /// </summary>
-    /// <param name="msg">The message body</param>
-    /// <param name="arg0">Optional first argument</param>
-    /// <param name="arg1">Option second argument</param>
-    /// <returns>An EMBArgumentException containing the formatted message</returns>
-    private EMBArgumentException ArgError(string msg, string arg0="", string arg1 = "")
-    {
-        string formattedMessage = "Failed to parse command-line arguments:\n"
-            + String.Format(msg, arg0, arg1);
-        return new EMBArgumentException(formattedMessage);
     }
 
     /// <summary>
