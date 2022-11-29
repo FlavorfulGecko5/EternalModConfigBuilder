@@ -1,27 +1,4 @@
 /// <summary>
-/// Describes all modes EternalModBuilder can run in
-/// </summary>
-public enum ExecutionMode
-{
-    COMPLETE,
-    READONLY,
-    PARSE,
-    PROPAGATE
-}
-
-/// <summary>
-/// Describes all levels EternalModBuilder's logging feature can operate at
-/// </summary>
-public enum LogLevel
-{
-    MINIMAL,
-    CONFIGS,
-    PARSINGS,
-    PROPAGATIONS,
-    VERBOSE
-}
-
-/// <summary>
 /// Enumerates all types that configuration files can use to define
 /// an Option as.
 /// </summary>
@@ -38,27 +15,6 @@ public enum OptionType
 /// </summary>
 class EnumDesc
 {
-    /// <summary>
-    /// Describes what behavior is expected for each element of the
-    /// ExecutionMode enum when they're utilized
-    /// </summary>
-    public const string SUMMARY_EXEMODE = 
-      "complete  - Reads config. files and performs all build operations (default)\n"
-    + "readonly  - Reads config. files but performs no build operations.\n"
-    + "parse     - Reads config. files and parses labels.\n"
-    + "propagate - Reads config. files and propagates files.";
-
-    /// <summary>
-    /// Describes what behavior is expected for each element of the
-    /// LogLevel enum when they're utilized
-    /// </summary>
-    public const string SUMMARY_LOGLEVEL = 
-      "minimal      - Only outputs errors and warnings (default)\n"
-    + "configs      - Outputs parsed command-line argument and configuration file data.\n"
-    + "parsings     - Outputs what each label's expression resolved to.\n"
-    + "propagations - Outputs each successful propagation.\n"
-    + "verbose      - Outputs everything";
-
     /// <summary>
     /// Describes what each OptionType enum represents and
     /// what behavior is expected when they're utilized.

@@ -1,3 +1,45 @@
+using System.ComponentModel;
+/// <summary>
+/// Describes all modes EternalModBuilder can run in
+/// </summary>
+public enum ExecutionMode
+{
+    /// <summary> Default mode where all build operations are performed </summary>
+    [Description("Reads config. files and performs all build operations (default)")]
+    COMPLETE,
+    /// <summary> Only read config. data without building the mod </summary>
+    [Description("Reads config. files but performs no build operations.")]
+    READONLY,
+    /// <summary> Read config. data and parse files for labels </summary>
+    [Description("Reads config. files and parses labels.")]
+    PARSE,
+    /// <summary> Read config. data and propagate files </summary>
+    [Description("Reads config. files and propagates files.")]
+    PROPAGATE
+}
+
+/// <summary>
+/// Describes all levels EternalModBuilder's logging feature can operate at
+/// </summary>
+public enum LogLevel
+{
+    /// <summary> Default level where only errors and warnings should be output </summary>
+    [Description("Only outputs errors and warnings (default)")]
+    MINIMAL,
+    /// <summary> Should output parsed command-line argument and config. file data </summary>
+    [Description("Outputs parsed command-line argument and configuration file data.")]
+    CONFIGS,
+    /// <summary> Should output what each label's expression resolves to </summary>
+    [Description("Outputs what each label's expression resolved to.")]
+    PARSINGS,
+    /// <summary> Should output the result of each propagation </summary>
+    [Description("Outputs each successful propagation")]
+    PROPAGATIONS,
+    /// <summary> Should output everything logged by other log levels.</summary>
+    [Description("Outputs everything")]
+    VERBOSE
+}
+
 /// <summary>
 /// An object that parses and stores all data needing to be read from
 /// command-line arguments. <para/>
@@ -24,28 +66,6 @@ class ArgData
     /* Constants Defining Program Rules and Behavior */
 
     /// <summary>
-    /// Shows how to run EternalModBuilder with only the mandatory
-    /// command-line arguments
-    /// </summary>
-    const string RULES_USAGE_GENERAL = "Usage: ./EternalModBuilder -c [config "
-    + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]\n"
-    + "You may enter multiple configuration files (use '-c' once per file).\n\n";
-
-    /// <summary>
-    /// Shows how to run EternalModBuilder with only the mandatory command-line
-    /// arguments. Details how to display information for all arguments.
-    /// </summary>
-    const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL 
-    + "For information on optional parameters, run this application with 0 arguments.";
-
-    /// <summary>
-    /// Shows how to run EternalModBuilder by outputting information on
-    /// all possible command-line arguments and how they function
-    /// </summary>
-    public const string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL 
-    + RULES_COMP_ENTITIES + "\n\n" + RULES_EXEMODE + "\n\n" + RULES_LOGLEVEL + "\n";
-
-    /// <summary>
     /// Defines the input instructions for the Compress Entities argument
     /// and how this argument will be utilized
     /// </summary>
@@ -59,15 +79,15 @@ class ArgData
     /// Defines the input instructions for the Execution Mode argument
     /// and how this argument will be utilized
     /// </summary>
-    const string RULES_EXEMODE = "Optional Parameter - Execution Mode\n"
-    + "-x [mode] (Choose one of the following):\n" + EnumDesc.SUMMARY_EXEMODE;
+    static readonly string RULES_EXEMODE = new String("Optional Parameter - Execution Mode\n"
+    + "-x [mode] (Choose one of the following):\n" + EnumUtil.EnumToString<ExecutionMode>());
 
     /// <summary>
     /// Defines the input instructions for the Log Level argument
     /// and how this argument will be utilized
     /// </summary>
-    const string RULES_LOGLEVEL = "Optional Parameter - Log Level\n"
-    + "-l [level] (Choose one of the following):\n" + EnumDesc.SUMMARY_LOGLEVEL;
+    static readonly string RULES_LOGLEVEL = "Optional Parameter - Log Level\n"
+    + "-l [level] (Choose one of the following):\n" + EnumUtil.EnumToString<LogLevel>();
 
     /// <summary>
     /// Defines the rules your output location must follow and how
@@ -79,6 +99,28 @@ class ArgData
     + "-- This directory is ALWAYS deleted when this program is executed.\n"
     + "- No file may already exist at the output location.\n"
     + "- Your output path cannot be inside of your source directory.";
+
+    /// <summary>
+    /// Shows how to run EternalModBuilder with only the mandatory
+    /// command-line arguments
+    /// </summary>
+    const string RULES_USAGE_GENERAL = "Usage: ./EternalModBuilder -c [config "
+    + DESC_CFG_EXTENSIONS + "] -s [mod folder or .zip] -o [output folder or .zip]\n"
+    + "You may enter multiple configuration files (use '-c' once per file).\n\n";
+
+    /// <summary>
+    /// Shows how to run EternalModBuilder with only the mandatory command-line
+    /// arguments. Details how to display information for all arguments.
+    /// </summary>
+    const string RULES_USAGE_MINIMAL = RULES_USAGE_GENERAL
+    + "For information on optional parameters, run this application with 0 arguments.";
+
+    /// <summary>
+    /// Shows how to run EternalModBuilder by outputting information on
+    /// all possible command-line arguments and how they function
+    /// </summary>
+    public static readonly string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL
+    + RULES_COMP_ENTITIES + "\n\n" + RULES_EXEMODE + "\n\n" + RULES_LOGLEVEL + "\n";
 
 
 

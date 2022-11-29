@@ -45,16 +45,6 @@ class EternalModBuilder
     const string MSG_ERROR_UNKNOWN = MSG_ERROR + "An unknown error occurred:\n\n";
 
     /// <summary>
-    /// Output text prefacing any warning message
-    /// </summary>
-    const string MSG_WARNING = "WARNING: ";
-
-    /// <summary>
-    /// Output text prefacing any log message
-    /// </summary>
-    const string MSG_LOG = "LOG: ";
-
-    /// <summary>
     /// Final output message when mod building fails
     /// </summary>
     const string MSG_FAILURE = "\n\nMod building halted due to the above error.\n";
@@ -111,7 +101,7 @@ class EternalModBuilder
     /// <param name="msg">The message to log.</param>
     public static void log(string msg)
     {
-        Console.WriteLine(MSG_LOG + msg);
+        Console.WriteLine("LOG: " + msg);
     }
 
     /// <summary>
@@ -120,7 +110,7 @@ class EternalModBuilder
     /// <param name="msg">The warning message.</param>
     public static void reportWarning(string msg)
     {
-        Console.WriteLine(MSG_WARNING + msg);
+        Console.WriteLine("WARNING: " + msg);
     }
 
     /// <summary>
