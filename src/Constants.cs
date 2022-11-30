@@ -1,30 +1,3 @@
-/// <summary>
-/// Enumerates all types that configuration files can use to define
-/// an Option as.
-/// </summary>
-public enum OptionType
-{
-    STANDARD_PRIMITIVE,
-    STANDARD_LIST,
-    COMMENT,
-    PROPAGATER
-}
-
-/// <summary>
-/// Contains string descriptions for any enums defined in this file
-/// </summary>
-class EnumDesc
-{
-    /// <summary>
-    /// Describes what each OptionType enum represents and
-    /// what behavior is expected when they're utilized.
-    /// </summary>
-    public const string SUMMARY_OPTIONTYPE = 
-      "Standard   - A primitive (number/Boolean/String) value or list of primitives.\n"
-    + "Comment    - Any Options using this type will be ignored when reading the config.\n"
-    + "Propagater - Used to control EternalModBuilder's propagation feature.";
-}
-
 interface Constants
 {
     // Constants pertaining to directories
