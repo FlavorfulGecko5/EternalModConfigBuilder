@@ -46,24 +46,24 @@ class FileParser
         {
             switch (label.type)
             {
-                case LabelType.VAR:
+                case LABEL_VAR:
                     expResult = parseVariable(label);
                 break;
 
-                case LabelType.TOGGLE_START:
+                case LABEL_TOGGLE_START:
                     expResult = parseToggle(label);
                 break;
 
-                case LabelType.LOOP:
+                case LABEL_LOOP:
                     expResult = parseLoop(label);
                 break;
 
-                case LabelType.TOGGLE_END:
+                case LABEL_TOGGLE_END:
                     throw ParseError(
                         "There is a '{0}' label with no preceding start label.\n\n{1}", 
                         DESC_LABEL_TOGGLE_END, RULES_TOGGLE_BLOCK);
 
-                case LabelType.INVALID:
+                default:
                     throw ParseError(
                         "The label '{0}' has an unrecognized type. \n\n'{1}'", 
                         label.raw, DESC_LABEL_TYPES);
@@ -126,9 +126,9 @@ class FileParser
                     start.raw, DESC_LABEL_TOGGLE_END, RULES_TOGGLE_BLOCK);
             end = buildLabel(endStart);
 
-            if(end.type == LabelType.TOGGLE_END)
+            if(end.type.Equals(LABEL_TOGGLE_END))
                 numEndLabelsNeeded--;
-            else if(end.type == LabelType.TOGGLE_START)
+            else if(end.type.Equals(LABEL_TOGGLE_START))
                 numEndLabelsNeeded++;
         }
 

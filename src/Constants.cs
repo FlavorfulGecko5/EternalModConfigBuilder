@@ -10,14 +10,6 @@ interface Constants
     const string NULL_EXP_RESULT = "NULL";
 
     // Enums and Constants pertaining to labels
-    enum LabelType
-    {
-        INVALID,
-        VAR,
-        TOGGLE_START,
-        TOGGLE_END,
-        LOOP
-    }
     const string LABEL_CHAR_BORDER         = "$";
     const string LABEL_CHAR_SEPARATOR      = "#";
     const string LABEL_CHAR_LOOP_SEPARATOR = "&";
