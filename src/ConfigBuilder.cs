@@ -43,7 +43,7 @@ class ConfigBuilder
     /// <summary>
     /// The rules for how a JSON Object Option can have it's type defined
     /// </summary>
-    const string RULES_TYPE = "An option's '" + PROPERTY_TYPE + "' property must:\n"
+    const string RULES_TYPE = "An Option's '" + PROPERTY_TYPE + "' property must:\n"
     + "- Be defined as a string, or not defined at all.\n"
     + "- If undefined, the Option's assumed type will be '" + TYPE_STANDARD + "'\n\n"
     + "The list of acceptable (case-insensitive) strings are:\n"
@@ -64,9 +64,9 @@ class ConfigBuilder
     /// <summary>
     /// The rules for how a 'Propagater' Option can be defined
     /// </summary>
-    const string RULES_PROPAGATER = "Options with the'" + TYPE_PROPAGATER + "' type must obey these rules:\n"
+    const string RULES_PROPAGATER = "Options with the '" + TYPE_PROPAGATER + "' type must obey these rules:\n"
     + "- All their sub-properties (except for '" + PROPERTY_TYPE + "' must be defined as lists of strings.\n"
-    + "- The names and values of these string lists must be formatted according to the rules for Propagation filepaths."
+    + "- The names and values of these string lists must be formatted according to the rules for Propagation filepaths.\n"
     + "These options are used to control EternalModBuilder's Propagation feature."; 
 
 
@@ -154,13 +154,12 @@ class ConfigBuilder
     public void parseConfigFile(string configPathParameter)
     {
         configPath = configPathParameter;
-        name = "N/A";
 
         /*
         * Read the configuration file
         */
         const string
-        ERR_BAD_CFG = "The file has a syntax error. Printing Exception message:\n\n{0}";
+        ERR_BAD_CFG = "The configuration file '{0}' has a syntax error. Printing Exception message:\n\n{1}";
 
         JObject rawJson = new JObject();
         JsonLoadSettings reportExactDuplicates = new JsonLoadSettings()
@@ -175,7 +174,7 @@ class ConfigBuilder
         }
         catch (Newtonsoft.Json.JsonReaderException e)
         {
-            throw ConfigError(ERR_BAD_CFG, e.Message);
+            throw new EMBConfigException(String.Format(ERR_BAD_CFG, configPath, e.Message));
         }
 
         /*
@@ -222,16 +221,16 @@ class ConfigBuilder
                 if(type.Type != JTokenType.String)
                     throw typeError();
                 
-                switch(type.ToString().ToLower())
+                switch(type.ToString().ToUpper())
                 {
-                    case "standard":
+                    case TYPE_STANDARD:
                         readStandard(objectToken.GetValue(PROPERTY_VALUE));
                     return;
 
-                    case "comment":
+                    case TYPE_COMMENT:
                     return;
 
-                    case "propagater":
+                    case TYPE_PROPAGATER:
                         readPropagater(objectToken);
                     return;
 
@@ -325,7 +324,7 @@ class ConfigBuilder
             "Problem encountered in config. file '{0}' with Property '{1}':\n",
             configPath, name
         );
-        string formattedMessage = String.Format(msg, arg0);
+        string formattedMessage = String.Format(msg, arg0, arg1);
 
         return new EMBConfigException(preamble + formattedMessage);
     }

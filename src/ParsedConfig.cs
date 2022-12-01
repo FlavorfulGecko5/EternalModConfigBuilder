@@ -1,11 +1,10 @@
 class ParsedConfig
 {
-    const string RULES_OPTION_NAME = "Option names cannot be empty, and may only contain these characters:\n"
+    const string RULES_OPTION_NAME = "Variable names cannot be empty, and may only contain these characters:\n"
     + "- Letters (a-z, A-Z)\n"
     + "- Numbers (0-9)\n"
     + "- Underscores (_)\n"
-    + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.\n"
-    + "Options with names beginning with an underscore (_) will be treated as comments, and won't be processed as variables.";
+    + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.\n";
 
     public Dictionary<string, string> options = new Dictionary<string, string>();
     public List<PropagateList> propagations = new List<PropagateList>();
@@ -50,7 +49,7 @@ class ParsedConfig
     {
         const string
         ERR_INVALID_NAME = "'{0}' is an invalid name.\n\n{1}",
-        ERR_DUPE_NAME = "'{0}' is used to define multiple Options.\n\n{1}";
+        ERR_DUPE_NAME = "'{0}' is already the name of another variable.\n\n{1}";
 
         string fixedName = name.ToLower();
         if (fixedName.Length == 0)
