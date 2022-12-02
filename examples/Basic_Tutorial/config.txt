@@ -38,6 +38,13 @@
         "Standard Type": "All of the above options utilize 'Standard' as their 'Type' (this is the default Type if none is specified)."
     },
 
+    "largeText": {
+        "About": "The 'Text' type lets you parse a list of strings into a single variable, one list item per line",
+
+        "Type": "Text",
+        "Value": ["line #1", "line #2", "line #3"]
+    },
+
     "Propagater_Objects": {
         "Type": "Comment",
         "About": "The 'Propagater' type let's you define Options that control EternalModBuilder's propagation feature"

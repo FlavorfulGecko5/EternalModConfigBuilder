@@ -25,6 +25,11 @@ class ConfigBuilder
     const string TYPE_STANDARD = "STANDARD";
 
     /// <summary>
+    /// The type for text block Options
+    /// </summary>
+    const string TYPE_TEXT = "TEXT";
+
+    /// <summary>
     /// JSON Objects with this type will not be parsed into a value
     /// </summary>
     const string TYPE_COMMENT = "COMMENT";
@@ -33,7 +38,6 @@ class ConfigBuilder
     /// JSON Objects with this type will be parsed into a set of <see cref="PropagateList"/>
     /// </summary>
     const string TYPE_PROPAGATER = "PROPAGATER";
-
     
     
     /* 
@@ -48,6 +52,7 @@ class ConfigBuilder
     + "- If undefined, the Option's assumed type will be '" + TYPE_STANDARD + "'\n\n"
     + "The list of acceptable (case-insensitive) strings are:\n"
     + "- '" + TYPE_STANDARD + "'\n"
+    + "- '" + TYPE_TEXT + "'\n"
     + "- '" + TYPE_COMMENT + "'\n"
     + "- '" + TYPE_PROPAGATER + "'";
 
@@ -61,13 +66,23 @@ class ConfigBuilder
     + "- List: A list of values containing only strings, numbers and Booleans.\n"
     + "- Object: This must have a '" + PROPERTY_VALUE + "' (case-sensitive) sub-property defined in one of the above ways.";
 
+    const string RULES_TEXT = "'" + TYPE_TEXT + "' Options must:\n"
+    + "- Have their '" + PROPERTY_VALUE + "' property defined as a list.\n"
+    + "- This list's values must consist of strings, numbers or Booleans.\n"
+    + "These list elements will be merged into a single variable, with each element on it's own line of text.";
+
     /// <summary>
     /// The rules for how a 'Propagater' Option can be defined
     /// </summary>
     const string RULES_PROPAGATER = "Options with the '" + TYPE_PROPAGATER + "' type must obey these rules:\n"
     + "- All their sub-properties (except for '" + PROPERTY_TYPE + "' must be defined as lists of strings.\n"
     + "- The names and values of these string lists must be formatted according to the rules for Propagation filepaths.\n"
-    + "These options are used to control EternalModBuilder's Propagation feature."; 
+    + "These options are used to control EternalModBuilder's Propagation feature.";
+
+    /// <summary>
+    /// Generic error message for when an Option is not defined properly according to it's type's rules.
+    /// </summary>
+    const string ERR_OPTION_DEF = "This Option is not defined in a valid way.\n\n{0}"; 
 
 
 
@@ -227,6 +242,10 @@ class ConfigBuilder
                         readStandard(objectToken.GetValue(PROPERTY_VALUE));
                     return;
 
+                    case TYPE_TEXT:
+                        readText(objectToken.GetValue(PROPERTY_VALUE));
+                    return;
+
                     case TYPE_COMMENT:
                     return;
 
@@ -257,8 +276,6 @@ class ConfigBuilder
     /// </throws>
     private void readStandard(JToken? valueToken)
     {
-        const string ERR_STANDARD = "This Option is not defined in a valid way.\n\n{0}";
-
         if (valueToken == null)
             throw invalidDefinition();
         switch (valueToken.Type)
@@ -280,8 +297,24 @@ class ConfigBuilder
         }
         EMBConfigException invalidDefinition()
         {
-            return ConfigError(ERR_STANDARD, RULES_STANDARD);
+            return ConfigError(ERR_OPTION_DEF, RULES_STANDARD);
         }
+    }
+
+    private void readText(JToken? textToken)
+    {
+        string[] textLines = {};
+        if(textToken == null || !readPrimitiveList(textToken, ref textLines))
+            throw ConfigError(ERR_OPTION_DEF, RULES_TEXT);
+        
+        string textBlock = "";
+        foreach(string line in textLines)
+            textBlock += '\n' + line;
+        
+        // Eliminate initial newline character
+        string fixedBlock = textBlock.Length == 0 ? "" : textBlock.Substring(1);
+        
+        config.addOption(name, fixedBlock);
     }
 
     /// <summary>

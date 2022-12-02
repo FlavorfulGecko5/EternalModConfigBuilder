@@ -47,6 +47,12 @@ be replaced with the value of "y":
 
 
 
+This segment demonstrates how 'Text' variables are output:
+line #1
+line #2
+line #3
+As you can see, each element of the list is output onto it's own line
+
 
 
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever

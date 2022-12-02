@@ -49,6 +49,14 @@ $emb_var#{z}$
 
 
 
+This segment demonstrates how 'Text' variables are output:
+$emb_var#'{largeText}'$
+As you can see, each element of the list is output onto it's own line
+
+
+
+
+
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
 it's expression evaluates to, a toggle label can be used to keep or remove an entire
 section of a file, based on what it's expression evaluates to. Toggle label expressions
