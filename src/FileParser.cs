@@ -129,7 +129,7 @@ class FileParser
     {
         string result = ExpressionHandler.computeVarExpression(label.exp);
         text = text.Substring(0, label.start) + result 
-            + text.Substring(label.end + 1, text.Length - label.end - 1);
+            + text.Substring(label.end + 1);
         return result;
     }
 
@@ -158,10 +158,10 @@ class FileParser
         if (resultBool) // Keep what's in-between, remove the labels
             text = text.Substring(0, start.start)
                 + text.Substring(start.end + 1, endStart - start.end - 1)
-                + text.Substring(end.end + 1, text.Length - end.end - 1);
+                + text.Substring(end.end + 1);
         else // Remove the labels and what's in-between them
             text = text.Substring(0, start.start)
-                + text.Substring(end.end + 1, text.Length - end.end - 1);
+                + text.Substring(end.end + 1);
         return resultBool.ToString();
     }
 
@@ -169,7 +169,7 @@ class FileParser
     {
         string result = ExpressionHandler.computeLoopExpression(label.exp);
         text = text.Substring(0, label.start) + result
-            + text.Substring(label.end + 1, text.Length - label.end - 1);
+            + text.Substring(label.end + 1);
         return result;
     }
 
