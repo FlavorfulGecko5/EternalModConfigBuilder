@@ -8,7 +8,14 @@ class FileParser
         public string type { get; private set; } = "!UNDEFINED!";
         public string exp { get; private set; } = "!UNDEFINED!";
 
-        public Label() { }
+        public Label(Label copyFrom) 
+        { 
+            start = copyFrom.start;
+            end = copyFrom.end;
+            raw = copyFrom.raw;
+            type = copyFrom.type;
+            exp = copyFrom.exp;
+        }
 
         public Label(int startParm, int endParm, string labelParm, int separatorIndex)
         {
@@ -42,11 +49,11 @@ class FileParser
             logger.startNewFileLog(path);
 
         // Labels are parsed sequentially by scanning the entire text file.
-        int nextStartIndex = findNextLabelIndex(LABEL_ANY, 0);
-        while (nextStartIndex != -1)
+        Label? nextLabel = buildLabel(LABEL_ANY, 0);
+        while (nextLabel != null)
         {
-            parseLabel(nextStartIndex);
-            nextStartIndex = findNextLabelIndex(LABEL_ANY, nextStartIndex);
+            parseLabel(nextLabel);
+            nextLabel = buildLabel(LABEL_ANY, nextLabel.start);
         }
 
         FSUtil.writeFile(path, text);
@@ -55,14 +62,8 @@ class FileParser
             EternalModBuilder.log(logger.getMessage());
     }
 
-    private int findNextLabelIndex(string labelToFind, int searchStartIndex)
+    private void parseLabel(Label label)
     {
-        return text.IndexOfCCIC(labelToFind, searchStartIndex);
-    }
-
-    private void parseLabel(int startIndex)
-    {
-        Label label = buildLabel(startIndex);
         string expResult = "";
         try
         {
@@ -102,8 +103,12 @@ class FileParser
             logger.appendLabelResult(label, expResult);
     }
 
-    private Label buildLabel(int start)
+    private Label? buildLabel(string labelToFind, int searchStartIndex)
     {
+        int start = text.IndexOfCCIC(labelToFind, searchStartIndex);
+        if(start == -1)
+            return null;
+
         if(numBuildLabelCalls++ == PARSER_INFINITE_LOOP_THRESHOLD)
             throw ParseError(
                 "Parsing this file's labels creates an infinite loop.");
@@ -136,17 +141,15 @@ class FileParser
     private string parseToggle(Label start)
     {
         int numEndLabelsNeeded = 1; // Allows nested toggles
-        int endStart = start.start;
-        Label end = new Label();
+        Label? end = new Label(start);
 
         while(numEndLabelsNeeded > 0)
         {
-            endStart = findNextLabelIndex(LABEL_TOGGLE_ANY, endStart + 1);
-            if(endStart == -1)
+            end = buildLabel(LABEL_TOGGLE_ANY, end.start + 1);
+            if(end == null)
                 throw ParseError(
                     "The label '{0}' has no '{1}' label following it.\n\n{2}", 
                     start.raw, DESC_LABEL_TOGGLE_END, RULES_TOGGLE_BLOCK);
-            end = buildLabel(endStart);
 
             if(end.type.Equals(LABEL_TOGGLE_END))
                 numEndLabelsNeeded--;
@@ -157,7 +160,7 @@ class FileParser
         bool resultBool = ExpressionHandler.computeToggleExpression(start.exp);
         if (resultBool) // Keep what's in-between, remove the labels
             text = text.Substring(0, start.start)
-                + text.Substring(start.end + 1, endStart - start.end - 1)
+                + text.Substring(start.end + 1, end.start - start.end - 1)
                 + text.Substring(end.end + 1);
         else // Remove the labels and what's in-between them
             text = text.Substring(0, start.start)
