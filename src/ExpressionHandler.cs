@@ -49,7 +49,7 @@ class ExpressionHandler
                     default:
                         if (options.ContainsKey(name))
                         {
-                            exp = exp.ReplaceCCIC('{' + name + '}', options[name]);
+                            exp = exp.ReplaceOIC('{' + name + '}', options[name]);
                             openIndex = exp.IndexOf('{');
 
                             if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
@@ -81,7 +81,7 @@ class ExpressionHandler
 
         // Decl files use lowercase true/false
         // Variations in capitalization cause game crashes
-        if (result.EqualsCCIC("true") || result.EqualsCCIC("false"))
+        if (result.EqualsOIC("true") || result.EqualsOIC("false"))
             result = result.ToLower();
         return result;
     }
@@ -91,14 +91,14 @@ class ExpressionHandler
         int endIndex = startIndex, numEndsNeeded = 1;
         while (numEndsNeeded > 0)
         {
-            endIndex = exp.IndexOfCCIC('{' + SYM_SUBEXP_START, endIndex + 1);
+            endIndex = exp.IndexOfOIC('{' + SYM_SUBEXP_START, endIndex + 1);
             if (endIndex == -1)
                 throw ExpError(
                     "There is a '{0}' symbol with no '{1}' symbol following it.\n\n{2}",
                     '{' + SYM_SUBEXP_START + '}', '{' + SYM_SUBEXP_END + '}', RULES_SUBEXPRESSIONS);
-            if (endIndex == exp.IndexOfCCIC('{' + SYM_SUBEXP_START + '}', endIndex))
+            if (endIndex == exp.IndexOfOIC('{' + SYM_SUBEXP_START + '}', endIndex))
                 numEndsNeeded++;
-            else if (endIndex == exp.IndexOfCCIC('{' + SYM_SUBEXP_END + '}', endIndex))
+            else if (endIndex == exp.IndexOfOIC('{' + SYM_SUBEXP_END + '}', endIndex))
                 numEndsNeeded--;
         }
         // Indices used in substring calculations

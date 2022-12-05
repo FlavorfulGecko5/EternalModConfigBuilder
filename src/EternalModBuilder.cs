@@ -230,9 +230,9 @@ class EternalModBuilder
         // and uncompressed .entities files
         string[] allFiles = FSUtil.getAllFilesInCurrentDir();
         foreach(string file in allFiles)
-            if(file.EndsWithCCIC(".decl") || file.EndsWithCCIC(".json"))
+            if(file.EndsWithOIC(".decl") || file.EndsWithOIC(".json"))
                 labelFiles.Add(file);
-            else if(file.EndsWithCCIC(".entities"))
+            else if(file.EndsWithOIC(".entities"))
                 if(!EntityCompressor.isEntityFileCompressed(file))
                 {
                     labelFiles.Add(file);

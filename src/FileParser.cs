@@ -105,7 +105,7 @@ class FileParser
 
     private Label? buildLabel(string labelToFind, int searchStartIndex)
     {
-        int start = text.IndexOfCCIC(labelToFind, searchStartIndex);
+        int start = text.IndexOfOIC(labelToFind, searchStartIndex);
         if(start == -1)
             return null;
 

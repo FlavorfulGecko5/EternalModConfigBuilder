@@ -329,7 +329,7 @@ class ArgData
         foreach(string config in configPaths)
         {
             // Ensure the file extension is acceptable
-            if(!config.EndsWithCCIC(".json") && !config.EndsWithCCIC(".txt"))
+            if(!config.EndsWithOIC(".json") && !config.EndsWithOIC(".txt"))
                 throw ArgError(ERR_CFG_EXT, config, DESC_CFG_EXTENSIONS);
             
             // Ensure the file exists
@@ -387,7 +387,7 @@ class ArgData
         if (!srcIsZip) 
             if(FSUtil.isParentDir(srcPath, outPath))
                 throw ArgError(ERR_OUTPUT_IN_SRC, RULES_OUTPUT);
-        outToZip = outPath.EndsWithCCIC(".zip");
+        outToZip = outPath.EndsWithOIC(".zip");
     }
 
     /// <summary>
