@@ -30,6 +30,11 @@ class ConfigBuilder
     const string TYPE_TEXT = "TEXT";
 
     /// <summary>
+    /// The type for map Options
+    /// </summary>
+    const string TYPE_MAP = "MAP";
+
+    /// <summary>
     /// JSON Objects with this type will not be parsed into a value
     /// </summary>
     const string TYPE_COMMENT = "COMMENT";
@@ -53,6 +58,7 @@ class ConfigBuilder
     + "The list of acceptable (case-insensitive) strings are:\n"
     + "- '" + TYPE_STANDARD + "'\n"
     + "- '" + TYPE_TEXT + "'\n"
+    + "- '" + TYPE_MAP + "'\n"
     + "- '" + TYPE_COMMENT + "'\n"
     + "- '" + TYPE_PROPAGATER + "'";
 
@@ -246,6 +252,10 @@ class ConfigBuilder
                         readText(objectToken.GetValue(PROPERTY_VALUE));
                     return;
 
+                    case TYPE_MAP:
+                        readMap(objectToken);
+                    return;
+
                     case TYPE_COMMENT:
                     return;
 
@@ -315,6 +325,36 @@ class ConfigBuilder
         string fixedBlock = textBlock.Length == 0 ? "" : textBlock.Substring(1);
         
         config.addOption(name, fixedBlock);
+    }
+
+    private void readMap(JObject map)
+    {
+        const string PROPERTY_MAP_KEYS = "Keys";
+        const string PROPERTY_MAP_VALUES = "Values";
+
+        const string RULES_MAP = "'" + TYPE_MAP + "' Options must:\n"
+        + "- Have a '" + PROPERTY_MAP_KEYS + "' and a '" + PROPERTY_MAP_VALUES + "' property.\n"
+        + "- Both properties must be defined as lists of strings, numbers or Booleans.\n"
+        + "- Both lists must be the same length.\n"
+        + "When parsed, each key will be associated with its corresponding value in a variable";
+
+        const string
+        ERR_KEYS = "The '" + PROPERTY_MAP_KEYS + "' subproperty is not defined properly.\n\n{0}",
+        ERR_VALUES = "The '" + PROPERTY_MAP_VALUES + "' subproperty is not defined properly.\n\n{0}",
+        ERR_UNEQUAL_LENGTHS = "The '" + PROPERTY_MAP_KEYS + "' and '" + PROPERTY_MAP_VALUES + "' lists must be the same length.\n\n{0}";
+
+        string[] keys = {}, values = {};
+
+        if (!readPrimitiveList(map.GetValue(PROPERTY_MAP_KEYS), ref keys))
+            throw ConfigError(ERR_KEYS, RULES_MAP);
+
+        if (!readPrimitiveList(map.GetValue(PROPERTY_MAP_VALUES), ref values))
+            throw ConfigError(ERR_VALUES, RULES_MAP);
+
+        if (keys.Length != values.Length)
+            throw ConfigError(ERR_UNEQUAL_LENGTHS, RULES_MAP);
+
+        config.addMapOption(name, keys, values);
     }
 
     /// <summary>

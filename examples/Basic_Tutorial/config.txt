@@ -45,6 +45,14 @@
         "Value": ["line #1", "line #2", "line #3"]
     },
 
+    "mapObject": {
+        "About": "The 'Map' type creates a set of options relating keys to values.",
+
+        "Type": "Map",
+        "Keys": ["first", "second", 3],
+        "Values": [234, "true", "the third value in the map"]
+    },
+
     "Propagater_Objects": {
         "Type": "Comment",
         "About": "The 'Propagater' type let's you define Options that control EternalModBuilder's propagation feature"

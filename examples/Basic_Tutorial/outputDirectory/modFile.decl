@@ -59,6 +59,20 @@ As you can see, each element of the list is output onto it's own line
 
 
 
+This segment shows how to access variables created by 'Map' Options
+234
+true
+the third value in the map
+
+Simply inputting the name of the Map Option with no key will yield
+the number of entries inside the Map.
+
+This Map Option has 3 entries.
+
+
+
+
+
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
 it's expression evaluates to, a toggle label can be used to keep or remove an entire
 section of a file, based on what it's expression evaluates to. Toggle label expressions

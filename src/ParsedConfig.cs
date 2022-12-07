@@ -6,6 +6,10 @@ class ParsedConfig
     + "- Underscores (_)\n"
     + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.\n";
 
+    const string RULES_SUBNAMES = "Subnames obey the same naming rules as primary Variable names.\n"
+    + "Additionally, subnames belonging to the same variable cannot equal each other.\n"
+    + "(Due to case-insensitivity, duplicate subnames with different capitalizations are not allowed.)";
+
     public Dictionary<string, string> options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
     public List<PropagateList> propagations = new List<PropagateList>();
 
@@ -39,6 +43,16 @@ class ParsedConfig
             options.Add(name + '[' + i + ']', values[i]);
     }
 
+    public void addMapOption(string name, string[] keys, string[] values)
+    {
+        validatePrimaryName(name);
+        validateSubNames(keys);
+
+        options.Add(name, keys.Length.ToString());
+        for(int i = 0; i < keys.Length; i++)
+            options.Add(name + '[' + keys[i] + ']', values[i]);
+    }
+
     public void addPropagationLists(PropagateList[] newLists)
     {
         foreach(PropagateList list in newLists)
@@ -56,6 +70,22 @@ class ParsedConfig
 
         if (options.ContainsKey(name))
             throw NameError(ERR_DUPE_NAME, name, RULES_OPTION_NAME);     
+    }
+
+    private void validateSubNames(string[] subnames)
+    {
+        const string
+        ERR_INVALID_SUBNAME = "'{0}' is an invalid subname.\n\n{1}",
+        ERR_DUPE_SUBNAME = "'{0}' is being used as a subname multiple times for this variable.\n\n{1}";
+
+        for(int i = 0; i < subnames.Length; i++)
+        {
+            if(!followsNameRules(subnames[i]))
+                throw NameError(ERR_INVALID_SUBNAME, subnames[i], RULES_SUBNAMES);
+            for(int j = i + 1; j < subnames.Length; j++)
+                if(subnames[i].EqualsOIC(subnames[j]))
+                    throw NameError(ERR_DUPE_SUBNAME, subnames[i], RULES_SUBNAMES);
+        }
     }
 
     private bool followsNameRules(string name)
