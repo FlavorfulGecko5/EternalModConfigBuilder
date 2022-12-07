@@ -108,7 +108,7 @@ class ConfigBuilder
         ConfigBuilder builder = new ConfigBuilder();
         foreach(string path in configPaths)
             builder.parseConfigFile(path);    
-        return builder.config;
+        return new ParsedConfig(builder.options, builder.propagations);
     }
 
     /// <summary>
@@ -153,9 +153,14 @@ class ConfigBuilder
     */
 
     /// <summary>
-    /// Contains all data parsed from the configuration files
+    /// Contains all options parsed from the configuration files
     /// </summary>
-    public ParsedConfig config {get; private set;} = new ParsedConfig();
+    public EMBOptionDictionary options {get; private set;} = new EMBOptionDictionary();
+
+    /// <summary>
+    /// Contains all Propagation Lists read from the configuration files
+    /// </summary>
+    public List<PropagateList> propagations {get; private set;} = new List<PropagateList>(); 
 
     /// <summary>
     /// The pathway to the configuration file that is currently being parsed.
@@ -203,77 +208,58 @@ class ConfigBuilder
         */
         foreach (JProperty property in rawJson.Properties())
         {
-            name = property.Name; 
-            try
-            {
-                read(property.Value);
-            }
-            catch(ParsedConfig.EMBConfigNameException e)
-            {
-                throw ConfigError(e.Message);
-            }
-        }
-    }
+            name = property.Name;
+            JToken value = property.Value;
 
-    /// <summary>
-    /// Reads a JToken formatted as an EternalModBuilder Option and stores
-    /// it's values and type in the appropriate instance fields.
-    /// </summary>
-    /// <param name="token">The Option to be read</param>
-    /// <exception cref="EMBConfigException">
-    /// The data cannot be parsed for any reason, including having
-    /// improper formatting or structuring.
-    /// </exception>
-    public void read(JToken token)
-    {
-        const string ERR_BAD_TYPE = "The Option's type is unrecognized.\n\n{0}";
+            const string ERR_BAD_TYPE = "The Option's type is unrecognized.\n\n{0}";
 
-        // Execute appropriate reading function based on the type
-        // or throw an error if the type is invalid
-        if(token.Type == JTokenType.Object)
-        {
-            JObject objectToken = (JObject)token;
-            JToken? type = objectToken.GetValue(PROPERTY_TYPE);
-
-            if(type == null)
-                readStandard(objectToken.GetValue(PROPERTY_VALUE));
-            else
+            // Execute appropriate reading function based on the type
+            // or throw an error if the type is invalid
+            if (value.Type == JTokenType.Object)
             {
-                if(type.Type != JTokenType.String)
-                    throw typeError();
-                
-                switch(type.ToString().ToUpper())
+                JObject objectToken = (JObject)value;
+                JToken? type = objectToken.GetValue(PROPERTY_TYPE);
+
+                if (type == null)
+                    readStandard(objectToken.GetValue(PROPERTY_VALUE));
+                else
                 {
-                    case TYPE_STANDARD:
-                        readStandard(objectToken.GetValue(PROPERTY_VALUE));
-                    return;
-
-                    case TYPE_TEXT:
-                        readText(objectToken.GetValue(PROPERTY_VALUE));
-                    return;
-
-                    case TYPE_MAP:
-                        readMap(objectToken);
-                    return;
-
-                    case TYPE_COMMENT:
-                    return;
-
-                    case TYPE_PROPAGATER:
-                        readPropagater(objectToken);
-                    return;
-
-                    default:
+                    if (type.Type != JTokenType.String)
                         throw typeError();
-                }
-                EMBConfigException typeError()
-                {
-                    return ConfigError(ERR_BAD_TYPE, RULES_TYPE);
+
+                    switch (type.ToString().ToUpper())
+                    {
+                        case TYPE_STANDARD:
+                            readStandard(objectToken.GetValue(PROPERTY_VALUE));
+                        break;
+
+                        case TYPE_TEXT:
+                            readText(objectToken.GetValue(PROPERTY_VALUE));
+                        break;
+
+                        case TYPE_MAP:
+                            readMap(objectToken);
+                        break;
+
+                        case TYPE_COMMENT:
+                        break;
+
+                        case TYPE_PROPAGATER:
+                            readPropagater(objectToken);
+                        break;
+
+                        default:
+                            throw typeError();
+                    }
+                    EMBConfigException typeError()
+                    {
+                        return ConfigError(ERR_BAD_TYPE, RULES_TYPE);
+                    }
                 }
             }
+            else
+                readStandard(value); 
         }
-        else
-            readStandard(token);
     }
 
     /// <summary>
@@ -286,6 +272,8 @@ class ConfigBuilder
     /// </throws>
     private void readStandard(JToken? valueToken)
     {
+        validatePrimaryName();
+
         if (valueToken == null)
             throw invalidDefinition();
         switch (valueToken.Type)
@@ -294,12 +282,14 @@ class ConfigBuilder
             string[] list = {};
             if (!readPrimitiveList(valueToken, ref list))
                 throw invalidDefinition();
-            config.addListOption(name, list);
+            options.Add(name, list.Length.ToString());
+            for (int i = 0; i < list.Length; i++)
+                options.Add(name + '[' + i + ']', list[i]);
             break;
 
             case JTokenType.Integer: case JTokenType.Float:
             case JTokenType.Boolean: case JTokenType.String:
-            config.addOption(name, valueToken.ToString());
+            options.Add(name, valueToken.ToString());
             break;
 
             default:
@@ -313,6 +303,8 @@ class ConfigBuilder
 
     private void readText(JToken? textToken)
     {
+        validatePrimaryName();
+
         string[] textLines = {};
         if(textToken == null || !readPrimitiveList(textToken, ref textLines))
             throw ConfigError(ERR_OPTION_DEF, RULES_TEXT);
@@ -324,11 +316,13 @@ class ConfigBuilder
         // Eliminate initial newline character
         string fixedBlock = textBlock.Length == 0 ? "" : textBlock.Substring(1);
         
-        config.addOption(name, fixedBlock);
+        options.Add(name, fixedBlock);
     }
 
     private void readMap(JObject map)
     {
+        validatePrimaryName();
+
         const string PROPERTY_MAP_KEYS = "Keys";
         const string PROPERTY_MAP_VALUES = "Values";
 
@@ -353,8 +347,12 @@ class ConfigBuilder
 
         if (keys.Length != values.Length)
             throw ConfigError(ERR_UNEQUAL_LENGTHS, RULES_MAP);
+        
+        validateSubNames(keys);
 
-        config.addMapOption(name, keys, values);
+        options.Add(name, keys.Length.ToString());
+        for (int i = 0; i < keys.Length; i++)
+            options.Add(name + '[' + keys[i] + ']', values[i]);
     }
 
     /// <summary>
@@ -388,7 +386,61 @@ class ConfigBuilder
                 throw ConfigError(e.Message);
             }
         }
-        config.addPropagationLists(parsedLists);
+        foreach (PropagateList list in parsedLists)
+            propagations.Add(list);
+    }
+
+    private void validatePrimaryName()
+    {
+        const string RULES_OPTION_NAME = "Variable names cannot be empty, and may only contain these characters:\n"
+        + "- Letters (a-z, A-Z)\n"
+        + "- Numbers (0-9)\n"
+        + "- Underscores (_)\n"
+        + "Names are case-insensitive, so duplicate names with different capitalizations are not allowed.\n";
+
+        const string
+        ERR_INVALID_NAME = "'{0}' is an invalid name.\n\n{1}",
+        ERR_DUPE_NAME = "'{0}' is already the name of another variable.\n\n{1}";
+
+        if(!followsNameRules(name))
+            throw ConfigError(ERR_INVALID_NAME, name, RULES_OPTION_NAME);
+
+        if (options.ContainsKey(name))
+            throw ConfigError(ERR_DUPE_NAME, name, RULES_OPTION_NAME);     
+    }
+
+    private void validateSubNames(string[] subnames)
+    {
+        const string RULES_SUBNAMES = "Subnames obey the same naming rules as primary Variable names.\n"
+        + "Additionally, subnames belonging to the same variable cannot equal each other.\n"
+        + "(Due to case-insensitivity, duplicate subnames with different capitalizations are not allowed.)";
+
+        const string
+        ERR_INVALID_SUBNAME = "'{0}' is an invalid subname.\n\n{1}",
+        ERR_DUPE_SUBNAME = "'{0}' is being used as a subname multiple times for this variable.\n\n{1}";
+
+        for(int i = 0; i < subnames.Length; i++)
+        {
+            if(!followsNameRules(subnames[i]))
+                throw ConfigError(ERR_INVALID_SUBNAME, subnames[i], RULES_SUBNAMES);
+            for(int j = i + 1; j < subnames.Length; j++)
+                if(subnames[i].EqualsOIC(subnames[j]))
+                    throw ConfigError(ERR_DUPE_SUBNAME, subnames[i], RULES_SUBNAMES);
+        }
+    }
+
+    private bool followsNameRules(string nameToCheck)
+    {
+        if (nameToCheck.Length == 0)
+            return false;
+
+        foreach (char c in nameToCheck)
+            if (!(c <= 'z' && c >= 'a'))
+            if (!(c <= 'Z' && c >= 'A'))
+            if (!(c <= '9' && c >= '0'))
+            if (!(c == '_'))
+                return false;
+        return true;
     }
 
     EMBConfigException ConfigError(string msg, string arg0 = "", string arg1 = "")
