@@ -43,6 +43,12 @@ class ConfigBuilder
     /// JSON Objects with this type will be parsed into a set of <see cref="PropagateList"/>
     /// </summary>
     const string TYPE_PROPAGATER = "PROPAGATER";
+
+    /// <summary>
+    /// A list of all Option Types built into EternalModBuilder
+    /// </summary>
+    static readonly List<string> RESERVED_TYPES = new List<string> 
+        { TYPE_STANDARD, TYPE_TEXT, TYPE_MAP, TYPE_COMMENT, TYPE_PROPAGATER };
     
     
     /* 
@@ -61,29 +67,6 @@ class ConfigBuilder
     + "- '" + TYPE_MAP + "'\n"
     + "- '" + TYPE_COMMENT + "'\n"
     + "- '" + TYPE_PROPAGATER + "'";
-
-    /// <summary>
-    /// The rules for how a 'Standard' Option can be defined
-    /// </summary>
-    const string RULES_STANDARD = "'" + TYPE_STANDARD + "' Options can be defined as follows:\n"
-    + "- String: Any text encased in double-quotes.\n"
-    + "- Number: An integer or floating-point value.\n"
-    + "- Boolean: Either 'true' or 'false' (case sensitive).\n"
-    + "- List: A list of values containing only strings, numbers and Booleans.\n"
-    + "- Object: This must have a '" + PROPERTY_VALUE + "' (case-sensitive) sub-property defined in one of the above ways.";
-
-    const string RULES_TEXT = "'" + TYPE_TEXT + "' Options must:\n"
-    + "- Have their '" + PROPERTY_VALUE + "' property defined as a list.\n"
-    + "- This list's values must consist of strings, numbers or Booleans.\n"
-    + "These list elements will be merged into a single variable, with each element on it's own line of text.";
-
-    /// <summary>
-    /// The rules for how a 'Propagater' Option can be defined
-    /// </summary>
-    const string RULES_PROPAGATER = "Options with the '" + TYPE_PROPAGATER + "' type must obey these rules:\n"
-    + "- All their sub-properties (except for '" + PROPERTY_TYPE + "' must be defined as lists of strings.\n"
-    + "- The names and values of these string lists must be formatted according to the rules for Propagation filepaths.\n"
-    + "These options are used to control EternalModBuilder's Propagation feature.";
 
     /// <summary>
     /// Generic error message for when an Option is not defined properly according to it's type's rules.
@@ -173,8 +156,7 @@ class ConfigBuilder
     private string name = "";
 
     /// <summary>
-    /// Parses the entire contents of a JSON configuration file and adds
-    /// the parsed data to <see cref="config"/>
+    /// Parses the entire contents of a JSON configuration file
     /// </summary>
     /// <param name="configPathParameter">The filepath to the config. file</param>
     public void parseConfigFile(string configPathParameter)
@@ -274,6 +256,13 @@ class ConfigBuilder
     {
         validatePrimaryName();
 
+        const string RULES_STANDARD = "'" + TYPE_STANDARD + "' Options can be defined as follows:\n"
+        + "- String: Any text encased in double-quotes.\n"
+        + "- Number: An integer or floating-point value.\n"
+        + "- Boolean: Either 'true' or 'false' (case sensitive).\n"
+        + "- List: A list of values containing only strings, numbers and Booleans.\n"
+        + "- Object: This must have a '" + PROPERTY_VALUE + "' (case-sensitive) sub-property defined in one of the above ways.";
+
         if (valueToken == null)
             throw invalidDefinition();
         switch (valueToken.Type)
@@ -304,6 +293,11 @@ class ConfigBuilder
     private void readText(JToken? textToken)
     {
         validatePrimaryName();
+
+        const string RULES_TEXT = "'" + TYPE_TEXT + "' Options must:\n"
+        + "- Have their '" + PROPERTY_VALUE + "' property defined as a list.\n"
+        + "- This list's values must consist of strings, numbers or Booleans.\n"
+        + "These list elements will be merged into a single variable, with each element on it's own line of text.";
 
         string[] textLines = {};
         if(textToken == null || !readPrimitiveList(textToken, ref textLines))
@@ -365,6 +359,11 @@ class ConfigBuilder
     /// </throws>
     private void readPropagater(JObject propagater)
     {
+        const string RULES_PROPAGATER = "Options with the '" + TYPE_PROPAGATER + "' type must obey these rules:\n"
+        + "- All their sub-properties (except for '" + PROPERTY_TYPE + "' must be defined as lists of strings.\n"
+        + "- The names and values of these string lists must be formatted according to the rules for Propagation filepaths.\n"
+        + "These options are used to control EternalModBuilder's Propagation feature.";
+
         const string ERR_BAD_LIST = "The sub-property '{0}' is not a valid string list.\n\n{1}";
 
         PropagateList[] parsedLists = new PropagateList[propagater.Count - 1];
