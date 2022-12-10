@@ -53,6 +53,33 @@
         "Values": [234, "true", "the third value in the map"]
     },
 
+    "CustomObject": {
+        "About": [
+            "The 'TypeDef' type allows us to create our own custom types.",
+            "The name of this object will become the 'Type' string.",
+            "The 'Using' list specifies what properties of the object will be read.",
+            "The 'Value' creates a value shared amongst all Options of this type."
+        ],
+
+
+        "Type": "TypeDef",
+        "Using": ["First", "Second", "THIRD"],
+        "Value": ["Hello there. ", "The name of this Option is {!this}"]
+    },
+
+    "obj": {
+        "About": [
+            "Here we create an Option using the custom type we defined above.",
+            "Notice how we define all of the properties specified in the 'Using' array"
+        ],
+
+
+        "Type": "customobject",
+        "First": 123,
+        "Second": "Howdy",
+        "THIRD": [true, "hooray"]
+    },
+
     "Propagater_Objects": {
         "Type": "Comment",
         "About": "The 'Propagater' type let's you define Options that control EternalModBuilder's propagation feature"

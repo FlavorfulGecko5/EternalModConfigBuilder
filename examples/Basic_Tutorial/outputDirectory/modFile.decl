@@ -73,6 +73,24 @@ This Map Option has 3 entries.
 
 
 
+This segment shows how to use variables created by Options that use custom types.
+These variables can be defined as strings, numbers, Booleans or lists containing these.
+For lists, the same syntax is used as standard list variables.
+123
+Howdy
+true
+hooray
+obj.THIRD contains 2 elements.
+
+Finally, we can also access the 'Value' defined in the Type Definition. Notice that
+the list was merged into a single value and {!THIS} was replaced with the current
+Option's name.
+Hello there. The name of this Option is obj
+
+
+
+
+
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
 it's expression evaluates to, a toggle label can be used to keep or remove an entire
 section of a file, based on what it's expression evaluates to. Toggle label expressions

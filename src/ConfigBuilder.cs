@@ -45,10 +45,21 @@ class ConfigBuilder
     const string TYPE_PROPAGATER = "PROPAGATER";
 
     /// <summary>
+    /// JSON Objectw with this type are used to define a custom Type
+    /// </summary>
+    const string TYPE_TYPEDEF = "TYPEDEF";
+
+    /// <summary>
     /// A list of all Option Types built into EternalModBuilder
     /// </summary>
-    static readonly List<string> RESERVED_TYPES = new List<string> 
-        { TYPE_STANDARD, TYPE_TEXT, TYPE_MAP, TYPE_COMMENT, TYPE_PROPAGATER };
+    static readonly string[] RESERVED_TYPES =  
+        { TYPE_STANDARD, TYPE_TEXT, TYPE_MAP, TYPE_COMMENT, TYPE_PROPAGATER, TYPE_TYPEDEF };
+
+    /// <summary>
+    /// The value property of custom types may have this string inserted into it
+    /// To represent the name of the Options using this type
+    /// </summary>
+    const string SYM_TYPEDEF_NAME = "{!THIS}";
     
     
     /* 
@@ -61,12 +72,13 @@ class ConfigBuilder
     const string RULES_TYPE = "An Option's '" + PROPERTY_TYPE + "' property must:\n"
     + "- Be defined as a string, or not defined at all.\n"
     + "- If undefined, the Option's assumed type will be '" + TYPE_STANDARD + "'\n\n"
-    + "The list of acceptable (case-insensitive) strings are:\n"
+    + "The built-in list of acceptable (case-insensitive) strings are:\n"
     + "- '" + TYPE_STANDARD + "'\n"
     + "- '" + TYPE_TEXT + "'\n"
     + "- '" + TYPE_MAP + "'\n"
     + "- '" + TYPE_COMMENT + "'\n"
-    + "- '" + TYPE_PROPAGATER + "'";
+    + "- '" + TYPE_PROPAGATER + "'\n"
+    + "- '" + TYPE_TYPEDEF + "'";
 
     /// <summary>
     /// Generic error message for when an Option is not defined properly according to it's type's rules.
@@ -146,6 +158,11 @@ class ConfigBuilder
     public List<PropagateList> propagations {get; private set;} = new List<PropagateList>(); 
 
     /// <summary>
+    /// Contains all user-defined types read from the configuration files
+    /// </summary>
+    private EMBTypeDefDictionary userTypes = new EMBTypeDefDictionary();
+
+    /// <summary>
     /// The pathway to the configuration file that is currently being parsed.
     /// </summary>
     private string configPath = "";
@@ -208,8 +225,8 @@ class ConfigBuilder
                 {
                     if (type.Type != JTokenType.String)
                         throw typeError();
-
-                    switch (type.ToString().ToUpper())
+                    string typeString = type.ToString().ToUpper();
+                    switch (typeString)
                     {
                         case TYPE_STANDARD:
                             readStandard(objectToken.GetValue(PROPERTY_VALUE));
@@ -230,8 +247,18 @@ class ConfigBuilder
                             readPropagater(objectToken);
                         break;
 
+                        case TYPE_TYPEDEF:
+                            readTypeDef(objectToken);
+                        break;
+
                         default:
-                            throw typeError();
+                            if (userTypes.ContainsKey(typeString))
+                            {
+                                readCustomType(objectToken, userTypes[typeString]);
+                                break;
+                            }
+                            else
+                                throw typeError();
                     }
                     EMBConfigException typeError()
                     {
@@ -326,10 +353,16 @@ class ConfigBuilder
         + "- Both lists must be the same length.\n"
         + "When parsed, each key will be associated with its corresponding value in a variable";
 
+        const string RULES_KEYS = "In a '" + TYPE_MAP + "' Option, the '" + PROPERTY_MAP_KEYS + "' list's elements must:\n"
+        + "- Obey the normal variable naming rules.\n"
+        + "- Cannot have duplicate values (even with variations in capitalization)";
+
         const string
         ERR_KEYS = "The '" + PROPERTY_MAP_KEYS + "' subproperty is not defined properly.\n\n{0}",
         ERR_VALUES = "The '" + PROPERTY_MAP_VALUES + "' subproperty is not defined properly.\n\n{0}",
-        ERR_UNEQUAL_LENGTHS = "The '" + PROPERTY_MAP_KEYS + "' and '" + PROPERTY_MAP_VALUES + "' lists must be the same length.\n\n{0}";
+        ERR_UNEQUAL_LENGTHS = "The '" + PROPERTY_MAP_KEYS + "' and '" + PROPERTY_MAP_VALUES + "' lists must be the same length.\n\n{0}",
+        ERR_KEY_NAME = "'{0}' is an invalid name for a key.\n\n{1}",
+        ERR_KEY_DUPLICATE = "'{0}' is being used as a key multiple times.\n\n{1}";
 
         string[] keys = {}, values = {};
 
@@ -341,8 +374,15 @@ class ConfigBuilder
 
         if (keys.Length != values.Length)
             throw ConfigError(ERR_UNEQUAL_LENGTHS, RULES_MAP);
-        
-        validateSubNames(keys);
+
+        for(int i = 0; i < keys.Length; i++)
+        {
+            if(!followsNameRules(keys[i]))
+                throw ConfigError(ERR_KEY_NAME, keys[i], RULES_KEYS);
+            for(int j = i + 1; j < keys.Length; j++)
+                if(keys[i].EqualsOIC(keys[j]))
+                    throw ConfigError(ERR_KEY_DUPLICATE, keys[i], RULES_KEYS);
+        }
 
         options.Add(name, keys.Length.ToString());
         for (int i = 0; i < keys.Length; i++)
@@ -389,6 +429,150 @@ class ConfigBuilder
             propagations.Add(list);
     }
 
+    private void readTypeDef(JObject typeObject)
+    {
+        /*
+        * Type Object name rules and validation
+        */
+        const string RULES_TYPEDEF_NAME = "A '" + TYPE_TYPEDEF + "' Option's name will become it's '" + PROPERTY_TYPE + "' string. The name must:\n"
+        + "- Obey the same naming rules as normal variable names.\n"
+        + "- Not match the type string of any other standard or user-defined types.";
+
+        const string
+        ERR_INVALID_NAME = "'{0}' is not a valid name for a custom type.\n\n{1}",
+        ERR_DUPLICATE_USERTYPE = "'{0}' is already defined as a custom type.\n\n{1}",
+        ERR_DUPLICATE_RESERVEDTYPE = "'{0}' is already a built-in type.\n\n{1}";
+
+        if(!followsNameRules(name))
+            throw ConfigError(ERR_INVALID_NAME, name, RULES_TYPEDEF_NAME);
+        if(userTypes.ContainsKey(name))
+            throw ConfigError(ERR_DUPLICATE_USERTYPE, name, RULES_TYPEDEF_NAME);
+        foreach(string reservedType in RESERVED_TYPES)
+            if(reservedType.EqualsOIC(name))
+                throw ConfigError(ERR_DUPLICATE_RESERVEDTYPE, name, RULES_TYPEDEF_NAME);
+        
+        /*
+        * Type properties list rules, reading and validation
+        */
+        const string PROPERTY_TYPEDEF_PROPLIST = "Using";
+
+        const string RULES_TYPEDEF_PROPERTIES = "'" + TYPE_TYPEDEF + "' Options must have a '" + PROPERTY_TYPEDEF_PROPLIST + "' property.\n"
+        + "- This property must be defined as a list of strings.\n"
+        + "- Each string in this list must follow standard Option naming conventions.\n"
+        + "- No string may equal each other or a property used by a '" + TYPE_TYPEDEF + "' Option (even with variations in capitalization).\n"
+        + "These strings define what JSON object subproperties are utilized by this type.";
+
+        const string
+        ERR_PROPLIST_DEFINITION = "The '" + PROPERTY_TYPEDEF_PROPLIST + "' subproperty is not defined correctly.\n\n{0}",
+        ERR_PROPLIST_ELEMENT = "The '" + PROPERTY_TYPEDEF_PROPLIST + "' list contains an invalid or duplicate string '{0}'\n\n{1}";
+
+        string[] propList = {};
+        if(!readPrimitiveList(typeObject.GetValue(PROPERTY_TYPEDEF_PROPLIST), ref propList))
+            throw ConfigError(ERR_PROPLIST_DEFINITION, RULES_TYPEDEF_PROPERTIES);
+        
+        for (int i = 0; i < propList.Length; i++)
+        {
+            if (!followsNameRules(propList[i]))
+                throw invalidPropName();
+
+            if(
+                propList[i].EqualsOIC(PROPERTY_TYPE)
+                || propList[i].EqualsOIC(PROPERTY_VALUE)
+                || propList[i].EqualsOIC(PROPERTY_TYPEDEF_PROPLIST)
+            )
+                throw invalidPropName();
+
+            for (int j = i + 1; j < propList.Length; j++)
+                if (propList[i].EqualsOIC(propList[j]))
+                    throw invalidPropName();
+            
+            EMBConfigException invalidPropName()
+            {
+                return ConfigError(ERR_PROPLIST_ELEMENT, propList[i], RULES_TYPEDEF_PROPERTIES);
+            }
+        }
+        
+        /*
+        * TypeDef value property rules, reading and validation
+        */
+        const string RULES_TYPEDEF_VALUE = "'" + TYPE_TYPEDEF + "' Options have a non-mandatory '" + PROPERTY_VALUE + "' property where:\n"
+        + "- It can be defined as a list of strings, numbers and Booleans.\n"
+        + "- When parsed, it's elements will be consecutively merged into a single string\n"
+        + "If defined with strings, you may insert '" + SYM_TYPEDEF_NAME + "' into this value.\n"
+        + "When creating Options using this custom type, this symbol will be replaced with the name of the Option.";
+
+        const string
+        ERR_VALUE = "The '" + PROPERTY_VALUE + "' property is not defined correctly.\n\n{0}";
+
+        string parsedValue = "";
+        JToken? valueToken = typeObject.GetValue(PROPERTY_VALUE);
+        if(valueToken != null)
+        {
+            string[] rawValues = {};
+            if(!readPrimitiveList(valueToken, ref rawValues))
+                throw ConfigError(ERR_VALUE, RULES_TYPEDEF_VALUE);
+            foreach(string element in rawValues)
+                parsedValue += element;
+        }
+
+        userTypes.Add(name, new TypeDef(propList, parsedValue));
+
+        /*
+        Console.WriteLine("Type Name '" + name + "'\nUsing:");
+        foreach(string s in propList)
+            Console.WriteLine("- '" + s + "'");
+        Console.WriteLine("Value: '" + parsedValue + "'");
+        */
+    }
+
+    private void readCustomType(JObject objectToken, TypeDef type)
+    {
+        validatePrimaryName();
+
+        const string RULES_CUSTOM_PROPS = "An Option that uses a custom type must:\n"
+        + "- Have all of that Type's properties defined.\n"
+        + "- These may be defined as strings, numbers, Booleans, or lists containing them.\n"
+        + "Note that the '" + PROPERTY_VALUE + "' property cannot be defined or redefined here.";
+
+        const string
+        ERR_PROP_MISSING = "The required sub-property '{0}' is not defined.\n\n{1}",
+        ERR_PROP_DEF = "The sub-property '{0}' is not defined in a valid way.\n\n{1}";
+
+        foreach(string prop in type.properties)
+        {
+            JToken? propToken = objectToken.GetValue(prop);
+            if(propToken == null)
+                throw ConfigError(ERR_PROP_MISSING, prop, RULES_CUSTOM_PROPS);
+
+            switch(propToken.Type)
+            {
+                case JTokenType.Array:
+                string[] listElements = {};
+                if(!readPrimitiveList(propToken, ref listElements))
+                    throw propDefError();
+                options.Add(name + '.' + prop, listElements.Length.ToString());
+                for(int i = 0; i < listElements.Length; i++)
+                    options.Add(name + '.' + prop + '[' + i + ']', listElements[i]);
+                break;
+
+                case JTokenType.Integer: case JTokenType.Float:
+                case JTokenType.String: case JTokenType.Boolean:
+                options.Add(name + '.' + prop, propToken.ToString());
+                break;
+
+                default:
+                    throw propDefError();
+            }
+
+            EMBConfigException propDefError()
+            {
+                return ConfigError(ERR_PROP_DEF, prop, RULES_CUSTOM_PROPS);
+            }   
+        }
+        string processedValue = type.value.ReplaceOIC(SYM_TYPEDEF_NAME, name);
+        options.Add(name, processedValue);
+    }
+
     private void validatePrimaryName()
     {
         const string RULES_OPTION_NAME = "Variable names cannot be empty, and may only contain these characters:\n"
@@ -406,26 +590,6 @@ class ConfigBuilder
 
         if (options.ContainsKey(name))
             throw ConfigError(ERR_DUPE_NAME, name, RULES_OPTION_NAME);     
-    }
-
-    private void validateSubNames(string[] subnames)
-    {
-        const string RULES_SUBNAMES = "Subnames obey the same naming rules as primary Variable names.\n"
-        + "Additionally, subnames belonging to the same variable cannot equal each other.\n"
-        + "(Due to case-insensitivity, duplicate subnames with different capitalizations are not allowed.)";
-
-        const string
-        ERR_INVALID_SUBNAME = "'{0}' is an invalid subname.\n\n{1}",
-        ERR_DUPE_SUBNAME = "'{0}' is being used as a subname multiple times for this variable.\n\n{1}";
-
-        for(int i = 0; i < subnames.Length; i++)
-        {
-            if(!followsNameRules(subnames[i]))
-                throw ConfigError(ERR_INVALID_SUBNAME, subnames[i], RULES_SUBNAMES);
-            for(int j = i + 1; j < subnames.Length; j++)
-                if(subnames[i].EqualsOIC(subnames[j]))
-                    throw ConfigError(ERR_DUPE_SUBNAME, subnames[i], RULES_SUBNAMES);
-        }
     }
 
     private bool followsNameRules(string nameToCheck)

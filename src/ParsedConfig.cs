@@ -3,6 +3,23 @@ class EMBOptionDictionary : Dictionary<string, string>
     public EMBOptionDictionary() : base(StringComparer.OrdinalIgnoreCase) {}     
 }
 
+class TypeDef
+{
+    public string[] properties { get; private set; }
+    public string value { get; private set; }
+
+    public TypeDef(string[] propertiesParam, string valueParam)
+    {
+        properties = propertiesParam;
+        value = valueParam;
+    }
+}
+
+class EMBTypeDefDictionary : Dictionary<string, TypeDef>
+{
+    public EMBTypeDefDictionary() : base(StringComparer.OrdinalIgnoreCase) { }
+}
+
 class ParsedConfig
 {
     public EMBOptionDictionary options {get; private set;} = new EMBOptionDictionary();
