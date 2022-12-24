@@ -1,15 +1,11 @@
 using System.Data;
-class ExpressionHandler
+class EMBOptionDictionary : Dictionary<string, string>
 {
-    private static DataTable computer = new DataTable();
-    private static Dictionary<string, string> options = new Dictionary<string, string>();
+    private DataTable computer = new DataTable();
 
-    public static void setOptionList(Dictionary<string, string> optionsParameter)
-    {
-        options = optionsParameter;
-    }
+    public EMBOptionDictionary() : base(StringComparer.OrdinalIgnoreCase) {}
 
-    private static string calculateResult(string exp)
+    private string calculateResult(string exp)
     {
         // PHASE 1 - Substitute Variables
         int numIterations = 0; // Prevents infinite loops
@@ -47,9 +43,9 @@ class ExpressionHandler
                             '{' + SYM_SUBEXP_END + '}', '{' + SYM_SUBEXP_START + '}', RULES_SUBEXPRESSIONS);
 
                     default:
-                        if (options.ContainsKey(name))
+                        if (ContainsKey(name))
                         {
-                            exp = exp.ReplaceOIC('{' + name + '}', options[name]);
+                            exp = exp.ReplaceOIC('{' + name + '}', this[name]);
                             openIndex = exp.IndexOf('{');
 
                             if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
@@ -86,7 +82,7 @@ class ExpressionHandler
         return result;
     }
 
-    private static string evalSubExpression(string exp, int startIndex)
+    private string evalSubExpression(string exp, int startIndex)
     {
         int endIndex = startIndex, numEndsNeeded = 1;
         while (numEndsNeeded > 0)
@@ -114,12 +110,12 @@ class ExpressionHandler
         return exp;
     }
 
-    public static string computeVarExpression(string exp)
+    public string computeVarExpression(string exp)
     {
         return calculateResult(exp);
     }
 
-    public static bool computeToggleExpression(string exp)
+    public bool computeToggleExpression(string exp)
     {
         string rawResult = calculateResult(exp);
         bool resultBool = false;
@@ -143,7 +139,7 @@ class ExpressionHandler
         return resultBool;
     }
 
-    public static string computeLoopExpression(string exp)
+    public string computeLoopExpression(string exp)
     {
         int indexOne = -1, indexTwo = -1, startNum = -1, endNum = -1;
         string stringStartNum = "", stringEndNum = "", mainExp = "";
@@ -188,19 +184,19 @@ class ExpressionHandler
                 RULES_LOOPS);
         
         // Construct the final expression that will be substituted for the label
-        options.Add(SYM_LOOP_INC, "");
+        this.Add(SYM_LOOP_INC, "");
         string expandedExp = "";
         for(int i = startNum; i <= endNum; i++)
         {
-            options[SYM_LOOP_INC] = i.ToString();
+            this[SYM_LOOP_INC] = i.ToString();
             string currentExp = calculateResult(mainExp);
             expandedExp += currentExp;
         }
-        options.Remove(SYM_LOOP_INC);
+        this.Remove(SYM_LOOP_INC);
         return expandedExp;
     }
 
-    private static EMBExpressionException ExpError(string msg, string arg0="", string arg1="", string arg2="")
+    private EMBExpressionException ExpError(string msg, string arg0 = "", string arg1 = "", string arg2 = "")
     {
         string formattedMessage = String.Format(msg, arg0, arg1, arg2);
         return new EMBExpressionException(formattedMessage);
@@ -208,6 +204,6 @@ class ExpressionHandler
 
     public class EMBExpressionException : EMBException
     {
-        public EMBExpressionException(string msg) : base(msg) {}
+        public EMBExpressionException(string msg) : base(msg) { }
     }
 }

@@ -32,11 +32,13 @@ class FileParser
     private string path, text;
     private int numBuildLabelCalls;
     private ParserLogMaker logger;
+    private EMBOptionDictionary expHandler;
 
-    public FileParser()
+    public FileParser(EMBOptionDictionary options)
     {
         path = text = "";
         logger = new ParserLogMaker();
+        expHandler = options;
     }
 
     public void parseFile(string pathParameter)
@@ -92,7 +94,7 @@ class FileParser
                         label.raw, DESC_LABEL_TYPES);
             }
         }
-        catch(ExpressionHandler.EMBExpressionException e)
+        catch(EMBOptionDictionary.EMBExpressionException e)
         {
             throw ParseError(
                 "Failed to evaluate expression in label '{0}'\n{1}", 
@@ -132,7 +134,7 @@ class FileParser
 
     private string parseVariable(Label label)
     {
-        string result = ExpressionHandler.computeVarExpression(label.exp);
+        string result = expHandler.computeVarExpression(label.exp);
         text = text.Substring(0, label.start) + result 
             + text.Substring(label.end + 1);
         return result;
@@ -157,7 +159,7 @@ class FileParser
                 numEndLabelsNeeded++;
         }
 
-        bool resultBool = ExpressionHandler.computeToggleExpression(start.exp);
+        bool resultBool = expHandler.computeToggleExpression(start.exp);
         if (resultBool) // Keep what's in-between, remove the labels
             text = text.Substring(0, start.start)
                 + text.Substring(start.end + 1, end.start - start.end - 1)
@@ -170,7 +172,7 @@ class FileParser
 
     private string parseLoop(Label label)
     {
-        string result = ExpressionHandler.computeLoopExpression(label.exp);
+        string result = expHandler.computeLoopExpression(label.exp);
         text = text.Substring(0, label.start) + result
             + text.Substring(label.end + 1);
         return result;

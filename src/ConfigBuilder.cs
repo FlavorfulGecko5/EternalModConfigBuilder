@@ -253,12 +253,10 @@ class ConfigBuilder
 
                         default:
                             if (userTypes.ContainsKey(typeString))
-                            {
                                 readCustomType(objectToken, userTypes[typeString]);
-                                break;
-                            }
                             else
                                 throw typeError();
+                        break;
                     }
                     EMBConfigException typeError()
                     {

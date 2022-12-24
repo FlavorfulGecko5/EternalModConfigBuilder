@@ -221,8 +221,7 @@ class EternalModBuilder
     /// </summary>
     private static void parseAndCompressFiles()
     {
-        ExpressionHandler.setOptionList(configData.options);
-        FileParser parser = new FileParser();
+        FileParser parser = new FileParser(configData.options);
         List<string> labelFiles = new List<string>();
         List<string> uncompressedEntities = new List<string>();
 

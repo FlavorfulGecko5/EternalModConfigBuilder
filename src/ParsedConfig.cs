@@ -1,8 +1,3 @@
-class EMBOptionDictionary : Dictionary<string, string>
-{
-    public EMBOptionDictionary() : base(StringComparer.OrdinalIgnoreCase) {}     
-}
-
 class TypeDef
 {
     public string[] properties { get; private set; }
