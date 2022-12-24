@@ -19,6 +19,12 @@ class EternalModBuilder
     public const string DIR_TEMP = "eternalmodbuilder_temp";
 
     /// <summary>
+    /// The name of the directory inside the mod that 
+    /// EternalModBuilder propagates files from
+    /// </summary>
+    public const string DIR_PROPAGATE = "propagate";
+
+    /// <summary>
     /// Describes all types of mod files that will be scanned for labels
     /// </summary>
     const string DESC_LABEL_FILES = ".decl, .json and decompressed .entities";

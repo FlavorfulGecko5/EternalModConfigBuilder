@@ -1,6 +1,14 @@
 using System.Data;
 class EMBOptionDictionary : Dictionary<string, string>
 {
+    const string SYM_SUBEXP_START = "!sub";
+    const string SYM_SUBEXP_END = "!subend";
+
+    const string RULES_SUBEXPRESSIONS = "A subexpression block:\n"
+    + "- Starts with the symbol '{" + SYM_SUBEXP_START 
+    + "}'\n- Ends with the symbol '{" + SYM_SUBEXP_END 
+    + "}'\nAnything inside a subexpression block will be fully evaluated before the rest of the expression.";
+
     private DataTable computer = new DataTable();
 
     public EMBOptionDictionary() : base(StringComparer.OrdinalIgnoreCase) {}

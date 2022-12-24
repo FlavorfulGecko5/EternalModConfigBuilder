@@ -2,7 +2,7 @@ class PropagateList
 {
     const string RULES_PROPAGATE_PATHS = "Propagation string lists must:\n"
     + "- Have a relative, non-backtracking directory as their name.\n"
-    + "- Each list string must be a relative path to files or directories inside your mod's '" + DIR_PROPAGATE + "' folder.\n"
+    + "- Each list string must be a relative path to files or directories inside your mod's '" + EternalModBuilder.DIR_PROPAGATE + "' folder.\n"
     + "When your mod is built, listed files/directories will be copied to the directory specified by the list's name.";
 
 
@@ -60,7 +60,7 @@ class PropagateList
             logger.startNewPropagationLog(name);
         foreach(string path in filePaths)
         {
-            string  copyFrom = Path.Combine(DIR_PROPAGATE, path),
+            string  copyFrom = Path.Combine(EternalModBuilder.DIR_PROPAGATE, path),
                     copyTo = Path.Combine(name, path);
             
             if(File.Exists(copyFrom))
@@ -121,7 +121,7 @@ class PropagateList
                     + " '{2}'. This path will be ignored.",
                 path,
                 listName,
-                DIR_PROPAGATE
+                EternalModBuilder.DIR_PROPAGATE
             );
             EternalModBuilder.reportWarning(warning);
         }
