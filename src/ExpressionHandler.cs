@@ -57,7 +57,7 @@ class EMBOptionDictionary : Dictionary<string, string>
                     default:
                         if (ContainsKey(name))
                         {
-                            exp = exp.ReplaceOIC('{' + name + '}', this[name]);
+                            exp = exp.Substring(0, openIndex) + this[name] + exp.Substring(closeIndex + 1);
                             openIndex = exp.IndexOf('{');
 
                             if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
