@@ -2,12 +2,16 @@ using System.Data;
 class EMBOptionDictionary : Dictionary<string, string>
 {
     const string SYM_SUBEXP_START = "!sub";
+    const string SYM_SUBEXP_START_B = "{" + SYM_SUBEXP_START + "}";
+    const string SYM_SUBEXP_LOOP = "!subloop";
+    const string SYM_SUBEXP_LOOP_B = "{" + SYM_SUBEXP_LOOP + "}";
     const string SYM_SUBEXP_END = "!subend";
+    const string SYM_SUBEXP_END_B = "{" + SYM_SUBEXP_END + "}";
 
     const string RULES_SUBEXPRESSIONS = "A subexpression block:\n"
-    + "- Starts with the symbol '{" + SYM_SUBEXP_START 
-    + "}'\n- Ends with the symbol '{" + SYM_SUBEXP_END 
-    + "}'\nAnything inside a subexpression block will be fully evaluated before the rest of the expression.";
+    + "- Starts with the symbol '" + SYM_SUBEXP_START_B + "' or '" + SYM_SUBEXP_LOOP_B
+    + "'\n- Ends with the symbol '" + SYM_SUBEXP_END_B 
+    + "'\nAnything inside a subexpression block will be fully evaluated before the rest of the expression.";
 
     private DataTable computer = new DataTable();
 
@@ -47,8 +51,8 @@ class EMBOptionDictionary : Dictionary<string, string>
 
                     case SYM_SUBEXP_END:
                         throw ExpError(
-                            "There is a '{0}' symbol with no preceding '{1}' symbol.\n\n{2}",
-                            '{' + SYM_SUBEXP_END + '}', '{' + SYM_SUBEXP_START + '}', RULES_SUBEXPRESSIONS);
+                            "There is a '{0}' symbol with no starting symbol preceding it.\n\n{1}",
+                            SYM_SUBEXP_END_B, RULES_SUBEXPRESSIONS);
 
                     default:
                         if (ContainsKey(name))
@@ -59,8 +63,7 @@ class EMBOptionDictionary : Dictionary<string, string>
                             if (numIterations++ == EXP_INFINITE_LOOP_THRESHOLD)
                                 throw ExpError(
                                     "The expression loops infinitely when inserting Option values."
-                                    + "\nLast edited form of the expression: '{0}'",
-                                    exp);
+                                    + "\nLast edited form of the expression: '{0}'", exp);
                         }
                         else
                             openIndex = nextOpenIndex;
@@ -95,19 +98,21 @@ class EMBOptionDictionary : Dictionary<string, string>
         int endIndex = startIndex, numEndsNeeded = 1;
         while (numEndsNeeded > 0)
         {
+            // This algorithm functions by assuming all sub labels start
+            // with the same set of characters
             endIndex = exp.IndexOfOIC('{' + SYM_SUBEXP_START, endIndex + 1);
             if (endIndex == -1)
                 throw ExpError(
-                    "There is a '{0}' symbol with no '{1}' symbol following it.\n\n{2}",
-                    '{' + SYM_SUBEXP_START + '}', '{' + SYM_SUBEXP_END + '}', RULES_SUBEXPRESSIONS);
-            if (endIndex == exp.IndexOfOIC('{' + SYM_SUBEXP_START + '}', endIndex))
+                    "There is a subexpression-starting symbol with no '{0}' symbol following it.\n\n{1}",
+                    SYM_SUBEXP_END_B, RULES_SUBEXPRESSIONS);
+            if (endIndex == exp.IndexOfOIC(SYM_SUBEXP_START_B, endIndex))
                 numEndsNeeded++;
-            else if (endIndex == exp.IndexOfOIC('{' + SYM_SUBEXP_END + '}', endIndex))
+            else if (endIndex == exp.IndexOfOIC(SYM_SUBEXP_END_B, endIndex))
                 numEndsNeeded--;
         }
         // Indices used in substring calculations
-        int subExpIndex = startIndex + SYM_SUBEXP_START.Length + 2;
-        int postSubExp = endIndex + SYM_SUBEXP_END.Length + 2;
+        int subExpIndex = startIndex + SYM_SUBEXP_START_B.Length;
+        int postSubExp = endIndex + SYM_SUBEXP_END_B.Length;
 
         // Get sub-expression, and place result into expression
         string subExp = exp.Substring(subExpIndex, endIndex - subExpIndex);
