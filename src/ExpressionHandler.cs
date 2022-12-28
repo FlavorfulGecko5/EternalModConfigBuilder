@@ -8,12 +8,24 @@ class EMBOptionDictionary : Dictionary<string, string>
     const string SYM_SUBEXP_END = "!subend";
     const string SYM_SUBEXP_END_B = "{" + SYM_SUBEXP_END + "}";
 
+    const string SYM_LOOP_INC = "inc";
+
     const string RULES_SUBEXPRESSIONS = "A subexpression block:\n"
     + "- Starts with the symbol '" + SYM_SUBEXP_START_B + "' or '" + SYM_SUBEXP_LOOP_B
     + "'\n- Ends with the symbol '" + SYM_SUBEXP_END_B 
     + "'\nAnything inside a subexpression block will be fully evaluated before the rest of the expression.";
 
+    const string RULES_LOOPS = "Loop subexpressions have the form "
+    + SYM_SUBEXP_LOOP_B + "[Start]" + LABEL_CHAR_LOOP_SEPARATOR
+    + "[Stop]" + LABEL_CHAR_LOOP_SEPARATOR + "[Expression]" + SYM_SUBEXP_END_B + " where:\n"
+    + "- [Start] and [Stop] are expressions that evaluate to integers - You may NOT place loops inside of these.\n"
+    + "- [Start] is less than or equal to [Stop]\n"
+    + "- You may use '{[COUNT]" + SYM_LOOP_INC + "}' in [Expression] to get the value of the current loop iteration.\n"
+    + "   > [COUNT] is a number of exclamation marks, corresponding to the number of nested labels.\n"
+    + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
+
     private DataTable computer = new DataTable();
+    private int numLoops = 0;
 
     public EMBOptionDictionary() : base(StringComparer.OrdinalIgnoreCase) {}
 
@@ -45,7 +57,12 @@ class EMBOptionDictionary : Dictionary<string, string>
                 switch(name)
                 {
                     case SYM_SUBEXP_START:
-                    exp = evalSubExpression(exp, openIndex);
+                    exp = evalSubExpression(exp, openIndex, false);
+                    openIndex = exp.IndexOf('{');
+                    break;
+
+                    case SYM_SUBEXP_LOOP:
+                    exp = evalSubExpression(exp, openIndex, true);
                     openIndex = exp.IndexOf('{');
                     break;
 
@@ -93,7 +110,7 @@ class EMBOptionDictionary : Dictionary<string, string>
         return result;
     }
 
-    private string evalSubExpression(string exp, int startIndex)
+    private string evalSubExpression(string exp, int startIndex, bool loops)
     {
         int endIndex = startIndex, numEndsNeeded = 1;
         while (numEndsNeeded > 0)
@@ -105,18 +122,21 @@ class EMBOptionDictionary : Dictionary<string, string>
                 throw ExpError(
                     "There is a subexpression-starting symbol with no '{0}' symbol following it.\n\n{1}",
                     SYM_SUBEXP_END_B, RULES_SUBEXPRESSIONS);
-            if (endIndex == exp.IndexOfOIC(SYM_SUBEXP_START_B, endIndex))
-                numEndsNeeded++;
-            else if (endIndex == exp.IndexOfOIC(SYM_SUBEXP_END_B, endIndex))
+            if (endIndex == exp.IndexOfOIC(SYM_SUBEXP_END_B, endIndex))
                 numEndsNeeded--;
+            else if (endIndex == exp.IndexOfOIC(SYM_SUBEXP_START_B, endIndex)
+                || endIndex == exp.IndexOfOIC(SYM_SUBEXP_LOOP_B, endIndex))
+                numEndsNeeded++;
         }
         // Indices used in substring calculations
-        int subExpIndex = startIndex + SYM_SUBEXP_START_B.Length;
+        int subExpIndex = startIndex + (loops ? SYM_SUBEXP_LOOP_B.Length : SYM_SUBEXP_START_B.Length);
         int postSubExp = endIndex + SYM_SUBEXP_END_B.Length;
 
         // Get sub-expression, and place result into expression
         string subExp = exp.Substring(subExpIndex, endIndex - subExpIndex);
-        string subResult = calculateResult(subExp);
+
+        string subResult = loops ? computeLoopExpression(subExp) : calculateResult(subExp);
+
         exp = exp.Substring(0, startIndex) + subResult
             + exp.Substring(postSubExp, exp.Length - postSubExp);
 
@@ -154,6 +174,8 @@ class EMBOptionDictionary : Dictionary<string, string>
 
     public string computeLoopExpression(string exp)
     {
+        numLoops++;
+
         int indexOne = -1, indexTwo = -1, startNum = -1, endNum = -1;
         string stringStartNum = "", stringEndNum = "", mainExp = "";
         try
@@ -197,15 +219,19 @@ class EMBOptionDictionary : Dictionary<string, string>
                 RULES_LOOPS);
         
         // Construct the final expression that will be substituted for the label
-        this.Add(SYM_LOOP_INC, "");
+        string incrementerVar = SYM_LOOP_INC.PadLeft(SYM_LOOP_INC.Length + numLoops, '!');
+        this.Add(incrementerVar, "");
         string expandedExp = "";
         for(int i = startNum; i <= endNum; i++)
         {
-            this[SYM_LOOP_INC] = i.ToString();
+            this[incrementerVar] = i.ToString();
             string currentExp = calculateResult(mainExp);
+            Console.WriteLine(currentExp);
             expandedExp += currentExp;
         }
-        this.Remove(SYM_LOOP_INC);
+        this.Remove(incrementerVar);
+
+        numLoops--;
         return expandedExp;
     }
 

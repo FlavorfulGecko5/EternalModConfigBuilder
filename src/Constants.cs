@@ -26,7 +26,7 @@ interface Constants
     + "- 'EMB_LOOP'";
     const string DESC_LABEL_TOGGLE_END = LABEL_TOGGLE_END + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
 
-    const string SYM_LOOP_INC = "!inc";
+    
 
     // Rules
 
@@ -45,11 +45,5 @@ interface Constants
     + "- A Boolean (true/false) value, from a logical expression or from reading a string.\n"
     + "- A numerical value. A number less than one is interpeted as false, and one or higher is interpreted as true.";
 
-    const string RULES_LOOPS = "Loop labels have the form "
-    + LABEL_LOOP + LABEL_CHAR_SEPARATOR + "[Start]" + LABEL_CHAR_LOOP_SEPARATOR
-    + "[Stop]" + LABEL_CHAR_LOOP_SEPARATOR + "[Expression]" + LABEL_CHAR_BORDER + " where:\n"
-    + "- [Start] and [Stop] are expressions that evaluate to integers.\n"
-    + "- [Start] is less than or equal to [Stop]\n"
-    + "- You may use '{" + SYM_LOOP_INC + "}' in [Expression] to get the value of the current loop iteration.\n"
-    + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
+
 }
