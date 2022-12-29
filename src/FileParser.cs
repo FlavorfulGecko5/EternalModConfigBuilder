@@ -1,3 +1,4 @@
+using System.Text;
 class FileParser
 {
     private class Label
@@ -29,14 +30,16 @@ class FileParser
         }
     }
 
-    private string path, text;
+    private string path;
+    private StringBuilder text;
     private int numBuildLabelCalls;
     private ParserLogMaker logger;
     private EMBOptionDictionary expHandler;
 
     public FileParser(EMBOptionDictionary options)
     {
-        path = text = "";
+        path = "";
+        text = new StringBuilder();
         logger = new ParserLogMaker();
         expHandler = options;
     }
@@ -44,7 +47,8 @@ class FileParser
     public void parseFile(string pathParameter)
     {
         path = pathParameter;
-        text = FSUtil.readFileText(path);
+        text.Clear();
+        text.Append(FSUtil.readFileText(path));
         numBuildLabelCalls = 0;
 
         if(logger.mustLog)
@@ -64,38 +68,25 @@ class FileParser
         * 
         * This algorithm is necessary to fixup expressions that affect
         * bool assignment statements without putting the burden on the user
-        * to work around it. Creates an entirely new copy of the file text
-        * to minimize number of substring calls
+        * to work around it. 
         *
         * Possible TODO: Ensure this only executes on .decl and .entities files
         */
-        string newText = "";
-        int lastCapIndex = -1;
-        int equalIndex = text.IndexOf('=');
-        while(equalIndex > -1)
+        for(int i = 0; i < text.Length; i++)
         {
-            for(int i = equalIndex + 1; i < text.Length; i++)
+            if(text[i] != '=')
+                continue;
+            for(int j = i + 1; j < text.Length; j++)
             {
-                if(Char.IsWhiteSpace(text[i]))
+                if(Char.IsWhiteSpace(text[j]))
                     continue;
-                switch(text[i])
-                {
-                    case 'T': case 'F':
-                    newText += text.Substring(lastCapIndex + 1, i - lastCapIndex - 1) + (text[i] == 'T' ? 't' : 'f');
-                    lastCapIndex = i;
-                    i = text.Length;
-                    continue;
-
-                    default:
-                    i = text.Length;
-                    continue;
-                }
+                else if(text[j] == 'T' || text[j] == 'F')
+                    text[j] = (char)(text[j] + 32);
+                break;
             }
-            equalIndex = text.IndexOf('=', equalIndex + 1);
         }
-        newText += text.Substring(lastCapIndex + 1);
 
-        FSUtil.writeFile(path, newText);
+        FSUtil.writeFile(path, text.ToString());
         
         if(logger.mustLog)
             EternalModBuilder.log(logger.getMessage());
@@ -144,7 +135,8 @@ class FileParser
 
     private Label? buildLabel(string labelToFind, int searchStartIndex)
     {
-        int start = text.IndexOfOIC(labelToFind, searchStartIndex);
+        string rawText = text.ToString();
+        int start = rawText.IndexOfOIC(labelToFind, searchStartIndex);
         if(start == -1)
             return null;
 
@@ -152,13 +144,13 @@ class FileParser
             throw ParseError(
                 "Parsing this file's labels creates an infinite loop.");
         
-        int end = text.IndexOf(LABEL_CHAR_BORDER, start + 1);
+        int end = rawText.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
             throw ParseError(
                 "A label is missing a '{0}' on it's right side.\n\n{1}", 
                 LABEL_CHAR_BORDER, RULES_LABEL_FORMAT);
  
-        string rawLabel = text.Substring(start, end - start + 1);
+        string rawLabel = rawText.Substring(start, end - start + 1);
         int separator = rawLabel.IndexOf(LABEL_CHAR_SEPARATOR);
         if (separator == -1)
             throw ParseError(
@@ -172,8 +164,7 @@ class FileParser
     private string parseVariable(Label label)
     {
         string result = expHandler.computeVarExpression(label.exp);
-        text = text.Substring(0, label.start) + result 
-            + text.Substring(label.end + 1);
+        text.Replace(label.raw, result, label.start, label.raw.Length);
         return result;
     }
 
@@ -198,20 +189,19 @@ class FileParser
 
         bool resultBool = expHandler.computeToggleExpression(start.exp);
         if (resultBool) // Keep what's in-between, remove the labels
-            text = text.Substring(0, start.start)
-                + text.Substring(start.end + 1, end.start - start.end - 1)
-                + text.Substring(end.end + 1);
+        {
+            text.Remove(end.start, end.raw.Length);
+            text.Remove(start.start, start.raw.Length);
+        }
         else // Remove the labels and what's in-between them
-            text = text.Substring(0, start.start)
-                + text.Substring(end.end + 1);
+            text.Remove(start.start, end.end - start.start + 1);
         return resultBool.ToString();
     }
 
     private string parseLoop(Label label)
     {
         string result = expHandler.computeLoopExpression(label.exp);
-        text = text.Substring(0, label.start) + result
-            + text.Substring(label.end + 1);
+        text.Replace(label.raw, result, label.start, label.raw.Length);
         return result;
     }
 
