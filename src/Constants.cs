@@ -5,7 +5,6 @@ interface Constants
     
 
     // Constants pertaining to Label and expression parsing
-    const int PARSER_INFINITE_LOOP_THRESHOLD = 1000;
     const int EXP_INFINITE_LOOP_THRESHOLD = 500;
     const string NULL_EXP_RESULT = "NULL";
 

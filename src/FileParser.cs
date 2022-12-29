@@ -139,10 +139,6 @@ class FileParser
         int start = rawText.IndexOfOIC(labelToFind, searchStartIndex);
         if(start == -1)
             return null;
-
-        if(numBuildLabelCalls++ == PARSER_INFINITE_LOOP_THRESHOLD)
-            throw ParseError(
-                "Parsing this file's labels creates an infinite loop.");
         
         int end = rawText.IndexOf(LABEL_CHAR_BORDER, start + 1);
         if (end == -1)
