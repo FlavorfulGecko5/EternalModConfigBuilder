@@ -3,11 +3,11 @@ class FileParser
 {
     private class Label
     {
-        public int start { get; private set; } = -1;
-        public int end { get; private set; } = -1;
-        public string raw { get; private set; } = "!UNDEFINED!";
-        public string type { get; private set; } = "!UNDEFINED!";
-        public string exp { get; private set; } = "!UNDEFINED!";
+        public int    start { get; private set; }
+        public int    end   { get; private set; }
+        public string raw   { get; private set; }
+        public string type  { get; private set; }
+        public string exp   { get; private set; }
 
         public Label(Label copyFrom) 
         { 
@@ -48,7 +48,7 @@ class FileParser
     {
         path = pathParameter;
         text.Clear();
-        text.Append(FSUtil.readFileText(path));
+        text.Append(File.ReadAllText(path));
         numBuildLabelCalls = 0;
 
         if(logger.mustLog)
@@ -86,7 +86,7 @@ class FileParser
             }
         }
 
-        FSUtil.writeFile(path, text.ToString());
+        File.WriteAllText(path, text.ToString());
         
         if(logger.mustLog)
             EternalModBuilder.log(logger.getMessage());

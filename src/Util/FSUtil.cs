@@ -153,32 +153,4 @@ static class FSUtil
         if(directory != null && !directory.Equals(""))
             Directory.CreateDirectory(directory);
     }
-
-
-
-    /// <summary>
-    /// Reads a file's entire contents to a string
-    /// </summary>
-    /// <param name="filePath"> Pathway to the file </param>
-    /// <returns>
-    /// A string containing the raw text of the file.
-    /// </returns>
-    public static string readFileText(string filePath)
-    {
-        using (StreamReader reader = new StreamReader(filePath))
-            return reader.ReadToEnd();
-    }
-
-
-
-    /// <summary>
-    /// Writes a string to a new file
-    /// </summary>
-    /// <param name="filePath"> The output destination path </param>
-    /// <param name="fileText"> The text of the file to be written </param>
-    public static void writeFile(string filePath, string fileText)
-    {
-        using (StreamWriter fileWriter = new StreamWriter(filePath))
-            fileWriter.Write(fileText);
-    }
 }

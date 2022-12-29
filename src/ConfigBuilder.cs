@@ -187,14 +187,14 @@ class ConfigBuilder
         ERR_BAD_CFG = "The configuration file '{0}' has a syntax error. Printing Exception message:\n\n{1}";
 
         JObject rawJson = new JObject();
-        JsonLoadSettings reportExactDuplicates = new JsonLoadSettings()
-        {
-            DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error
-        };
 
         try
         {
-            string text = FSUtil.readFileText(configPath);
+            string text = File.ReadAllText(configPath);
+            JsonLoadSettings reportExactDuplicates = new JsonLoadSettings()
+            {
+                DuplicatePropertyNameHandling = DuplicatePropertyNameHandling.Error
+            };
             rawJson = JObject.Parse(text, reportExactDuplicates);
         }
         catch (Newtonsoft.Json.JsonReaderException e)
