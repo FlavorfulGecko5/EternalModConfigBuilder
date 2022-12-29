@@ -33,9 +33,9 @@ cacodemon is the best demon
 
 
 We can also perform a rule range of logical expressions:
-false
-true
-false
+False
+True
+False
 
 
 
@@ -61,7 +61,7 @@ As you can see, each element of the list is output onto it's own line
 
 This segment shows how to access variables created by 'Map' Options
 234
-true
+True
 the third value in the map
 
 Simply inputting the name of the Map Option with no key will yield
@@ -78,7 +78,7 @@ These variables can be defined as strings, numbers, Booleans or lists containing
 For lists, the same syntax is used as standard list variables.
 123
 Howdy
-true
+True
 hooray
 obj.THIRD contains 2 elements.
 
@@ -135,7 +135,7 @@ The name of the list, without any index notation, represents the number of eleme
 listA contains 4 elements
 
 To access the last element in the list, using the number of elements, you could do something like:
-The last element in 'listA' is true
+The last element in 'listA' is True
 
 This last expression also shows a practical application of the subexpression system discussed above.
 

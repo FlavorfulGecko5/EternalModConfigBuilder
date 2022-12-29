@@ -58,7 +58,44 @@ class FileParser
             nextLabel = buildLabel(LABEL_ANY, nextLabel.start);
         }
 
-        FSUtil.writeFile(path, text);
+        /*
+        * .decl files true/false for bool assignments, variations cause crashes
+        * C# uses True/False for representing bools as strings
+        * 
+        * This algorithm is necessary to fixup expressions that affect
+        * bool assignment statements without putting the burden on the user
+        * to work around it. Creates an entirely new copy of the file text
+        * to minimize number of substring calls
+        *
+        * Possible TODO: Ensure this only executes on .decl and .entities files
+        */
+        string newText = "";
+        int lastCapIndex = -1;
+        int equalIndex = text.IndexOf('=');
+        while(equalIndex > -1)
+        {
+            for(int i = equalIndex + 1; i < text.Length; i++)
+            {
+                if(Char.IsWhiteSpace(text[i]))
+                    continue;
+                switch(text[i])
+                {
+                    case 'T': case 'F':
+                    newText += text.Substring(lastCapIndex + 1, i - lastCapIndex - 1) + (text[i] == 'T' ? 't' : 'f');
+                    lastCapIndex = i;
+                    i = text.Length;
+                    continue;
+
+                    default:
+                    i = text.Length;
+                    continue;
+                }
+            }
+            equalIndex = text.IndexOf('=', equalIndex + 1);
+        }
+        newText += text.Substring(lastCapIndex + 1);
+
+        FSUtil.writeFile(path, newText);
         
         if(logger.mustLog)
             EternalModBuilder.log(logger.getMessage());

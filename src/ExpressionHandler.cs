@@ -102,11 +102,6 @@ class EMBOptionDictionary : Dictionary<string, string>
                 + "\n\nPrinting Error Message:\n{1}",
                 exp, e.Message);
         }
-
-        // Decl files use lowercase true/false
-        // Variations in capitalization cause game crashes
-        if (result.EqualsOIC("true") || result.EqualsOIC("false"))
-            result = result.ToLower();
         return result;
     }
 
@@ -226,7 +221,6 @@ class EMBOptionDictionary : Dictionary<string, string>
         {
             this[incrementerVar] = i.ToString();
             string currentExp = calculateResult(mainExp);
-            Console.WriteLine(currentExp);
             expandedExp += currentExp;
         }
         this.Remove(incrementerVar);
