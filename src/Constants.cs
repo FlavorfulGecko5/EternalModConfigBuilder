@@ -34,7 +34,8 @@ interface Constants
     + "- [TYPE] is a pre-defined string - see examples that show all types.\n"
     + "- [EXPRESSION] is a valid arithmetic or logical expression - see examples.\n"
     + "- To insert an option from your config. files into an expression, use the notation {NAME}\n"
-    + "- Case-insensitivity of all label elements is allowed.";
+    + "- Case-insensitivity of all label elements is allowed.\n"
+    + "- If the '" + LABEL_CHAR_SEPARATOR + "' is omitted, the expression is assumed empty.";
 
     const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '"
     + DESC_LABEL_TOGGLE_END + "' label placed after it.\n"

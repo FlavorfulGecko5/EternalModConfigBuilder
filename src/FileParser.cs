@@ -18,15 +18,27 @@ class FileParser
             exp = copyFrom.exp;
         }
 
-        public Label(int startParm, int endParm, string labelParm, int separatorIndex)
+        public Label(int startParm, int endParm, string labelParm)
         {
             start = startParm;
             end = endParm;
             raw = labelParm;
 
-            // Excludes separator index. Capitalize for switch comparisons
-            type = raw.Substring(0, separatorIndex).ToUpper();
-            exp = raw.Substring(separatorIndex + 1, raw.Length - separatorIndex - 2);
+            // Instead of throwing error for missing separator, assume the whole
+            // label body is the type. This allows for labels to omit an expression
+            // if it isn't used (such as for end-toggle labels)
+            int separatorIndex = raw.IndexOf(LABEL_CHAR_SEPARATOR);
+            if(separatorIndex == -1)
+            {
+                type = raw.Substring(0, raw.Length - LABEL_CHAR_BORDER.Length).ToUpper();
+                exp = "";
+            }
+            else
+            {
+                // Excludes separator index. Capitalize for switch comparisons
+                type = raw.Substring(0, separatorIndex).ToUpper();
+                exp = raw.Substring(separatorIndex + 1, raw.Length - separatorIndex - 2);
+            }
         }
     }
 
@@ -147,13 +159,8 @@ class FileParser
                 LABEL_CHAR_BORDER, RULES_LABEL_FORMAT);
  
         string rawLabel = rawText.Substring(start, end - start + 1);
-        int separator = rawLabel.IndexOf(LABEL_CHAR_SEPARATOR);
-        if (separator == -1)
-            throw ParseError(
-                "The label '{0}' has no '{1}' written after the type.\n\n{2}", 
-                rawLabel, LABEL_CHAR_SEPARATOR, RULES_LABEL_FORMAT);
 
-        Label label = new Label(start, end, rawLabel, separator);
+        Label label = new Label(start, end, rawLabel);
         return label;
     }
 
