@@ -138,6 +138,11 @@ class FileParser
 
     private void parseLabel(Label label)
     {
+        const string
+        ERR_END_TOGGLE = "There is a '{0}' label with no preceding start label.\n\n{1}",
+        ERR_TYPE = "The label '{0}' has an unrecognized type. \n\n'{1}'",
+        ERR_EXPRESSION = "Failed to evaluate expression in label '{0}'\n{1}";
+
         string expResult = "";
         try
         {
@@ -156,21 +161,15 @@ class FileParser
                 break;
 
                 case Label.TYPE_TOGGLE_END:
-                    throw ParseError(
-                        "There is a '{0}' label with no preceding start label.\n\n{1}", 
-                        Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
+                    throw ParseError(ERR_END_TOGGLE, Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
 
                 default:
-                    throw ParseError(
-                        "The label '{0}' has an unrecognized type. \n\n'{1}'", 
-                        label.raw, Label.DESC_TYPES);
+                    throw ParseError(ERR_TYPE, label.raw, Label.DESC_TYPES);
             }
         }
         catch(EMBOptionDictionary.EMBExpressionException e)
         {
-            throw ParseError(
-                "Failed to evaluate expression in label '{0}'\n{1}", 
-                label.raw, e.Message);
+            throw ParseError(ERR_EXPRESSION, label.raw, e.Message);
         }
 
         if (logger.mustLog)
@@ -179,6 +178,9 @@ class FileParser
 
     private Label? buildLabel(string type, int searchStartIndex)
     {
+        const string 
+        ERR_END = "A label is missing a '{0}' on it's right side.\n\n{1}";
+
         string rawText = text.ToString();
         int start = rawText.IndexOfOIC(Label.CHAR_BORDER + type, searchStartIndex);
         if(start == -1)
@@ -186,9 +188,7 @@ class FileParser
         
         int end = rawText.IndexOf(Label.CHAR_BORDER, start + 1);
         if (end == -1)
-            throw ParseError(
-                "A label is missing a '{0}' on it's right side.\n\n{1}", 
-                Label.CHAR_BORDER.ToString(), Label.RULES_FORMAT);
+            throw ParseError(ERR_END, Label.CHAR_BORDER.ToString(), Label.RULES_FORMAT);
  
         string rawLabel = rawText.Substring(start, end - start + 1);
 
@@ -205,6 +205,9 @@ class FileParser
 
     private string parseToggle(Label start)
     {
+        const string
+        ERR_NO_END = "The label '{0}' has no '{1}' label following it.\n\n{2}";
+        
         int numEndLabelsNeeded = 1; // Allows nested toggles
         Label? end = new Label(start);
 
@@ -212,9 +215,7 @@ class FileParser
         {
             end = buildLabel(Label.TYPE_TOGGLE, end.start + 1);
             if(end == null)
-                throw ParseError(
-                    "The label '{0}' has no '{1}' label following it.\n\n{2}", 
-                    start.raw, Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
+                throw ParseError(ERR_NO_END, start.raw, Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
 
             if(end.type.Equals(Label.TYPE_TOGGLE_END))
                 numEndLabelsNeeded--;
