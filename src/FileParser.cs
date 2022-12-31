@@ -88,6 +88,26 @@ class FileParser
         expHandler = options;
     }
 
+    private Label? buildLabel(string type, int searchStartIndex)
+    {
+        const string 
+        ERR_END = "A label is missing a '{0}' on it's right side.\n\n{1}";
+
+        string rawText = text.ToString();
+        int start = rawText.IndexOfOIC(Label.CHAR_BORDER + type, searchStartIndex);
+        if(start == -1)
+            return null;
+        
+        int end = rawText.IndexOf(Label.CHAR_BORDER, start + 1);
+        if (end == -1)
+            throw ParseError(ERR_END, Label.CHAR_BORDER.ToString(), Label.RULES_FORMAT);
+ 
+        string rawLabel = rawText.Substring(start, end - start + 1);
+
+        Label label = new Label(start, end, rawLabel);
+        return label;
+    }
+
     public void parseFile(string pathParameter)
     {
         path = pathParameter;
@@ -149,15 +169,17 @@ class FileParser
             switch (label.type)
             {
                 case Label.TYPE_VAR:
-                    expResult = parseVariable(label);
-                break;
-
-                case Label.TYPE_TOGGLE_START:
-                    expResult = parseToggle(label);
+                    expResult = expHandler.computeVarExpression(label.exp);
+                    text.Replace(label.raw, expResult, label.start, label.raw.Length);
                 break;
 
                 case Label.TYPE_LOOP:
-                    expResult = parseLoop(label);
+                    expResult = expHandler.computeLoopExpression(label.exp);
+                    text.Replace(label.raw, expResult, label.start, label.raw.Length);
+                break;
+
+                case Label.TYPE_TOGGLE_START:
+                    expResult = parseToggle();
                 break;
 
                 case Label.TYPE_TOGGLE_END:
@@ -174,71 +196,37 @@ class FileParser
 
         if (logger.mustLog)
             logger.appendLabelResult(label, expResult);
-    }
-
-    private Label? buildLabel(string type, int searchStartIndex)
-    {
-        const string 
-        ERR_END = "A label is missing a '{0}' on it's right side.\n\n{1}";
-
-        string rawText = text.ToString();
-        int start = rawText.IndexOfOIC(Label.CHAR_BORDER + type, searchStartIndex);
-        if(start == -1)
-            return null;
         
-        int end = rawText.IndexOf(Label.CHAR_BORDER, start + 1);
-        if (end == -1)
-            throw ParseError(ERR_END, Label.CHAR_BORDER.ToString(), Label.RULES_FORMAT);
- 
-        string rawLabel = rawText.Substring(start, end - start + 1);
-
-        Label label = new Label(start, end, rawLabel);
-        return label;
-    }
-
-    private string parseVariable(Label label)
-    {
-        string result = expHandler.computeVarExpression(label.exp);
-        text.Replace(label.raw, result, label.start, label.raw.Length);
-        return result;
-    }
-
-    private string parseToggle(Label start)
-    {
-        const string
-        ERR_NO_END = "The label '{0}' has no '{1}' label following it.\n\n{2}";
+        string parseToggle()
+        {
+            const string
+            ERR_NO_END = "The label '{0}' has no '{1}' label following it.\n\n{2}";
         
-        int numEndLabelsNeeded = 1; // Allows nested toggles
-        Label? end = new Label(start);
+            int numEndLabelsNeeded = 1; // Allows nested toggles
+            Label? end = new Label(label);
 
-        while(numEndLabelsNeeded > 0)
-        {
-            end = buildLabel(Label.TYPE_TOGGLE, end.start + 1);
-            if(end == null)
-                throw ParseError(ERR_NO_END, start.raw, Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
+            while(numEndLabelsNeeded > 0)
+            {
+                end = buildLabel(Label.TYPE_TOGGLE, end.start + 1);
+                if(end == null)
+                    throw ParseError(ERR_NO_END, label.raw, Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
 
-            if(end.type.Equals(Label.TYPE_TOGGLE_END))
-                numEndLabelsNeeded--;
-            else if(end.type.Equals(Label.TYPE_TOGGLE_START))
-                numEndLabelsNeeded++;
+                if(end.type.Equals(Label.TYPE_TOGGLE_END))
+                    numEndLabelsNeeded--;
+                else if(end.type.Equals(Label.TYPE_TOGGLE_START))
+                    numEndLabelsNeeded++;
+            }
+
+            bool resultBool = expHandler.computeToggleExpression(label.exp);
+            if (resultBool) // Keep what's in-between, remove the labels
+            {
+                text.Remove(end.start, end.raw.Length);
+                text.Remove(label.start, label.raw.Length);
+            }
+            else // Remove the labels and what's in-between them
+                text.Remove(label.start, end.end - label.start + 1);
+            return resultBool.ToString();
         }
-
-        bool resultBool = expHandler.computeToggleExpression(start.exp);
-        if (resultBool) // Keep what's in-between, remove the labels
-        {
-            text.Remove(end.start, end.raw.Length);
-            text.Remove(start.start, start.raw.Length);
-        }
-        else // Remove the labels and what's in-between them
-            text.Remove(start.start, end.end - start.start + 1);
-        return resultBool.ToString();
-    }
-
-    private string parseLoop(Label label)
-    {
-        string result = expHandler.computeLoopExpression(label.exp);
-        text.Replace(label.raw, result, label.start, label.raw.Length);
-        return result;
     }
 
     private EMBParserException ParseError(string msg, string arg0="", string arg1="", string arg2="")
