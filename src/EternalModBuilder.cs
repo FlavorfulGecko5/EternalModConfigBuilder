@@ -9,7 +9,7 @@ class EternalModBuilder
     /// <summary>
     /// The version identifier for this build of EternalModBuilder
     /// </summary>
-    const string EXE_VERSION = "INDEV-Beta 1.11.0";
+    const string EXE_VERSION = "INDEV-Beta 1.11.0 SHIPPABLE BUILD";
 
     /// <summary>
     /// The name of the directory EternalModBuilder recognizes as temporary

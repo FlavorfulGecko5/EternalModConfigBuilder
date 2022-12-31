@@ -163,6 +163,28 @@ This loop will output all elements of the listA variable - one element per line.
 
 
 
+Beta 1.11.0 lets you utilize loops in more complex ways, whilst keeping the behavior of the above loop labels identical.
+With this update, labels can be utilized as subexpressions.
+
+Here is a simple example:
+This loop nested in a regular label outputs: hello hello hello 
+There are several things to note:
+- The symbols that define the loop block
+- The single quotes around he loop block: unlike regular loop labels, this loop block is part of a larger expression
+  and it's result will used to finish computing the rest of the expression. These single quotes ensure the loop
+  result is treated as a string in the rest of the expression.
+
+For even more advanced behavior, you can nest loop blocks inside of loop blocks.
+ 0 0 - 0 1 - 1 0 - 1 1 -
+Take notice of the contents of the inner loop:
+- {!INC} refers to the current incrementer value of the OUTER loop
+- {!!INC} refers to the current incrementer value of the INNER loop
+- If you're crazy enough to nest even more loops, keep adding exclamation marks to access that loop's INC value
+
+
+
+
+
 There are many other features you can include in these expressions. To get a better idea of what
 operators and functions are available, consult the following documentation:
 https://docs.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression?redirectedfrom=MSDN&view=net-6.0#System_Data_DataColumn_Expression

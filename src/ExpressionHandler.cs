@@ -25,7 +25,7 @@ class EMBOptionDictionary : Dictionary<string, string>
     + "- [Start] and [Stop] are expressions that evaluate to integers - You may NOT place loops inside of these.\n"
     + "- [Start] is less than or equal to [Stop]\n"
     + "- You may use '{[COUNT]" + SYM_LOOP_INC + "}' in [Expression] to get the value of the current loop iteration.\n"
-    + "   > [COUNT] is a number of exclamation marks, corresponding to the number of nested labels.\n"
+    + "   > [COUNT] is a number of exclamation marks, corresponding to the number of nested loops.\n"
     + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
 
     const string RULES_TOGGLE_RESULT = "Expressions in toggle labels must yield one of these results:\n"
@@ -192,7 +192,7 @@ class EMBOptionDictionary : Dictionary<string, string>
             // Split the expression using these indexes
             stringStartNum = exp.Substring(0, indexOne);
             stringEndNum = exp.Substring(indexOne + 1, indexTwo - indexOne - 1);
-            mainExp = exp.Substring(indexTwo + 1, exp.Length - indexTwo - 1);
+            mainExp = exp.Substring(indexTwo + 1);
 
         }
         catch(System.ArgumentOutOfRangeException)
