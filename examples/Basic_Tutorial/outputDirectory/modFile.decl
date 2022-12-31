@@ -1,5 +1,4 @@
 To best understand what is happening here, you should have "config.txt" open and readable alongside this file.
-To read all the syntax rules for options and names, see "Constants.cs"
 
 Let's start simple: the following label has a constant "999" as it's expression.
 This means the label will be replaced with "999" when this file is parsed.
@@ -32,7 +31,7 @@ cacodemon is the best demon
 
 
 
-We can also perform a rule range of logical expressions:
+We can also perform a full range of logical expressions:
 False
 True
 False
@@ -44,6 +43,17 @@ False
 Variables can be used to represent other variables. The following label will
 be replaced with the value of "y":
 -30
+
+
+
+
+
+Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
+The elements of a list are accessed by their index, starting at index 0
+The first element in 'listA' is 1
+
+The name of the list, without any index notation, represents the number of elements inside the list:
+listA contains 4 elements
 
 
 
@@ -123,21 +133,8 @@ subexpression block using the format: {!SUB}[Expression]{!SUBEND}
 I will be visible thanks to subexpressions!
 
 
-
-
-
-
-Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
-The elements of a list are accessed by their index, starting at index 0
-The first element in 'listA' is 1
-
-The name of the list, without any index notation, represents the number of elements inside the list:
-listA contains 4 elements
-
-To access the last element in the list, using the number of elements, you could do something like:
+To access the last element in a list, using the number of elements, you could do something like this:
 The last element in 'listA' is True
-
-This last expression also shows a practical application of the subexpression system discussed above.
 
 
 

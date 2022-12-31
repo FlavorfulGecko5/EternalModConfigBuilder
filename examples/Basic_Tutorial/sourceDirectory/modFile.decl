@@ -1,5 +1,4 @@
 To best understand what is happening here, you should have "config.txt" open and readable alongside this file.
-To read all the syntax rules for options and names, see "Constants.cs"
 
 Let's start simple: the following label has a constant "999" as it's expression.
 This means the label will be replaced with "999" when this file is parsed.
@@ -32,7 +31,7 @@ $emb_var#'{name}' + ' is the best demon'$
 
 
 
-We can also perform a rule range of logical expressions:
+We can also perform a full range of logical expressions:
 $emb_var#true AND false$
 $emb_var#{binary} OR false$
 $emb_var#NOT {binary}$
@@ -44,6 +43,17 @@ $emb_var#NOT {binary}$
 Variables can be used to represent other variables. The following label will
 be replaced with the value of "y":
 $emb_var#{z}$
+
+
+
+
+
+Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
+The elements of a list are accessed by their index, starting at index 0
+The first element in 'listA' is $emb_var#{listA[0]}$
+
+The name of the list, without any index notation, represents the number of elements inside the list:
+$emb_var#'listA contains {listA} elements'$
 
 
 
@@ -95,11 +105,11 @@ section of a file, based on what it's expression evaluates to. Toggle label expr
 MUST evaluate to a Boolean (true/false), or a numerical value.
 $emb_toggle#true$
 I will still be visible when this file is parsed.
-$emb_toggle_end#$
+$emb_toggle_end$
 
 $emb_toggle#{x} = 0$
 I will not be visible when this file is parsed.
-$emb_toggle_end#$
+$emb_toggle_end$
 
 Toggle labels can be nested inside of each other
 $emb_toggle#1$
@@ -107,9 +117,9 @@ I will be visible when this file is parsed.
 
 $emb_toggle#0.85$
 However, I will not be visible! (Any number < 1 is considered false for a toggle label)
-$emb_toggle_end#$
+$emb_toggle_end$
 
-$emb_toggle_end#$
+$emb_toggle_end$
 
 
 
@@ -123,23 +133,10 @@ $emb_var# {!sub}2 + 3{!subend} * {!sub}2{!subend} $
 
 $emb_toggle# {!sub}true{!subend} $
 I will be visible thanks to subexpressions!
-$emb_toggle_end#$
+$emb_toggle_end$
 
-
-
-
-
-Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
-The elements of a list are accessed by their index, starting at index 0
-The first element in 'listA' is $emb_var#{listA[0]}$
-
-The name of the list, without any index notation, represents the number of elements inside the list:
-$emb_var#'listA contains {listA} elements'$
-
-To access the last element in the list, using the number of elements, you could do something like:
+To access the last element in a list, using the number of elements, you could do something like this:
 The last element in 'listA' is $emb_var#{listA[{!sub}{listA} - 1{!subend}]}$
-
-This last expression also shows a practical application of the subexpression system discussed above.
 
 
 
