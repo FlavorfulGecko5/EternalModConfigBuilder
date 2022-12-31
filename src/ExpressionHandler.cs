@@ -8,6 +8,10 @@ class EMBOptionDictionary : Dictionary<string, string>
     const string SYM_SUBEXP_END = "!subend";
     const string SYM_SUBEXP_END_B = "{" + SYM_SUBEXP_END + "}";
 
+    const string LABEL_CHAR_LOOP_SEPARATOR = "&";
+    const int EXP_INFINITE_LOOP_THRESHOLD = 500;
+    const string NULL_EXP_RESULT = "NULL";
+
     const string SYM_LOOP_INC = "inc";
 
     const string RULES_SUBEXPRESSIONS = "A subexpression block:\n"
@@ -23,6 +27,11 @@ class EMBOptionDictionary : Dictionary<string, string>
     + "- You may use '{[COUNT]" + SYM_LOOP_INC + "}' in [Expression] to get the value of the current loop iteration.\n"
     + "   > [COUNT] is a number of exclamation marks, corresponding to the number of nested labels.\n"
     + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
+
+    const string RULES_TOGGLE_RESULT = "Expressions in toggle labels must yield one of these results:\n"
+    + "- A Boolean (true/false) value, from a logical expression or from reading a string.\n"
+    + "- A numerical value. A number less than one is interpeted as false, and one or higher is interpreted as true.";
+
 
     private DataTable computer = new DataTable();
     private int numLoops = 0;
