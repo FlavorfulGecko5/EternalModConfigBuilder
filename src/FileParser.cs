@@ -3,6 +3,39 @@ class FileParser
 {
     private class Label
     {
+        public const char CHAR_BORDER    = '$';
+        public const char CHAR_SEPARATOR = '#';
+
+        public const string TYPE_ANY          = "EMB_";
+        public const string TYPE_VAR          = TYPE_ANY    + "VAR";
+        public const string TYPE_TOGGLE       = TYPE_ANY    + "TOGGLE";
+        public const string TYPE_TOGGLE_START = TYPE_TOGGLE;
+        public const string TYPE_TOGGLE_END   = TYPE_TOGGLE + "_END";
+        public const string TYPE_LOOP         = TYPE_ANY    + "LOOP";
+
+        public const string DESC_TYPES = @"The current valid types for labels are:
+        - 'EMB_VAR'
+        - 'EMB_TOGGLE'
+        - 'EMB_TOGGLE_END'
+        - 'EMB_LOOP'";
+
+        public static readonly string DESC_END_TOGGLE = CHAR_BORDER + TYPE_TOGGLE_END + CHAR_BORDER;
+
+        public static readonly string RULES_FORMAT = 
+        "Labels must have the form "
+        + CHAR_BORDER + "[TYPE]" + CHAR_SEPARATOR + "[EXPRESSION]" + CHAR_BORDER + " where:\n"
+        + "- [TYPE] is a pre-defined string - see examples that show all types.\n"
+        + "- [EXPRESSION] is a valid arithmetic or logical expression - see examples.\n"
+        + "- To insert an option from your config. files into an expression, use the notation {NAME}\n"
+        + "- Case-insensitivity of all label elements is allowed.\n"
+        + "- If the '" + CHAR_SEPARATOR + "' is omitted, the expression is assumed empty.";
+
+        public static readonly string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '"
+        + DESC_END_TOGGLE + "' label placed after it.\n"
+        + "These two labels define the toggle-block controlled by the expression.";
+
+
+
         public int    start { get; private set; }
         public int    end   { get; private set; }
         public string raw   { get; private set; }
@@ -27,16 +60,15 @@ class FileParser
             // Instead of throwing error for missing separator, assume the whole
             // label body is the type. This allows for labels to omit an expression
             // if it isn't used (such as for end-toggle labels)
-            int separatorIndex = raw.IndexOf(LABEL_CHAR_SEPARATOR);
+            int separatorIndex = raw.IndexOf(CHAR_SEPARATOR);
             if(separatorIndex == -1)
             {
-                type = raw.Substring(0, raw.Length - LABEL_CHAR_BORDER.Length).ToUpper();
+                type = raw.Substring(1, raw.Length - 2).ToUpper();
                 exp = "";
             }
             else
             {
-                // Excludes separator index. Capitalize for switch comparisons
-                type = raw.Substring(0, separatorIndex).ToUpper();
+                type = raw.Substring(1, separatorIndex - 1).ToUpper();
                 exp = raw.Substring(separatorIndex + 1, raw.Length - separatorIndex - 2);
             }
         }
@@ -67,11 +99,11 @@ class FileParser
             logger.startNewFileLog(path);
 
         // Labels are parsed sequentially by scanning the entire text file.
-        Label? nextLabel = buildLabel(LABEL_ANY, 0);
+        Label? nextLabel = buildLabel(Label.TYPE_ANY, 0);
         while (nextLabel != null)
         {
             parseLabel(nextLabel);
-            nextLabel = buildLabel(LABEL_ANY, nextLabel.start);
+            nextLabel = buildLabel(Label.TYPE_ANY, nextLabel.start);
         }
 
         /*
@@ -111,27 +143,27 @@ class FileParser
         {
             switch (label.type)
             {
-                case LABEL_VAR:
+                case Label.TYPE_VAR:
                     expResult = parseVariable(label);
                 break;
 
-                case LABEL_TOGGLE_START:
+                case Label.TYPE_TOGGLE_START:
                     expResult = parseToggle(label);
                 break;
 
-                case LABEL_LOOP:
+                case Label.TYPE_LOOP:
                     expResult = parseLoop(label);
                 break;
 
-                case LABEL_TOGGLE_END:
+                case Label.TYPE_TOGGLE_END:
                     throw ParseError(
                         "There is a '{0}' label with no preceding start label.\n\n{1}", 
-                        DESC_LABEL_TOGGLE_END, RULES_TOGGLE_BLOCK);
+                        Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
 
                 default:
                     throw ParseError(
                         "The label '{0}' has an unrecognized type. \n\n'{1}'", 
-                        label.raw, DESC_LABEL_TYPES);
+                        label.raw, Label.DESC_TYPES);
             }
         }
         catch(EMBOptionDictionary.EMBExpressionException e)
@@ -145,18 +177,18 @@ class FileParser
             logger.appendLabelResult(label, expResult);
     }
 
-    private Label? buildLabel(string labelToFind, int searchStartIndex)
+    private Label? buildLabel(string type, int searchStartIndex)
     {
         string rawText = text.ToString();
-        int start = rawText.IndexOfOIC(labelToFind, searchStartIndex);
+        int start = rawText.IndexOfOIC(Label.CHAR_BORDER + type, searchStartIndex);
         if(start == -1)
             return null;
         
-        int end = rawText.IndexOf(LABEL_CHAR_BORDER, start + 1);
+        int end = rawText.IndexOf(Label.CHAR_BORDER, start + 1);
         if (end == -1)
             throw ParseError(
                 "A label is missing a '{0}' on it's right side.\n\n{1}", 
-                LABEL_CHAR_BORDER, RULES_LABEL_FORMAT);
+                Label.CHAR_BORDER.ToString(), Label.RULES_FORMAT);
  
         string rawLabel = rawText.Substring(start, end - start + 1);
 
@@ -178,15 +210,15 @@ class FileParser
 
         while(numEndLabelsNeeded > 0)
         {
-            end = buildLabel(LABEL_TOGGLE_ANY, end.start + 1);
+            end = buildLabel(Label.TYPE_TOGGLE, end.start + 1);
             if(end == null)
                 throw ParseError(
                     "The label '{0}' has no '{1}' label following it.\n\n{2}", 
-                    start.raw, DESC_LABEL_TOGGLE_END, RULES_TOGGLE_BLOCK);
+                    start.raw, Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
 
-            if(end.type.Equals(LABEL_TOGGLE_END))
+            if(end.type.Equals(Label.TYPE_TOGGLE_END))
                 numEndLabelsNeeded--;
-            else if(end.type.Equals(LABEL_TOGGLE_START))
+            else if(end.type.Equals(Label.TYPE_TOGGLE_START))
                 numEndLabelsNeeded++;
         }
 

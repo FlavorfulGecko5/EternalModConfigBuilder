@@ -9,37 +9,9 @@ interface Constants
     const string NULL_EXP_RESULT = "NULL";
 
     // Enums and Constants pertaining to labels
-    const string LABEL_CHAR_BORDER         = "$";
-    const string LABEL_CHAR_SEPARATOR      = "#";
     const string LABEL_CHAR_LOOP_SEPARATOR = "&";
-    const string LABEL_ANY            = LABEL_CHAR_BORDER + "EMB_";
-    const string LABEL_VAR            = LABEL_ANY + "VAR";
-    const string LABEL_TOGGLE_ANY     = LABEL_ANY + "TOGGLE";
-    const string LABEL_TOGGLE_START   = LABEL_TOGGLE_ANY;
-    const string LABEL_TOGGLE_END     = LABEL_TOGGLE_ANY + "_END";
-    const string LABEL_LOOP           = LABEL_ANY + "LOOP";
-    const string DESC_LABEL_TYPES = "The current valid types for labels are:\n"
-    + "- 'EMB_VAR'\n"
-    + "- 'EMB_TOGGLE'\n"
-    + "- 'EMG_TOGGLE_END'\n"
-    + "- 'EMB_LOOP'";
-    const string DESC_LABEL_TOGGLE_END = LABEL_TOGGLE_END + LABEL_CHAR_SEPARATOR + LABEL_CHAR_BORDER;
 
-    
 
-    // Rules
-
-    const string RULES_LABEL_FORMAT = "Labels must have the form " + LABEL_CHAR_BORDER 
-    + "[TYPE]" + LABEL_CHAR_SEPARATOR + "[EXPRESSION]" + LABEL_CHAR_BORDER + " where:\n"
-    + "- [TYPE] is a pre-defined string - see examples that show all types.\n"
-    + "- [EXPRESSION] is a valid arithmetic or logical expression - see examples.\n"
-    + "- To insert an option from your config. files into an expression, use the notation {NAME}\n"
-    + "- Case-insensitivity of all label elements is allowed.\n"
-    + "- If the '" + LABEL_CHAR_SEPARATOR + "' is omitted, the expression is assumed empty.";
-
-    const string RULES_TOGGLE_BLOCK = "Each toggle label must have exactly one '"
-    + DESC_LABEL_TOGGLE_END + "' label placed after it.\n"
-    + "These two labels define the toggle-block controlled by the expression.";
 
     const string RULES_TOGGLE_RESULT = "Expressions in toggle labels must yield one of these results:\n"
     + "- A Boolean (true/false) value, from a logical expression or from reading a string.\n"
