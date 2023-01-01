@@ -23,7 +23,7 @@ class EMBOptionDictionary : Dictionary<string, string>
     + SYM_SUBEXP_LOOP_B + "[Start]" + LABEL_CHAR_LOOP_SEPARATOR
     + "[Stop]" + LABEL_CHAR_LOOP_SEPARATOR + "[Expression]" + SYM_SUBEXP_END_B + " where:\n"
     + "- [Start] and [Stop] are expressions that evaluate to integers - You may NOT place loops inside of these.\n"
-    + "- [Start] is less than or equal to [Stop]\n"
+    + "- [Start] is less than or equal to [Stop] (otherwise the loop's result is an empty string)\n"
     + "- You may use '{[COUNT]" + SYM_LOOP_INC + "}' in [Expression] to get the value of the current loop iteration.\n"
     + "   > [COUNT] is a number of exclamation marks, corresponding to the number of nested loops.\n"
     + "When evaluated, a loop will repeat [Expression] once for every integer between [Start] and [Stop], inclusive.";
@@ -178,8 +178,6 @@ class EMBOptionDictionary : Dictionary<string, string>
 
     public string computeLoopExpression(string exp)
     {
-        numLoops++;
-
         int indexOne = -1, indexTwo = -1, startNum = -1, endNum = -1;
         string stringStartNum = "", stringEndNum = "", mainExp = "";
         try
@@ -218,11 +216,10 @@ class EMBOptionDictionary : Dictionary<string, string>
                 RULES_LOOPS);
         }
         if(startNum > endNum)
-            throw ExpError("The loop's ending value must "
-                + "be larger than it's starting value.\n\n{0}", 
-                RULES_LOOPS);
-        
+            return "";
+
         // Construct the final expression that will be substituted for the label
+        numLoops++;
         string incrementerVar = SYM_LOOP_INC.PadLeft(SYM_LOOP_INC.Length + numLoops, '!');
         this.Add(incrementerVar, "");
         string expandedExp = "";
