@@ -9,7 +9,7 @@ class EternalModBuilder
     /// <summary>
     /// The version identifier for this build of EternalModBuilder
     /// </summary>
-    const string EXE_VERSION = "INDEV-Beta 1.11.0 ENTITY-THREADING BUILD";
+    const string EXE_VERSION = "Beta 1.11.0";
 
     /// <summary>
     /// The name of the directory EternalModBuilder recognizes as temporary
@@ -243,7 +243,7 @@ class EternalModBuilder
                 }
 
         // Parse all label files
-        //multiThread(true);
+        //multiThread(true);  Expression system not setup for multithreading
         FileParser parser = new FileParser(configData.options);
         foreach(string f in labelFiles)
             parser.parseFile(f);
