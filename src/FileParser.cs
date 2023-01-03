@@ -13,11 +13,11 @@ class FileParser
         public const string TYPE_TOGGLE_END   = TYPE_TOGGLE + "_END";
         public const string TYPE_LOOP         = TYPE_ANY    + "LOOP";
 
-        public const string DESC_TYPES = @"The current valid types for labels are:
-        - 'EMB_VAR'
-        - 'EMB_TOGGLE'
-        - 'EMB_TOGGLE_END'
-        - 'EMB_LOOP'";
+        public const string DESC_TYPES = "The current valid types for labels are:\n"
+        + "- 'EMB_VAR'\n"
+        + "- 'EMB_TOGGLE'\n"
+        + "- 'EMB_TOGGLE_END'\n"
+        + "- 'EMB_LOOP'";
 
         public static readonly string DESC_END_TOGGLE = CHAR_BORDER + TYPE_TOGGLE_END + CHAR_BORDER;
 
@@ -160,7 +160,7 @@ class FileParser
     {
         const string
         ERR_END_TOGGLE = "There is a '{0}' label with no preceding start label.\n\n{1}",
-        ERR_TYPE = "The label '{0}' has an unrecognized type. \n\n'{1}'",
+        ERR_TYPE = "The label '{0}' has an unrecognized type. \n\n{1}",
         ERR_EXPRESSION = "Failed to evaluate expression in label '{0}'\n{1}";
 
         string expResult = "";
