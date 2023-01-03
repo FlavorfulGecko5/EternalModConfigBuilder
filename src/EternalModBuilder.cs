@@ -9,7 +9,7 @@ class EternalModBuilder
     /// <summary>
     /// The version identifier for this build of EternalModBuilder
     /// </summary>
-    const string EXE_VERSION = "INDEV-Beta 1.11.0 SHIPPABLE BUILD";
+    const string EXE_VERSION = "INDEV-Beta 1.11.0 ENTITY-THREADING BUILD";
 
     /// <summary>
     /// The name of the directory EternalModBuilder recognizes as temporary
@@ -226,7 +226,6 @@ class EternalModBuilder
     /// </summary>
     private static void parseAndCompressFiles()
     {
-        FileParser parser = new FileParser(configData.options);
         List<string> labelFiles = new List<string>();
         List<string> uncompressedEntities = new List<string>();
 
@@ -243,14 +242,62 @@ class EternalModBuilder
                     uncompressedEntities.Add(file);
                 }
 
-        // Parse all label files    
-        foreach(string file in labelFiles)
-            parser.parseFile(file);
+        // Parse all label files
+        //multiThread(true);
+        FileParser parser = new FileParser(configData.options);
+        foreach(string f in labelFiles)
+            parser.parseFile(f);
 
         // Compress all uncompressed .entities files if configured to do so
         if(runParms.compressEntities && EntityCompressor.canCompress)
-            foreach(string entityFile in uncompressedEntities)
-                EntityCompressor.compressAndWrite(entityFile);
+            multiThread(false);
+
+        void multiThread(bool trueParseFalseCompress)
+        {
+            List<string> list = trueParseFalseCompress ? labelFiles : uncompressedEntities;
+
+            Task[] pool = new Task[runParms.threadCount - 1];
+            int filesAssigned = 0;
+
+            // Initialize pools
+            int div = list.Count / runParms.threadCount,
+                rem = list.Count % runParms.threadCount;
+                
+            for(int i = 0; i < pool.Length; i++)
+            {
+                int poolCount = 0;
+                if(i < rem)
+                    poolCount = 1;
+                poolCount += div;
+
+                int localFiles = filesAssigned; // Prevents multithreading parameter errors
+                if(trueParseFalseCompress)
+                    pool[i] = Task.Factory.StartNew(() => parseTask(localFiles, localFiles + poolCount));
+                else
+                    pool[i] = Task.Factory.StartNew(() => compressTask(localFiles, localFiles + poolCount));
+                filesAssigned += poolCount;
+            }
+
+            if(trueParseFalseCompress)
+                parseTask(filesAssigned, labelFiles.Count);
+            else
+                compressTask(filesAssigned, uncompressedEntities.Count);
+                
+            Task.WaitAll(pool);
+
+            void parseTask(int start, int end)
+            {
+                FileParser p = new FileParser(configData.options);
+                for(int i = start; i < end; i++)
+                    p.parseFile(labelFiles[i]);
+
+            }
+            void compressTask(int start, int end)
+            {
+                for (int i = start; i < end; i++)
+                    EntityCompressor.compressAndWrite(uncompressedEntities[i]);
+            }
+        }
     }
 
     /// <summary>
