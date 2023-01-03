@@ -76,6 +76,15 @@ class ArgData
     + "Compression can not occur if the execution mode is 'readonly' or 'propagate'";
 
     /// <summary>
+    /// Defines the input instructions for the Threads argument and how 
+    /// it will be utilized
+    /// </summary>
+    const string RULES_THREADS = "Optional Parameter - Thread Count\n"
+    + "-t [ 1-8 ] (Default: 1)\n"
+    + "Allows multithreading to be used to compress multiple .entities files simultaneously\n"
+    + "This results in substantially faster and more consistent build times for mods with several .entities files.";
+
+    /// <summary>
     /// Defines the input instructions for the Execution Mode argument
     /// and how this argument will be utilized
     /// </summary>
@@ -120,7 +129,8 @@ class ArgData
     /// all possible command-line arguments and how they function
     /// </summary>
     public static readonly string RULES_USAGE_VERBOSE = RULES_USAGE_GENERAL
-    + RULES_COMP_ENTITIES + "\n\n" + RULES_EXEMODE + "\n\n" + RULES_LOGLEVEL + "\n";
+    + RULES_COMP_ENTITIES + "\n\n" + RULES_THREADS + "\n\n"
+    + RULES_EXEMODE + "\n\n" + RULES_LOGLEVEL + "\n";
 
 
 
@@ -160,6 +170,11 @@ class ArgData
     public bool          compressEntities {get; private set;} = true;
 
     /// <summary>
+    /// The number of threads to utilize
+    /// </summary>
+    public int           threadCount      {get; private set;} = 1;
+
+    /// <summary>
     /// The ExecutionMode to be used by EternalModBuilder
     /// </summary>
     public ExecutionMode exeMode          {get; private set;} = ExecutionMode.COMPLETE;
@@ -188,6 +203,7 @@ class ArgData
             + "\n - Output Path: "          + outPath
             + "\n - Output Type: "          + outputType
             + "\n - Execution Mode: "       + exeMode.ToString()
+            + "\n - Thread Count: "         + threadCount.ToString()
             + "\n - Log Level: "            + logMode.ToString()
             + "\n - Compress Entities: "    + compressEntities;
         
@@ -209,10 +225,10 @@ class ArgData
     /// </exception>
     public ArgData(string[] args)
     {
-        EMBArgumentException ArgError(string msg, string arg0 = "", string arg1 = "")
+        EMBArgumentException ArgError(string msg, params string[] args)
         {
             string formattedMessage = "Failed to parse command-line arguments:\n"
-                + String.Format(msg, arg0, arg1);
+                + String.Format(msg, args);
             return new EMBArgumentException(formattedMessage);
         }
 
@@ -225,6 +241,7 @@ class ArgData
         ERR_DUPE_ARG = "You may only input one {0}.\n\n{1}",
         ERR_MISSING_ARGS = "Missing required command line argument(s).\n\n{0}",
         ERR_ENTITIES = "Compress-entities needs a true/false value.\n\n{0}",
+        ERR_THREADS = "Thread Count must be between 1 and 8, inclusive.\n\n{0}",
         ERR_LOGLEVEL = "'{0}' is not a valid Log Level.\n\n{1}",
         ERR_EXEMODE = "'{0}' is not a valid Execution Mode.\n\n{1}";
         
@@ -232,7 +249,8 @@ class ArgData
         bool hasConfig = false, hasSource = false, hasOutput = false;
 
         // Optional arguments - default values will be used
-        bool hasCompEnts = false, hasExecutionMode = false, hasLogLevel = false;
+        bool hasCompEnts = false, hasExecutionMode = false, hasLogLevel = false,
+        hasThreadCount = false;
 
         if (args.Length % 2 != 0)
             throw ArgError(ERR_NUM_ARGS, RULES_USAGE_MINIMAL);
@@ -272,6 +290,22 @@ class ArgData
                         throw ArgError(ERR_ENTITIES, RULES_COMP_ENTITIES);
                     }
                     hasCompEnts = true;
+                break;
+
+                case "-t":
+                    if(hasThreadCount)
+                        throw duplicateArg("thread count");
+                    try
+                    {
+                        threadCount = Int32.Parse(args[i+1]);
+                        if(threadCount < 1 || threadCount > 8)
+                            throw new System.ArgumentException();
+                        hasThreadCount = true;
+                    }
+                    catch(Exception)
+                    {
+                        throw ArgError(ERR_THREADS, RULES_THREADS);
+                    }
                 break;
                 
                 // The string -> Enum parsing algorithm used below is
