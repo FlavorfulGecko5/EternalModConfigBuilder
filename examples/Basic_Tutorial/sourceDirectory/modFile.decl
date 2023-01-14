@@ -102,6 +102,17 @@ $emb_var#'{obj}'$
 
 
 
+$emb_comment# 
+
+This is a comment label. It will be completely removed at runtime.
+Use comment labels to add documentation to your mod files where necessary
+
+$
+
+
+
+
+
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
 it's expression evaluates to, a toggle label can be used to keep or remove an entire
 section of a file, based on what it's expression evaluates to. Toggle label expressions
