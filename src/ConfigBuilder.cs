@@ -233,7 +233,7 @@ class ConfigBuilder
                         break;
 
                         case TYPE_TEXT:
-                            readText(objectToken.GetValue(PROPERTY_VALUE));
+                            readText(objectToken);
                         break;
 
                         case TYPE_MAP:
@@ -315,25 +315,40 @@ class ConfigBuilder
         }
     }
 
-    private void readText(JToken? textToken)
+    private void readText(JObject textToken)
     {
         validatePrimaryName();
+
+        const string PROPERTY_NEWLINE = "Lines";
 
         const string RULES_TEXT = "'" + TYPE_TEXT + "' Options must:\n"
         + "- Have their '" + PROPERTY_VALUE + "' property defined as a list.\n"
         + "- This list's values must consist of strings, numbers or Booleans.\n"
-        + "These list elements will be merged into a single variable, with each element on it's own line of text.";
+        + "- Have an optional '" + PROPERTY_NEWLINE + "' property defined as a Boolean.\n"
+        + "The '" + PROPERTY_VALUE + "' list elements will be merged into a single variable.\n"
+        + "If '" + PROPERTY_NEWLINE + "' is true or undefined, each element will be on it's own line of text.";
 
         string[] textLines = {};
-        if(textToken == null || !readPrimitiveList(textToken, ref textLines))
+        JToken? valueToken = textToken.GetValue(PROPERTY_VALUE); 
+        if(!readPrimitiveList(valueToken, ref textLines))
             throw ConfigError(ERR_OPTION_DEF, RULES_TEXT);
         
+        bool addLine = true;
+        JToken? lineToken = textToken.GetValue(PROPERTY_NEWLINE);
+        if(lineToken != null)
+        {
+            if(lineToken.Type == JTokenType.Boolean)
+                addLine = (bool)lineToken;
+            else
+                throw ConfigError(ERR_OPTION_DEF, RULES_TEXT);
+        }
+
         string textBlock = "";
         foreach(string line in textLines)
-            textBlock += '\n' + line;
+            textBlock += addLine ? '\n' + line : line;
         
         // Eliminate initial newline character
-        string fixedBlock = textBlock.Length == 0 ? "" : textBlock.Substring(1);
+        string fixedBlock = textBlock.Length == 0 || !addLine ? textBlock : textBlock.Substring(1);
         
         options.Add(name, fixedBlock);
     }

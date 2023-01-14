@@ -65,6 +65,9 @@ line #2
 line #3
 As you can see, each element of the list is output onto it's own line
 
+And with 'Lines' set to false:
+No newlines here.
+
 
 
 

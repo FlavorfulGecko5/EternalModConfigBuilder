@@ -63,6 +63,9 @@ This segment demonstrates how 'Text' variables are output:
 $emb_var#'{largeText}'$
 As you can see, each element of the list is output onto it's own line
 
+And with 'Lines' set to false:
+$emb_var#'{largeLine}'$
+
 
 
 

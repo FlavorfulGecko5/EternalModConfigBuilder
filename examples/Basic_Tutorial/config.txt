@@ -45,6 +45,14 @@
         "Value": ["line #1", "line #2", "line #3"]
     },
 
+    "largeLine": {
+        "About": "Setting the 'Lines' property to 'false' in a 'Text' option will join all list elements together without adding newlines.",
+
+        "Type": "Text",
+        "Lines": false,
+        "Value": ["No ", "newlines ", "here."]
+    },
+
     "mapObject": {
         "About": "The 'Map' type creates a set of options relating keys to values.",
 
