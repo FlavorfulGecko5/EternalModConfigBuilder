@@ -12,12 +12,14 @@ class FileParser
         public const string TYPE_TOGGLE_START = TYPE_TOGGLE;
         public const string TYPE_TOGGLE_END   = TYPE_TOGGLE + "_END";
         public const string TYPE_LOOP         = TYPE_ANY    + "LOOP";
+        public const string TYPE_COMMENT      = TYPE_ANY    + "COMMENT";
 
         public const string DESC_TYPES = "The current valid types for labels are:\n"
         + "- 'EMB_VAR'\n"
         + "- 'EMB_TOGGLE'\n"
         + "- 'EMB_TOGGLE_END'\n"
-        + "- 'EMB_LOOP'";
+        + "- 'EMB_LOOP'\n"
+        + "- 'EMB_COMMENT'";
 
         public static readonly string DESC_END_TOGGLE = CHAR_BORDER + TYPE_TOGGLE_END + CHAR_BORDER;
 
@@ -180,6 +182,10 @@ class FileParser
 
                 case Label.TYPE_TOGGLE_START:
                     expResult = parseToggle();
+                break;
+
+                case Label.TYPE_COMMENT:
+                    text.Replace(label.raw, "", label.start, label.raw.Length);
                 break;
 
                 case Label.TYPE_TOGGLE_END:
