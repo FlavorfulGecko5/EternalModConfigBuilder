@@ -1,3 +1,4 @@
+using JSONEval.ExpressionEvaluation;
 using System.Text;
 class FileParser
 {
@@ -11,14 +12,12 @@ class FileParser
         public const string TYPE_TOGGLE       = TYPE_ANY    + "TOGGLE";
         public const string TYPE_TOGGLE_START = TYPE_TOGGLE;
         public const string TYPE_TOGGLE_END   = TYPE_TOGGLE + "_END";
-        public const string TYPE_LOOP         = TYPE_ANY    + "LOOP";
         public const string TYPE_COMMENT      = TYPE_ANY    + "COMMENT";
 
         public const string DESC_TYPES = "The current valid types for labels are:\n"
         + "- 'EMB_VAR'\n"
         + "- 'EMB_TOGGLE'\n"
         + "- 'EMB_TOGGLE_END'\n"
-        + "- 'EMB_LOOP'\n"
         + "- 'EMB_COMMENT'";
 
         public static readonly string DESC_END_TOGGLE = CHAR_BORDER + TYPE_TOGGLE_END + CHAR_BORDER;
@@ -79,35 +78,67 @@ class FileParser
     private string path;
     private StringBuilder text;
     private int numBuildLabelCalls;
-    private ParserLogMaker logger;
-    private EMBOptionDictionary expHandler;
 
-    public FileParser(EMBOptionDictionary options)
+    public FileParser()
     {
         path = "";
         text = new StringBuilder();
-        logger = new ParserLogMaker();
-        expHandler = options;
     }
 
-    private Label? buildLabel(string type, int searchStartIndex)
+    /// <summary>
+    /// Constructs a Label object by parsing data from the current file.
+    /// </summary>
+    /// <param name="type">Label string to search for</param>
+    /// <param name="searchStartIndex">
+    /// Index to start searching from.
+    /// Assumed to not be inside the expression of another label
+    /// </param>
+    /// <returns>
+    /// Object representing the first Label found of the desired.
+    /// Null is returned if no Label of the desired type is found.
+    /// </returns>
+    private Label? buildLabelNew(string type, int searchStartIndex)
     {
-        const string 
-        ERR_END = "A label is missing a '{0}' on it's right side.\n\n{1}";
-
         string rawText = text.ToString();
-        int start = rawText.IndexOfOIC(Label.CHAR_BORDER + type, searchStartIndex);
-        if(start == -1)
-            return null;
-        
-        int end = rawText.IndexOf(Label.CHAR_BORDER, start + 1);
-        if (end == -1)
-            throw ParseError(ERR_END, Label.CHAR_BORDER.ToString(), Label.RULES_FORMAT);
- 
-        string rawLabel = rawText.Substring(start, end - start + 1);
+        int start = searchStartIndex;
 
-        Label label = new Label(start, end, rawLabel);
-        return label;
+        while(true)
+        {
+            start = rawText.IndexOfOIC(Label.CHAR_BORDER + Label.TYPE_ANY, start);
+            if(start == -1)
+                return null;
+            int end = -1;
+
+            // Find the end of the label - ensuring no string literal labels
+            // inside of expressions are parsed.
+            bool inString = false;
+            for(int i = start + 1; i < rawText.Length && end == -1; i++)
+                switch(rawText[i])
+                {
+                    case Label.CHAR_BORDER:
+                    if(!inString)
+                        end = i;
+                    break;
+
+                    case '\'':
+                    if(!inString)
+                        inString = true;
+                    else if(rawText[i -1] != '`')
+                        inString = false;
+                    break;
+                }
+            if(end == -1)
+                throw ParseError("A label is missing a '{0}' on it's right side.\n\n{1}",
+                    Label.CHAR_BORDER.ToString(), Label.RULES_FORMAT);
+            
+            if(start == rawText.IndexOfOIC(Label.CHAR_BORDER + type, start))
+            {
+                string rawLabel = rawText.Substring(start, end - start + 1);
+                return new Label(start, end, rawLabel);
+            }
+            else
+                start = end;
+        }
     }
 
     public void parseFile(string pathParameter)
@@ -117,19 +148,16 @@ class FileParser
         text.Append(File.ReadAllText(path));
         numBuildLabelCalls = 0;
 
-        if(logger.mustLog)
-            logger.startNewFileLog(path);
-
         // Labels are parsed sequentially by scanning the entire text file.
-        Label? nextLabel = buildLabel(Label.TYPE_ANY, 0);
+        Label? nextLabel = buildLabelNew(Label.TYPE_ANY, 0);
         while (nextLabel != null)
         {
             parseLabel(nextLabel);
-            nextLabel = buildLabel(Label.TYPE_ANY, nextLabel.start);
+            nextLabel = buildLabelNew(Label.TYPE_ANY, nextLabel.start);
         }
 
         /*
-        * .decl files true/false for bool assignments, variations cause crashes
+        * .decl files use true/false for bool assignments, variations cause crashes
         * C# uses True/False for representing bools as strings
         * 
         * This algorithm is necessary to fixup expressions that affect
@@ -146,16 +174,13 @@ class FileParser
             {
                 if(Char.IsWhiteSpace(text[j]))
                     continue;
-                else if(text[j] == 'T' || text[j] == 'F')
+                if(text[j] == 'T' || text[j] == 'F')
                     text[j] = (char)(text[j] + 32);
                 break;
             }
         }
 
         File.WriteAllText(path, text.ToString());
-        
-        if(logger.mustLog)
-            EternalModBuilder.log(logger.getMessage());
     }
 
     private void parseLabel(Label label)
@@ -171,12 +196,7 @@ class FileParser
             switch (label.type)
             {
                 case Label.TYPE_VAR:
-                    expResult = expHandler.computeVarExpression(label.exp);
-                    text.Replace(label.raw, expResult, label.start, label.raw.Length);
-                break;
-
-                case Label.TYPE_LOOP:
-                    expResult = expHandler.computeLoopExpression(label.exp);
+                    expResult = Evaluator.Evaluate(label.exp).GetValueString();
                     text.Replace(label.raw, expResult, label.start, label.raw.Length);
                 break;
 
@@ -195,13 +215,10 @@ class FileParser
                     throw ParseError(ERR_TYPE, label.raw, Label.DESC_TYPES);
             }
         }
-        catch(EMBOptionDictionary.EMBExpressionException e)
+        catch(JSONEval.ExpressionEvaluation.ExpressionParsingException e)
         {
             throw ParseError(ERR_EXPRESSION, label.raw, e.Message);
         }
-
-        if (logger.mustLog)
-            logger.appendLabelResult(label, expResult);
         
         string parseToggle()
         {
@@ -213,7 +230,7 @@ class FileParser
 
             while(numEndLabelsNeeded > 0)
             {
-                end = buildLabel(Label.TYPE_TOGGLE, end.start + 1);
+                end = buildLabelNew(Label.TYPE_TOGGLE, end.end + 1);
                 if(end == null)
                     throw ParseError(ERR_NO_END, label.raw, Label.DESC_END_TOGGLE, Label.RULES_TOGGLE_BLOCK);
 
@@ -223,7 +240,7 @@ class FileParser
                     numEndLabelsNeeded++;
             }
 
-            bool resultBool = expHandler.computeToggleExpression(label.exp);
+            bool resultBool = ((BoolOperand)Evaluator.Evaluate("bool(" + label.exp + ")")).value;
             if (resultBool) // Keep what's in-between, remove the labels
             {
                 text.Remove(end.start, end.raw.Length);
@@ -246,21 +263,5 @@ class FileParser
     public class EMBParserException : EMBException
     {
         public EMBParserException(string msg) : base (msg){}
-    }
-
-    private class ParserLogMaker : LogMaker
-    {
-        public ParserLogMaker() : base(LogLevel.PARSINGS) {}
-
-        public void startNewFileLog(string path)
-        {
-            logMsg.Clear();
-            logMsg.Append("Parsing File '" + path + "'");
-        }
-
-        public void appendLabelResult(Label l, string result)
-        {
-            logMsg.Append("\n - Label '" + l.raw + "' resolved to '" + result + "'");
-        }
     }
 }

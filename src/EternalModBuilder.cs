@@ -75,9 +75,9 @@ class EternalModBuilder
     public static ArgData      runParms   {get; private set;} = new ArgData();
 
     /// <summary>
-    /// Parsed configuration file data
+    /// Propagation Data
     /// </summary>
-    public static ParsedConfig configData {get; private set;} = new ParsedConfig();
+    public static List<PropagateList> propagations {get; private set;} = new List<PropagateList>();
 
     /// <summary>
     /// The directory at program start.
@@ -173,12 +173,9 @@ class EternalModBuilder
     {
         // Parse argument and config data needed for the build process
         runParms = new ArgData(args);
-        configData = ConfigBuilder.buildConfig(runParms.configPaths);
-        if(mustLog(LogLevel.CONFIGS))
-        {
+        if (mustLog(LogLevel.CONFIGS))
             log(runParms.ToString());
-            log(configData.ToString());
-        }
+        propagations = ConfigBuilder.buildConfig(runParms.configPaths);
 
         if(runParms.exeMode == ExecutionMode.READONLY)
             return;
@@ -243,10 +240,7 @@ class EternalModBuilder
                 }
 
         // Parse all label files
-        //multiThread(true);  Expression system not setup for multithreading
-        FileParser parser = new FileParser(configData.options);
-        foreach(string f in labelFiles)
-            parser.parseFile(f);
+        multiThread(true);
 
         // Compress all uncompressed .entities files if configured to do so
         if(runParms.compressEntities && EntityCompressor.canCompress)
@@ -287,10 +281,9 @@ class EternalModBuilder
 
             void parseTask(int start, int end)
             {
-                FileParser p = new FileParser(configData.options);
+                FileParser p = new FileParser();
                 for(int i = start; i < end; i++)
                     p.parseFile(labelFiles[i]);
-
             }
             void compressTask(int start, int end)
             {
@@ -317,15 +310,15 @@ class EternalModBuilder
         // If one exists but not the other, warn the user.
         if (Directory.Exists(DIR_PROPAGATE))
         {
-            if (configData.propagations.Count == 0)
+            if (propagations.Count == 0)
                 reportWarning(WARNING_NO_LISTS);
             
             // Perform propagation and delete the propagation directory after
-            foreach (PropagateList resource in configData.propagations)
+            foreach (PropagateList resource in propagations)
                 resource.propagate();
             Directory.Delete(DIR_PROPAGATE, true);
         }
-        else if (configData.propagations.Count > 0)
+        else if (propagations.Count > 0)
             reportWarning(WARNING_NO_DIR);
     }
 }

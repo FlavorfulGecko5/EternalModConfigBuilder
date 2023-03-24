@@ -32,9 +32,6 @@ public enum LogLevel
     /// <summary> Should output what each label's expression resolves to </summary>
     [Description("Outputs what each label's expression resolved to.")]
     PARSINGS,
-    /// <summary> Should output the result of each propagation </summary>
-    [Description("Outputs each successful propagation")]
-    PROPAGATIONS,
     /// <summary> Should output everything logged by other log levels.</summary>
     [Description("Outputs everything")]
     VERBOSE

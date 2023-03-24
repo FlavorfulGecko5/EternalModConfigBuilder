@@ -47,17 +47,14 @@ class PropagateList
 
     public override string ToString()
     {
-        string formattedString = " - Propagation List '" + name + "'";
+        string formattedString = "Propagation List '" + name + "'";
         foreach(string file in filePaths)
-            formattedString += "\n  - '" + file + "'";
+            formattedString += "\n- '" + file + "'";
         return formattedString;
     }
 
     public void propagate()
     {
-        PropagationLogMaker logger = new PropagationLogMaker();
-        if(logger.mustLog)
-            logger.startNewPropagationLog(name);
         foreach(string path in filePaths)
         {
             string  copyFrom = Path.Combine(EternalModBuilder.DIR_PROPAGATE, path),
@@ -67,63 +64,34 @@ class PropagateList
             {
                 FSUtil.createDirectoryInFilePath(copyTo);
                 File.Copy(copyFrom, copyTo, true);
-                if(logger.mustLog)
-                    logger.appendFileCopyResult(copyTo);
             }
             else if (Directory.Exists(copyFrom))
             {
                 Directory.CreateDirectory(copyTo);
                 FSUtil.copyDirectory(copyFrom, copyTo);
-                if(logger.mustLog)
-                    logger.appendFolderCopyResult(copyTo);
             }    
             else
-                logger.logWarningMissingFile(path, name);
+            {
+                string warning = String.Format(
+                    "The path '{0}' in propagation list '{1}' does not exist in"
+                    + " '{2}'. This path will be ignored.",
+                    path,
+                    name,
+                    EternalModBuilder.DIR_PROPAGATE
+                );
+                EternalModBuilder.reportWarning(warning);
+            }
         }
-        if(logger.mustLog)
-            EternalModBuilder.log(logger.getMessage());
     }
 
-    private EMBPropagaterListException ListError(string msg, string arg0="", string arg1="", string arg2="")
+    private EMBPropagaterListException ListError(string msg, params string[] args)
     {
-        string formattedMessage = String.Format(msg, arg0, arg1, arg2);
+        string formattedMessage = String.Format(msg, args);
         return new EMBPropagaterListException(formattedMessage);
     }
 
     public class EMBPropagaterListException : EMBException
     {
         public EMBPropagaterListException(string msg) : base (msg) {}
-    }
-
-    private class PropagationLogMaker : LogMaker
-    {
-        public PropagationLogMaker() : base(LogLevel.PROPAGATIONS) {}
-
-        public void startNewPropagationLog(string listName)
-        {
-            logMsg.Append("Propagating to '" + listName + "'");
-        }
-
-        public void appendFileCopyResult(string fileName)
-        {
-            logMsg.Append("\n - Created file '" + fileName + "'");
-        }
-
-        public void appendFolderCopyResult(string folderName)
-        {
-            logMsg.Append("\n - Created folder '" + folderName + "'");
-        }
-
-        public void logWarningMissingFile(string path, string listName)
-        {
-            string warning = String.Format(
-                "The path '{0}' in propagation list '{1}' does not exist in"
-                    + " '{2}'. This path will be ignored.",
-                path,
-                listName,
-                EternalModBuilder.DIR_PROPAGATE
-            );
-            EternalModBuilder.reportWarning(warning);
-        }
     }
 }
