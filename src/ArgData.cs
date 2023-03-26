@@ -19,25 +19,6 @@ public enum ExecutionMode
 }
 
 /// <summary>
-/// Describes all levels EternalModBuilder's logging feature can operate at
-/// </summary>
-public enum LogLevel
-{
-    /// <summary> Default level where only errors and warnings should be output </summary>
-    [Description("Only outputs errors and warnings (default)")]
-    MINIMAL,
-    /// <summary> Should output parsed command-line argument and config. file data </summary>
-    [Description("Outputs parsed command-line argument and configuration file data.")]
-    CONFIGS,
-    /// <summary> Should output what each label's expression resolves to </summary>
-    [Description("Outputs what each label's expression resolved to.")]
-    PARSINGS,
-    /// <summary> Should output everything logged by other log levels.</summary>
-    [Description("Outputs everything")]
-    VERBOSE
-}
-
-/// <summary>
 /// An object that parses and stores all data needing to be read from
 /// command-line arguments. <para/>
 /// Defines all behavior pertaining to command-line argument format and usage
@@ -92,8 +73,11 @@ class ArgData
     /// Defines the input instructions for the Log Level argument
     /// and how this argument will be utilized
     /// </summary>
-    static readonly string RULES_LOGLEVEL = "Optional Parameter - Log Level\n"
-    + "-l [level] (Choose one of the following):\n" + EnumUtil.EnumToString<LogLevel>();
+    static readonly string RULES_LOGLEVEL = "Optional Parameter - Logfile\n"
+    + "-l [ true | false] (Choose One)\n"
+    + "If true, verbose logging data is output to the file '" + EternalModBuilder.FILE_LOG
+    + "'\nIf false (default), no log file is produced.\n"
+    + "This logfile is deleted at the start of program execution.";
 
     /// <summary>
     /// Defines the rules your output location must follow and how
@@ -177,9 +161,9 @@ class ArgData
     public ExecutionMode exeMode          {get; private set;} = ExecutionMode.COMPLETE;
 
     /// <summary>
-    /// The LogLevel to be used by EternalModBuilder
+    /// If true, generate and save verbose log data to a log file.
     /// </summary>
-    public LogLevel      logMode          {get; private set;} = LogLevel.MINIMAL;
+    public bool          logfile          {get; private set;} = false;
 
     /// <summary>
     /// Gets a string representation of this object
@@ -201,7 +185,7 @@ class ArgData
             + "\n - Output Type: "          + outputType
             + "\n - Execution Mode: "       + exeMode.ToString()
             + "\n - Thread Count: "         + threadCount.ToString()
-            + "\n - Log Level: "            + logMode.ToString()
+            + "\n - Logfile: "            + logfile.ToString()
             + "\n - Compress Entities: "    + compressEntities;
         
         return msg;
@@ -239,7 +223,7 @@ class ArgData
         ERR_MISSING_ARGS = "Missing required command line argument(s).\n\n{0}",
         ERR_ENTITIES = "Compress-entities needs a true/false value.\n\n{0}",
         ERR_THREADS = "Thread Count must be between 1 and 8, inclusive.\n\n{0}",
-        ERR_LOGLEVEL = "'{0}' is not a valid Log Level.\n\n{1}",
+        ERR_LOGLEVEL = "Logfile parameter needs a true/false value.\n\n{0}",
         ERR_EXEMODE = "'{0}' is not a valid Execution Mode.\n\n{1}";
         
         // Required arguments
@@ -328,12 +312,11 @@ class ArgData
                         throw duplicateArg("log level");
                     try
                     {
-                        logMode = (LogLevel)Enum.Parse(
-                                typeof(LogLevel), args[i+1].ToUpper());
+                        logfile = Boolean.Parse(args[i+1]);
                     }
                     catch(Exception) 
                     {
-                        throw ArgError(ERR_LOGLEVEL, args[i+1], RULES_LOGLEVEL);
+                        throw ArgError(ERR_LOGLEVEL, RULES_LOGLEVEL);
                     }
                     hasLogLevel = true;
                 break;

@@ -75,15 +75,9 @@ class FileParser
         }
     }
 
-    private string path;
-    private StringBuilder text;
-    private int numBuildLabelCalls;
-
-    public FileParser()
-    {
-        path = "";
-        text = new StringBuilder();
-    }
+    public StringBuilder log = new StringBuilder();
+    private StringBuilder text = new StringBuilder();
+    private string path = "";
 
     /// <summary>
     /// Constructs a Label object by parsing data from the current file.
@@ -146,7 +140,8 @@ class FileParser
         path = pathParameter;
         text.Clear();
         text.Append(File.ReadAllText(path));
-        numBuildLabelCalls = 0;
+        if(EternalModBuilder.runParms.logfile)
+            log.Append("\n\nLabels for file '" + path + "'\n");
 
         // Labels are parsed sequentially by scanning the entire text file.
         Label? nextLabel = buildLabelNew(Label.TYPE_ANY, 0);
@@ -219,6 +214,9 @@ class FileParser
         {
             throw ParseError(ERR_EXPRESSION, label.raw, e.Message);
         }
+
+        if(EternalModBuilder.runParms.logfile)
+            log.Append(label.raw + " = '" + expResult + "'\n");
         
         string parseToggle()
         {

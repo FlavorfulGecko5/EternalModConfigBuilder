@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 /// <summary>
 /// Structures and controls the execution of all mod building operations
 /// </summary>
@@ -16,6 +17,11 @@ class EternalModBuilder
     /// and safe to delete before/after mod building occurs.
     /// </summary>
     public const string DIR_TEMP = "eternalmodbuilder_temp";
+
+    /// <summary>
+    /// If verbose logging is enabled, log data will be written to this file.
+    /// </summary>
+    public const string FILE_LOG = "eternalmodbuilder_temp_log.txt";
 
     /// <summary>
     /// The name of the directory inside the mod that 
@@ -64,7 +70,6 @@ class EternalModBuilder
     + "If your game crashes, double-check your mod files for errors.\n";       
     
 
-    
 
 
     /* Static Fields and Methods */
@@ -80,6 +85,11 @@ class EternalModBuilder
     public static List<PropagateList> propagations {get; private set;} = new List<PropagateList>();
 
     /// <summary>
+    /// Data to write to the log file
+    /// </summary>
+    public static StringBuilder logData = new StringBuilder();
+
+    /// <summary>
     /// The directory at program start.
     /// </summary>
     private static string startDir = "";
@@ -88,26 +98,6 @@ class EternalModBuilder
     /// The directory that mod files will be copied to and built inside of.
     /// </summary>
     private static string activeDir = "";
-
-    /// <summary>
-    /// Determines if a mod building operation should have it's results logged 
-    /// based on the log level setting.
-    /// </summary>
-    /// <param name="targetLevel">The log level to check</param>
-    /// <returns>True if logging should occur, otherwise False.</returns>
-    public static bool mustLog(LogLevel targetLevel)
-    {
-        return runParms.logMode == targetLevel || runParms.logMode == LogLevel.VERBOSE;
-    }
-
-    /// <summary>
-    /// Outputs a log message
-    /// </summary>
-    /// <param name="msg">The message to log.</param>
-    public static void log(string msg)
-    {
-        Console.WriteLine("LOG: " + msg);
-    }
 
     /// <summary>
     /// Outputs a warning message
@@ -130,6 +120,7 @@ class EternalModBuilder
     /// </returns>
     public static int Main(string[] args)
     {
+        int exitcode = 0;
         try
         {
             Console.WriteLine(MSG_WELCOME);
@@ -139,10 +130,12 @@ class EternalModBuilder
                 return 0;
             }
 
-            // Delete temporary directory
-            if (Directory.Exists(DIR_TEMP))
+            // Delete temporary files
+            if(Directory.Exists(DIR_TEMP))
                 Directory.Delete(DIR_TEMP, true);
-            
+            if(File.Exists(FILE_LOG))
+                File.Delete(FILE_LOG);
+
             // Build the mod and time how long it takes
             Stopwatch embTimer = new Stopwatch();
             embTimer.Start();
@@ -151,18 +144,21 @@ class EternalModBuilder
 
             // Report successful execution and build time
             Console.WriteLine(MSG_SUCCESS, embTimer.ElapsedMilliseconds / 1000.0);
-            return 0;
+            exitcode = 0;
         }
         catch (EMBException e)
         {
             Console.WriteLine(MSG_ERROR + e.Message + MSG_FAILURE);
-            return 1;
+            exitcode = 1;
         }
         catch (Exception e)
         {
             Console.WriteLine(MSG_ERROR_UNKNOWN + e.ToString() + MSG_FAILURE);
-            return 2;
+            exitcode = 2;
         }
+        if(runParms.logfile)
+            File.WriteAllText(Path.Combine(startDir, FILE_LOG), logData.ToString());
+        return exitcode;
     }
 
     /// <summary>
@@ -172,9 +168,10 @@ class EternalModBuilder
     private static void buildMod(string[] args)
     {
         // Parse argument and config data needed for the build process
+        startDir = Directory.GetCurrentDirectory();
         runParms = new ArgData(args);
-        if (mustLog(LogLevel.CONFIGS))
-            log(runParms.ToString());
+        if(runParms.logfile)
+            logData.Append(runParms.ToString() + "\n\n");
         propagations = ConfigBuilder.buildConfig(runParms.configPaths);
 
         if(runParms.exeMode == ExecutionMode.READONLY)
@@ -182,7 +179,6 @@ class EternalModBuilder
 
         // If zip, use temp. directory then zip to output after processing
         activeDir = runParms.outToZip ? DIR_TEMP : runParms.outPath;
-        startDir = Directory.GetCurrentDirectory();
 
         // Clone the contents of src to the active output directory
         Directory.CreateDirectory(activeDir);
@@ -248,6 +244,7 @@ class EternalModBuilder
 
         void multiThread(bool trueParseFalseCompress)
         {
+            Object logLock = new Object();
             List<string> list = trueParseFalseCompress ? labelFiles : uncompressedEntities;
 
             Task[] pool = new Task[runParms.threadCount - 1];
@@ -276,14 +273,27 @@ class EternalModBuilder
                 parseTask(filesAssigned, labelFiles.Count);
             else
                 compressTask(filesAssigned, uncompressedEntities.Count);
-                
-            Task.WaitAll(pool);
-
+            
+            try
+            {
+                Task.WaitAll(pool);
+            }
+            catch(System.AggregateException e)
+            {
+                // Report the first Exception logged, any others will be
+                // identified with consecutive runs of the program
+                throw e.InnerExceptions[0];
+            }
+            
             void parseTask(int start, int end)
             {
                 FileParser p = new FileParser();
                 for(int i = start; i < end; i++)
                     p.parseFile(labelFiles[i]);
+                
+                if (runParms.logfile)
+                    lock(logLock)
+                        logData.Append(p.log);
             }
             void compressTask(int start, int end)
             {

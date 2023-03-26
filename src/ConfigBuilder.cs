@@ -70,14 +70,14 @@ class ConfigBuilder
             }
         }
 
-        if(EternalModBuilder.mustLog(LogLevel.CONFIGS))
+        if(EternalModBuilder.runParms.logfile)
         {
             string logMessage = "Parsed Variables:\n" + Evaluator.globalVars.ToString();
 
             foreach(PropagateList propList in propagations)
                 logMessage += propList.ToString() + '\n';
             
-            EternalModBuilder.log(logMessage);
+            EternalModBuilder.logData.Append(logMessage + "\n\n");
         }
         return propagations;
     }
