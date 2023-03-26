@@ -1,11 +1,16 @@
-To best understand what is happening here, you should have "config.txt" open and readable alongside this file.
+This file provides a tutorial on constucting labels and basic expressions. To understand how to fully
+utilize the expression system, consult the relevant JSONEval documentation: 
+https://github.com/FlavorfulGecko5/JSONEval/tree/master/documentation/ExpressionEvaluation
+
+
+To best understand what is happening here, you should have "config.json" open and readable alongside this file.
 
 Let's start simple: the following label has a constant "999" as it's expression.
 This means the label will be replaced with "999" when this file is parsed.
 999
 
 To insert an option we defined in our configuration file into the expression,
-we encase the option's name in braces {}. The following label would be replaced
+we can simply write the option's name. The following label would be replaced
 with the value of the option "x", which is defined in the configuration file.
 123
 
@@ -20,7 +25,7 @@ examples show. Note that both "x" and "y" are defined in our configuration file.
 
 
 What if the values we want to insert are strings? Wherever this is the case,
-we must put single quotes ('') around string literals or variables representing strings
+we must put single quotes ('') around string literals
 The Revenant
 cacodemon
 
@@ -40,7 +45,7 @@ False
 
 
 
-Variables can be used to represent other variables. The following label will
+Variables can be used to represent expressions. The following label will
 be replaced with the value of "y":
 -30
 
@@ -48,57 +53,12 @@ be replaced with the value of "y":
 
 
 
-Starting in Beta 1.5.0, you may define and use list variables in your configuration files.
+You may define and use list variables in your configuration files.
 The elements of a list are accessed by their index, starting at index 0
 The first element in 'listA' is 1
 
 The name of the list, without any index notation, represents the number of elements inside the list:
 listA contains 4 elements
-
-
-
-
-
-This segment demonstrates how 'Text' variables are output:
-line #1
-line #2
-line #3
-As you can see, each element of the list is output onto it's own line
-
-And with 'Lines' set to false:
-No newlines here.
-
-
-
-
-
-This segment shows how to access variables created by 'Map' Options
-234
-True
-the third value in the map
-
-Simply inputting the name of the Map Option with no key will yield
-the number of entries inside the Map.
-
-This Map Option has 3 entries.
-
-
-
-
-
-This segment shows how to use variables created by Options that use custom types.
-These variables can be defined as strings, numbers, Booleans or lists containing these.
-For lists, the same syntax is used as standard list variables.
-123
-Howdy
-True
-hooray
-obj.THIRD contains 2 elements.
-
-Finally, we can also access the 'Value' defined in the Type Definition. Notice that
-the list was merged into a single value and {!THIS} was replaced with the current
-Option's name.
-Hello there. The name of this Option is obj
 
 
 
@@ -113,7 +73,7 @@ Hello there. The name of this Option is obj
 Next-up, we have toggle labels. Whereas a variable label will be replaced with whatever
 it's expression evaluates to, a toggle label can be used to keep or remove an entire
 section of a file, based on what it's expression evaluates to. Toggle label expressions
-MUST evaluate to a Boolean (true/false), or a numerical value.
+MUST be resolveable to a Boolean
 
 I will still be visible when this file is parsed.
 
@@ -126,74 +86,3 @@ I will be visible when this file is parsed.
 
 
 
-
-
-
-
-
-
-Expressions are evaluated by first substituting variables, then computing the result.
-However, you may run into situations where you need to fully evaluate parts of an expression
-before variables are substituted into the rest of it. In these instances, you can define a
-subexpression block using the format: {!SUB}[Expression]{!SUBEND}
-10
-
-
-I will be visible thanks to subexpressions!
-
-
-To access the last element in a list, using the number of elements, you could do something like this:
-The last element in 'listA' is True
-
-
-
-
-
-Beta 1.8.0 has introduced the Loop Label. This allows you to iterate over a set of integers and evaluate an expression multiple times.
-
-A simple example: hello hello hello 
-> This label will be replaced with the world "hello" written three times.
-> Here, 1 is the initial loop value, 3 is the final value, and 'hello' is the expression that will be evaluated multiple times. 
-> These three elements are separated by the character '&'
-
-We can retrieve the loop value using the '{!inc}' symbol. The following loop label will output all loop values, one per iteration:
--3 -2 -1 0 1 2 3 4 5 
-
-This label can be very powerful when combined with lists. For instance:
-1
-hello there
-3.45
-True
-
-
-This loop will output all elements of the listA variable - one element per line.
-
-
-
-
-
-Beta 1.11.0 lets you utilize loops in more complex ways, whilst keeping the behavior of the above loop labels identical.
-With this update, labels can be utilized as subexpressions.
-
-Here is a simple example:
-This loop nested in a regular label outputs: hello hello hello 
-There are several things to note:
-- The symbols that define the loop block
-- The single quotes around he loop block: unlike regular loop labels, this loop block is part of a larger expression
-  and it's result will used to finish computing the rest of the expression. These single quotes ensure the loop
-  result is treated as a string in the rest of the expression.
-
-For even more advanced behavior, you can nest loop blocks inside of loop blocks.
- 0 0 - 0 1 - 1 0 - 1 1 -
-Take notice of the contents of the inner loop:
-- {!INC} refers to the current incrementer value of the OUTER loop
-- {!!INC} refers to the current incrementer value of the INNER loop
-- If you're crazy enough to nest even more loops, keep adding exclamation marks to access that loop's INC value
-
-
-
-
-
-There are many other features you can include in these expressions. To get a better idea of what
-operators and functions are available, consult the following documentation:
-https://docs.microsoft.com/en-us/dotnet/api/system.data.datacolumn.expression?redirectedfrom=MSDN&view=net-6.0#System_Data_DataColumn_Expression

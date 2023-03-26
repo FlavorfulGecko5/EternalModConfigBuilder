@@ -1,9 +1,25 @@
 {
-    "Standards": {
-        "Purpose": "OPTIONAL - Describes what this option does or controls",
-        "PossibleValues": ["OPTIONAL - WHAT VALUES CAN THIS OPTION BE SET TO?",
-            "100", "true", "any integer between 0 and 1, inclusive"],
-        "Value": "REQUIRED - Any string, numerical, or boolean value. Or a list containing these values.",
+    "!About": [
+        "This file shows some of the simplest ways of defining variables",
+        "and setting up your configuration files. To understand how to fully utilize",
+        "the config. file system, consult the relevant JSONEval documentation:",
+        "https://github.com/FlavorfulGecko5/JSONEval/tree/master/documentation/JSONParsing"
+    ],
+
+    "!Comments": [
+        "Any property whose name begins with an exclamation mark is a comment",
+        "These will not be parsed into variables."
+    ],
+
+    "Suggested_Variable_Formatting": {
+        "!Purpose": "OPTIONAL - Describes what this option does or controls",
+
+        "!PossibleValues": [
+            "OPTIONAL - WHAT VALUES CAN THIS OPTION BE SET TO?",
+            "100", "true", "any integer between 0 and 1, inclusive"
+        ],
+
+        "Value": "REQUIRED - Any string, numerical, or boolean value. Or a list containing these values."
     },
 
     "SimpleStandards": "Or, you can define simple variables like this",
@@ -15,86 +31,35 @@
     "y": -30,
 
     "z":{
-        "Value": "{y}"
+        "Value": "y",
+
+        "Note": "This variable is interpreted as an expression"
     },
 
     "name":{
-        "Value": "cacodemon"
+        "Type": "string",
+        "Value": "cacodemon",
+
+        "!Note": [
+            "Setting the type to 'string' ensures this variable is interpreted",
+            "as a string literal, and not as an expression"
+        ]
     },
 
     "binary": true,
 
-    "listA": [1, "hello there", 3.45, true],
+    "listA": [1, " 'hello there' ", 3.45, true],
 
     "listB": {
-        "Value": ["Lists in the object are allowed too"]
+        "Value": ["Lists in an object are allowed too"]
     },
 
-    "Comment_Standards": {
-        "Type": "Comment",
-        "About": "Options with their 'Type' property set to 'Comment' will be treated as a comment and won't be processed as a variable.",
-        "Usage": "Use comments to provide additional explanation without creating an extra, unused variable.",
+    "!Propagation": [
+        "The 'Propagate' property is a special property used to configure",
+        "EternalModBuilder's 'Propagation' feature"
+    ],
 
-        "Standard Type": "All of the above options utilize 'Standard' as their 'Type' (this is the default Type if none is specified)."
-    },
-
-    "largeText": {
-        "About": "The 'Text' type lets you parse a list of strings into a single variable, one list item per line",
-
-        "Type": "Text",
-        "Value": ["line #1", "line #2", "line #3"]
-    },
-
-    "largeLine": {
-        "About": "Setting the 'Lines' property to 'false' in a 'Text' option will join all list elements together without adding newlines.",
-
-        "Type": "Text",
-        "Lines": false,
-        "Value": ["No ", "newlines ", "here."]
-    },
-
-    "mapObject": {
-        "About": "The 'Map' type creates a set of options relating keys to values.",
-
-        "Type": "Map",
-        "Keys": ["first", "second", 3],
-        "Values": [234, "true", "the third value in the map"]
-    },
-
-    "CustomObject": {
-        "About": [
-            "The 'TypeDef' type allows us to create our own custom types.",
-            "The name of this object will become the 'Type' string.",
-            "The 'Using' list specifies what properties of the object will be read.",
-            "The 'Value' creates a value shared amongst all Options of this type."
-        ],
-
-
-        "Type": "TypeDef",
-        "Using": ["First", "Second", "THIRD"],
-        "Value": ["Hello there. ", "The name of this Option is {!this}"]
-    },
-
-    "obj": {
-        "About": [
-            "Here we create an Option using the custom type we defined above.",
-            "Notice how we define all of the properties specified in the 'Using' array"
-        ],
-
-
-        "Type": "customobject",
-        "First": 123,
-        "Second": "Howdy",
-        "THIRD": [true, "hooray"]
-    },
-
-    "Propagater_Objects": {
-        "Type": "Comment",
-        "About": "The 'Propagater' type let's you define Options that control EternalModBuilder's propagation feature"
-    },
-
-    "propagate":{
-        "Type": "Propagater",
+    "Propagate":{
         "gameresources/generated/decls": ["fileOne.txt"],
         "gameresources_patch1": ["directory/"]
     }
