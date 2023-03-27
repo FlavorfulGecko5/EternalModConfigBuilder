@@ -5,15 +5,15 @@
 			item[0] = {
 				type = "EQUIP_HAMMER_SUPERMETER";
 				hammerSupermeterInfo = {
-					superMeterMax = $emb_var#({hammerMax}*60)$;
-					fillPerGlorykill = $emb_var#({hammerGKCharge}*60)$;
-					fillPerChainsawkill = $emb_var#({hammerCSCharge}*60)$;
-					fillPerWeakpoint = $emb_var#({hammerWPCharge}*60)$;
-					fillPerBloodpunchKill = $emb_var#({hammerBPCharge}*60)$;
-					countBloodPunchSplashKills = $emb_var#{hammerBPSplash}$;
-					fillPerBurnKill = $emb_var#({hammerBNCharge}*60)$;
-					fillPerFrozenKill = $emb_var#({hammerFZCharge}*60)$;
-					fillPerHeadshotKill = $emb_var#({hammerHSCharge}*60)$;
+					superMeterMax = $emb_var#hammerMax*60$;
+					fillPerGlorykill = $emb_var#hammerGKCharge*60$;
+					fillPerChainsawkill = $emb_var#hammerCSCharge*60$;
+					fillPerWeakpoint = $emb_var#hammerWPCharge*60$;
+					fillPerBloodpunchKill = $emb_var#hammerBPCharge*60$;
+					countBloodPunchSplashKills = $emb_var#hammerBPSplash$;
+					fillPerBurnKill = $emb_var#hammerBNCharge*60$;
+					fillPerFrozenKill = $emb_var#hammerFZCharge*60$;
+					fillPerHeadshotKill = $emb_var#hammerHSCharge*60$;
 					superMeterFullSound = "play_sfx_hammer_ready";
 					dryFireSound = "play_sfx_hammer_negative_use";
 				}

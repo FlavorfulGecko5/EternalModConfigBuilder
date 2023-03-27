@@ -4,7 +4,7 @@
 		modifiersEquipment = {
 			item[0] = {
 				hammerSupermeterInfo = {
-					superMeterMax = $emb_var#({hammerHordeMax}*60)$;
+					superMeterMax = $emb_var#hammerHordeMax*60$;
 				}
 			}
 		}

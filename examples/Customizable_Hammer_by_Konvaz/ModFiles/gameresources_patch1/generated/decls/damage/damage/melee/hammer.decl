@@ -4,8 +4,8 @@
 			damageName = "hammer";
 			damageSource = "DAMAGESRC_HAMMER";
 			hitClientAuthoritative = true;
-			minDamage = $emb_var#{hammerDamage}$;
-			maxDamage = $emb_var#{hammerDamage}$;
+			minDamage = $emb_var#hammerDamage$;
+			maxDamage = $emb_var#hammerDamage$;
 			playerDamageScale = 0;
 			damageStat = "STAT_DAMAGE_DEALT_TO_DEMONS";
 			ignoreDeadTargets = true;
@@ -18,7 +18,7 @@
 				item[0] = {
 					monsterType = "AI_MONSTER_ZOMBIE_TIER_1 AI_MONSTER_ZOMBIE_TIER_3 AI_MONSTER_ZOMBIE_MAYKR AI_MONSTER_IMP AI_MONSTER_STONE_IMP AI_MONSTER_GARGOYLE AI_MONSTER_HELL_SOLDIER AI_MONSTER_SHOTGUN_SOLDIER";
 					maxDamage = -1;
-					damageScalar = $emb_var#{hammerFodderMultiplier}$;
+					damageScalar = $emb_var#hammerFodderMultiplier$;
 				}
 			}
 			kickTime = 0;

@@ -2,7 +2,7 @@
 	inherit = "lootdrop/armor/hammer_slam";
 	edit = {
 		item_maxDrop = {
-			defaultValue = $emb_var#{hammerArmorMultiplierUpgraded}$;
+			defaultValue = $emb_var#hammerArmorMultiplierUpgraded$;
 		}
 		mustHavePerk = "perk/player/weapons/hammer/armor_and_health_drops_upgraded";
 		mustNotHavePerk = NULL;

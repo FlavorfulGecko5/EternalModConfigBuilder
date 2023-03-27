@@ -2,7 +2,7 @@
 	inherit = "lootdrop/ammo/plasma_rifle/cells_hammer_slam";
 	edit = {
 		item_maxDrop = {
-			defaultValue = $emb_var#{hammerCellsMultiplierUpgraded}$;;
+			defaultValue = $emb_var#hammerCellsMultiplierUpgraded$;
 		}
 		mustHavePerk = "perk/player/weapons/hammer/ammo_drops_upgraded";
 		mustNotHavePerk = NULL;

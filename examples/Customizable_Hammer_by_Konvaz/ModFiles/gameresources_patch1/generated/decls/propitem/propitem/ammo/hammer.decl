@@ -7,6 +7,6 @@
 		componentTypeInfo = "idUseableItemComponent";
 		controllerShake_highMagnitude = 0.25;
 		notification = "hud/generic_callout";
-		hammerSupermeterCharge = $emb_var#({hammerPickupCharge}*60)$;
+		hammerSupermeterCharge = $emb_var#hammerPickupCharge*60$;
 	}
 }
