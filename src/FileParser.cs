@@ -115,10 +115,7 @@ class FileParser
                     break;
 
                     case '\'':
-                    if(!inString)
-                        inString = true;
-                    else if(rawText[i -1] != '`')
-                        inString = false;
+                    inString = !inString;
                     break;
                 }
             if(end == -1)

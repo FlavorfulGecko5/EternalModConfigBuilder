@@ -10,7 +10,7 @@ class EternalModBuilder
     /// <summary>
     /// The version identifier for this build of EternalModBuilder
     /// </summary>
-    const string EXE_VERSION = "2.0";
+    const string EXE_VERSION = "2.0.1";
 
     /// <summary>
     /// The name of the directory EternalModBuilder recognizes as temporary

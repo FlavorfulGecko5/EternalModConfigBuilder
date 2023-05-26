@@ -9,7 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="40-System.IO.Compression.FileSystem" Version="1.0.0.2" />
-    <PackageReference Include="FG5.JSONEval" Version="1.0.5" />
+    <PackageReference Include="FG5.JSONEval" Version="1.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="4.3.0" />
   </ItemGroup>
